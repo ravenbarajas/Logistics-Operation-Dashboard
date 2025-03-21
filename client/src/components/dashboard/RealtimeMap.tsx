@@ -14,19 +14,17 @@ declare global {
 export default function RealtimeMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<any>(null);
+  const mapCreatedRef = useRef<boolean>(false);
   const { theme } = useTheme();
   
+  // Effect to initialize map only once
   useEffect(() => {
-    if (!window.L || !mapRef.current) return;
+    if (!window.L || !mapRef.current || mapCreatedRef.current) return;
     
-    // Clean up existing map instance
-    if (leafletMapRef.current) {
-      leafletMapRef.current.remove();
-    }
-    
-    // Initialize map
+    // Initialize map only if it hasn't been created yet
     const map = window.L.map(mapRef.current).setView([37.7749, -122.4194], 7);
     leafletMapRef.current = map;
+    mapCreatedRef.current = true;
     
     // Add tile layer
     window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -70,12 +68,22 @@ export default function RealtimeMap() {
     }).addTo(map);
     geofence.bindPopup("San Francisco Bay Area Geofence");
     
+    // Clean up on component unmount
     return () => {
       if (leafletMapRef.current) {
         leafletMapRef.current.remove();
+        leafletMapRef.current = null;
+        mapCreatedRef.current = false;
       }
     };
-  }, [theme]); // Re-initialize when theme changes
+  }, []); // Only run once on mount
+
+  // Update map when theme changes
+  useEffect(() => {
+    if (leafletMapRef.current) {
+      leafletMapRef.current.invalidateSize();
+    }
+  }, [theme]);
   
   return (
     <Card className="lg:col-span-2">

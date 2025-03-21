@@ -7,6 +7,10 @@ import { Toaster } from "@/components/ui/toaster";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import Dashboard from "@/pages/Dashboard";
+import Vehicles from "@/pages/Vehicles";
+import Shipments from "@/pages/Shipments";
+import Analytics from "@/pages/Analytics";
+import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -57,6 +61,10 @@ function Router() {
         <div className="h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar">
           <Switch>
             <Route path="/" component={Dashboard} />
+            <Route path="/vehicles" component={Vehicles} />
+            <Route path="/shipments" component={Shipments} />
+            <Route path="/analytics" component={Analytics} />
+            <Route path="/settings" component={Settings} />
             <Route component={NotFound} />
           </Switch>
         </div>

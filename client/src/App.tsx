@@ -56,7 +56,7 @@ function Router() {
       
       {/* Main Content */}
       <main className="flex-1 overflow-hidden">
-        <Header onMenuClick={toggleSidebar} />
+        <Header onMenuClick={() => toggleSidebar()} />
         
         <div className="h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar">
           <Switch>

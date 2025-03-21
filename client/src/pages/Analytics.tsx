@@ -237,6 +237,7 @@ export default function Analytics() {
                     stroke="hsl(var(--primary))" 
                     fill="hsl(var(--primary))" 
                     fillOpacity={0.6}
+                    name="On Time"
                   />
                   <Area 
                     type="monotone" 
@@ -245,6 +246,7 @@ export default function Analytics() {
                     stroke="hsl(var(--destructive))" 
                     fill="hsl(var(--destructive))" 
                     fillOpacity={0.6}
+                    name="Late"
                   />
                 </AreaChart>
               </ResponsiveContainer>

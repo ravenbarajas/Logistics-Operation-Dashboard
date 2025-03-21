@@ -9,6 +9,12 @@ import Sidebar from "@/components/layout/Sidebar";
 import Dashboard from "@/pages/Dashboard";
 import Vehicles from "@/pages/Vehicles";
 import Shipments from "@/pages/Shipments";
+import Customers from "@/pages/Customers";
+import Suppliers from "@/pages/Suppliers";
+import Warehouse from "@/pages/Warehouse";
+import OrderManagement from "@/pages/OrderManagement";
+import RouteOptimization from "@/pages/RouteOptimization";
+import Reports from "@/pages/Reports";
 import Analytics from "@/pages/Analytics";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
@@ -63,6 +69,12 @@ function Router() {
             <Route path="/" component={Dashboard} />
             <Route path="/vehicles" component={Vehicles} />
             <Route path="/shipments" component={Shipments} />
+            <Route path="/customers" component={Customers} />
+            <Route path="/suppliers" component={Suppliers} />
+            <Route path="/warehouse" component={Warehouse} />
+            <Route path="/orders" component={OrderManagement} />
+            <Route path="/routes" component={RouteOptimization} />
+            <Route path="/reports" component={Reports} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/settings" component={Settings} />
             <Route component={NotFound} />

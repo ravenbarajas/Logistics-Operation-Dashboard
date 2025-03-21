@@ -27,19 +27,19 @@ const navItems = [
     href: "/",
   },
   {
-    title: "Real-time Tracking",
+    title: "Fleet Management",
+    icon: <Truck className="mr-2 h-4 w-4" />,
+    href: "/vehicles",
+  },
+  {
+    title: "Shipments",
     icon: <Compass className="mr-2 h-4 w-4" />,
-    href: "/tracking",
+    href: "/shipments",
   },
   {
-    title: "Order Management",
-    icon: <Heart className="mr-2 h-4 w-4" />,
-    href: "/orders",
-  },
-  {
-    title: "Inventory",
+    title: "Analytics",
     icon: <BarChart className="mr-2 h-4 w-4" />,
-    href: "/inventory",
+    href: "/analytics",
   },
   {
     title: "Route Optimization",
@@ -47,9 +47,9 @@ const navItems = [
     href: "/routes",
   },
   {
-    title: "Fleet Management",
-    icon: <Truck className="mr-2 h-4 w-4" />,
-    href: "/fleet",
+    title: "Order Management",
+    icon: <Heart className="mr-2 h-4 w-4" />,
+    href: "/orders",
   },
   {
     title: "Warehouse",

@@ -1,738 +1,390 @@
-import React from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle,
-  CardFooter
-} from "@/components/ui/card";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import { 
-  Route, 
-  MapPin, 
-  Truck, 
-  Plus, 
-  Clock, 
-  Fuel, 
-  RotateCcw,
-  BarChart4,
-  ArrowRight,
-  Settings
-} from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
+import { RouteTable, RouteData } from "@/components/routes/RouteTable";
+import { RouteDetails } from "@/components/routes/RouteDetails";
+import { RoutePlanModal } from "@/components/routes/RoutePlanModal";
+import { activeRoutes, scheduledRoutes, completedRoutes, routeTemplates } from "@/components/routes/routeData";
+import { AlertCircle, BarChart3, Clock, Fuel, LineChart, PlusCircle, Route, TrendingDown, Wind, Truck, Calendar, CheckCircle, Copy } from "lucide-react";
+import { BarChart } from "@/components/ui/bar-chart";
+import { LineChart as LineChartComponent } from "@/components/ui/line-chart";
 
-// Route Data
-const routes = [
-  {
-    id: "RT-3421",
-    name: "Los Angeles to San Francisco",
-    stops: 5,
-    distance: "382 mi",
-    duration: "5h 45m",
-    status: "active",
-    vehicle: "Truck #T-245",
-    driver: "Michael Brown",
-    fuelConsumption: "48 gal",
-    co2Emission: "490 kg",
-    startTime: "07:30 AM",
-    expectedArrival: "01:15 PM"
-  },
-  {
-    id: "RT-3422",
-    name: "Seattle to Portland",
-    stops: 3,
-    distance: "174 mi",
-    duration: "2h 50m",
-    status: "active",
-    vehicle: "Truck #T-248",
-    driver: "Sarah Johnson",
-    fuelConsumption: "22 gal",
-    co2Emission: "225 kg",
-    startTime: "08:00 AM",
-    expectedArrival: "10:50 AM"
-  },
-  {
-    id: "RT-3423",
-    name: "Denver to Kansas City",
-    stops: 4,
-    distance: "600 mi",
-    duration: "8h 30m",
-    status: "scheduled",
-    vehicle: "Truck #T-246",
-    driver: "James Wilson",
-    fuelConsumption: "75 gal",
-    co2Emission: "760 kg",
-    startTime: "06:00 AM",
-    expectedArrival: "02:30 PM"
-  },
-  {
-    id: "RT-3424",
-    name: "Chicago to Indianapolis",
-    stops: 2,
-    distance: "183 mi",
-    duration: "3h 10m",
-    status: "completed",
-    vehicle: "Van #V-427",
-    driver: "Lisa Chen",
-    fuelConsumption: "18 gal",
-    co2Emission: "185 kg",
-    startTime: "09:30 AM",
-    expectedArrival: "12:40 PM"
-  },
-  {
-    id: "RT-3425",
-    name: "New York to Boston",
-    stops: 3,
-    distance: "215 mi",
-    duration: "3h 45m",
-    status: "scheduled",
-    vehicle: "Van #V-428",
-    driver: "David Martinez",
-    fuelConsumption: "20 gal",
-    co2Emission: "205 kg",
-    startTime: "08:30 AM",
-    expectedArrival: "12:15 PM"
-  }
+// Mock data for charts
+const optimizationSummaryData = [
+  { name: "Distance", before: 1250, after: 1100 },
+  { name: "Fuel", before: 180, after: 145 },
+  { name: "Time", before: 22.5, after: 18.8 },
+  { name: "CO2", before: 1840, after: 1485 },
 ];
 
-// Optimization summary data
-const optimizationData = [
-  { name: 'Before', distance: 1650, time: 24.5, fuel: 195, emissions: 1980 },
-  { name: 'After', distance: 1554, time: 22.8, fuel: 183, emissions: 1865 }
+const efficiencyImprovementData = [
+  { name: "Route 1", distance: 14.7, time: 32, fuel: 1.2, emissions: 12.3 },
+  { name: "Route 2", distance: 9.3, time: 17, fuel: 0.8, emissions: 8.1 },
+  { name: "Route 3", distance: 22.5, time: 45, fuel: 2.7, emissions: 27.5 },
+  { name: "Route 4", distance: 11.2, time: 23, fuel: 1.4, emissions: 14.2 },
 ];
 
-// Efficiency improvement data
-const efficiencyData = [
-  { 
-    name: 'Seattle to Portland', 
-    distanceSaved: 12, 
-    timeSaved: 0.3, 
-    fuelSaved: 1.5, 
-    emissionsSaved: 15 
-  },
-  { 
-    name: 'Los Angeles to San Francisco', 
-    distanceSaved: 28, 
-    timeSaved: 0.5, 
-    fuelSaved: 3.2, 
-    emissionsSaved: 32 
-  },
-  { 
-    name: 'Denver to Kansas City', 
-    distanceSaved: 36, 
-    timeSaved: 0.7, 
-    fuelSaved: 4.5, 
-    emissionsSaved: 45 
-  },
-  { 
-    name: 'Chicago to Indianapolis', 
-    distanceSaved: 8, 
-    timeSaved: 0.2, 
-    fuelSaved: 0.8, 
-    emissionsSaved: 8 
-  },
-  { 
-    name: 'New York to Boston', 
-    distanceSaved: 12, 
-    timeSaved: 0.3, 
-    fuelSaved: 1.5, 
-    emissionsSaved: 15 
-  }
-];
-
-// Monthly trend data
 const monthlyTrendData = [
-  { month: 'Mar', distance: 32400, fuel: 4050, emissions: 41200 },
-  { month: 'Apr', distance: 31800, fuel: 3980, emissions: 40500 },
-  { month: 'May', distance: 30500, fuel: 3820, emissions: 38800 },
-  { month: 'Jun', distance: 29200, fuel: 3650, emissions: 37100 },
-  { month: 'Jul', distance: 28400, fuel: 3550, emissions: 36100 },
-  { month: 'Aug', distance: 27500, fuel: 3440, emissions: 34900 },
+  { month: "Jan", distance: 4200, fuel: 540, emissions: 5620 },
+  { month: "Feb", distance: 4350, fuel: 562, emissions: 5810 },
+  { month: "Mar", distance: 4100, fuel: 527, emissions: 5460 },
+  { month: "Apr", distance: 4550, fuel: 581, emissions: 6050 },
+  { month: "May", distance: 4720, fuel: 605, emissions: 6280 },
+  { month: "Jun", distance: 3950, fuel: 502, emissions: 5240 },
+  { month: "Jul", distance: 3850, fuel: 493, emissions: 5120 },
+  { month: "Aug", distance: 3950, fuel: 512, emissions: 5340 },
 ];
 
 export default function RouteOptimization() {
+  const [routes, setRoutes] = useState({
+    active: [...activeRoutes],
+    scheduled: [...scheduledRoutes],
+    completed: [...completedRoutes],
+    templates: [...routeTemplates]
+  });
+  
+  const [selectedRoute, setSelectedRoute] = useState<RouteData | undefined>(undefined);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
+  
+  // Handle viewing route details
+  const handleViewDetails = (route: RouteData) => {
+    setSelectedRoute(route);
+    setIsDetailsModalOpen(true);
+  };
+  
+  // Handle creating a new route
+  const handleAddRoute = (routeData: RouteData) => {
+    setRoutes({
+      ...routes,
+      scheduled: [routeData, ...routes.scheduled]
+    });
+  };
+  
+  // Handle starting a scheduled route
+  const handleStartRoute = (route: RouteData) => {
+    const updatedRoute = {
+      ...route,
+      status: "active",
+      startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      completionRate: 0
+    };
+    
+    setRoutes({
+      ...routes,
+      active: [updatedRoute, ...routes.active],
+      scheduled: routes.scheduled.filter(r => r.id !== route.id)
+    });
+  };
+  
+  // Handle completing an active route
+  const handleCompleteRoute = (route: RouteData) => {
+    const updatedRoute = {
+      ...route,
+      status: "completed",
+      endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      completionRate: 100,
+      actualDuration: Math.floor(route.duration * (Math.random() > 0.5 ? (1 + Math.random() * 0.2) : (1 - Math.random() * 0.15)))
+    };
+    
+    setRoutes({
+      ...routes,
+      completed: [updatedRoute, ...routes.completed],
+      active: routes.active.filter(r => r.id !== route.id)
+    });
+  };
+  
+  // Handle duplicate route
+  const handleDuplicateRoute = (route: RouteData) => {
+    const newRoute = {
+      ...route,
+      id: `RT-${Math.floor(1000 + Math.random() * 9000)}`,
+      name: `${route.name} (Copy)`,
+      status: "scheduled",
+      departureDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
+    };
+    
+    setRoutes({
+      ...routes,
+      scheduled: [newRoute, ...routes.scheduled]
+    });
+  };
+  
+  // Handle delete route
+  const handleDeleteRoute = (route: RouteData) => {
+    if (route.status === "active" || route.status === "in_progress") {
+      setRoutes({
+        ...routes,
+        active: routes.active.filter(r => r.id !== route.id)
+      });
+    } else if (route.status === "scheduled" || route.status === "planned" || route.status === "optimized") {
+      setRoutes({
+        ...routes,
+        scheduled: routes.scheduled.filter(r => r.id !== route.id)
+      });
+    } else if (route.status === "completed") {
+      setRoutes({
+        ...routes,
+        completed: routes.completed.filter(r => r.id !== route.id)
+      });
+    } else if (route.status === "template") {
+      setRoutes({
+        ...routes,
+        templates: routes.templates.filter(r => r.id !== route.id)
+      });
+    }
+  };
+
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Route Optimization</h1>
-          <p className="text-muted-foreground">Optimize delivery routes for efficiency and cost savings</p>
-        </div>
-        <div className="mt-4 md:mt-0 flex items-center gap-2">
-          <Button>
-            <Route className="mr-2 h-4 w-4" />
-            New Route Plan
-          </Button>
-        </div>
+    <div className="container px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Route Optimization</h1>
+        <Button 
+          onClick={() => setIsRouteModalOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <PlusCircle className="h-4 w-4" />
+          New Route Plan
+        </Button>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <Truck className="h-6 w-6 text-primary" />
+          <CardContent className="pt-6 flex items-start justify-between">
+            <div>
+              <div className="flex items-center">
+                <TrendingDown className="h-5 w-5 mr-2 text-green-500" />
+                <span className="text-lg font-medium">Fuel Efficiency Gain</span>
               </div>
-              <span className="text-muted-foreground text-sm">Total</span>
+              <div className="text-3xl font-bold mt-2">12%</div>
+              <div className="text-muted-foreground text-sm mt-1">Last 30 days</div>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">5</h3>
-              <p className="text-muted-foreground text-sm">Active Routes</p>
-            </div>
+            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+              +3.2% from August
+            </Badge>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
-                <MapPin className="h-6 w-6 text-green-500" />
+          <CardContent className="pt-6 flex items-start justify-between">
+            <div>
+              <div className="flex items-center">
+                <Fuel className="h-5 w-5 mr-2 text-primary" />
+                <span className="text-lg font-medium">Fuel Saved</span>
               </div>
-              <span className="text-muted-foreground text-sm">Total</span>
+              <div className="text-3xl font-bold mt-2">247 gal</div>
+              <div className="text-muted-foreground text-sm mt-1">$951 cost reduction</div>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">17</h3>
-              <p className="text-muted-foreground text-sm">Delivery Stops</p>
-            </div>
+            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+              186 routes optimized
+            </Badge>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-amber-500/10 rounded-full flex items-center justify-center">
-                <Clock className="h-6 w-6 text-amber-500" />
+          <CardContent className="pt-6 flex items-start justify-between">
+            <div>
+              <div className="flex items-center">
+                <Clock className="h-5 w-5 mr-2 text-primary" />
+                <span className="text-lg font-medium">Time Saved</span>
               </div>
-              <span className="text-muted-foreground text-sm">Saved</span>
+              <div className="text-3xl font-bold mt-2">158 hrs</div>
+              <div className="text-muted-foreground text-sm mt-1">Improved driver efficiency</div>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">1h 45m</h3>
-              <p className="text-muted-foreground text-sm">Time Saved Today</p>
-            </div>
+            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+              9.3 min/route avg
+            </Badge>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center">
-                <Fuel className="h-6 w-6 text-blue-500" />
+          <CardContent className="pt-6 flex items-start justify-between">
+            <div>
+              <div className="flex items-center">
+                <Wind className="h-5 w-5 mr-2 text-primary" />
+                <span className="text-lg font-medium">CO₂ Reduction</span>
               </div>
-              <span className="text-muted-foreground text-sm">Saved</span>
+              <div className="text-3xl font-bold mt-2">2,514 kg</div>
+              <div className="text-muted-foreground text-sm mt-1">Environmental impact</div>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">12%</h3>
-              <p className="text-muted-foreground text-sm">Fuel Efficiency Gain</p>
-            </div>
+            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+              119 trees saved
+            </Badge>
           </CardContent>
         </Card>
       </div>
-
-      <div className="grid grid-cols-1 gap-6 mb-6">
+      
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>
             <CardTitle>Optimization Summary</CardTitle>
-            <CardDescription>Comparison of routes before and after optimization</CardDescription>
+            <CardDescription>Before vs. After Optimization</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={optimizationData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="name" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    yAxisId="left"
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                    label={{ value: 'Distance (mi)', angle: -90, position: 'insideLeft' }}
-                  />
-                  <YAxis 
-                    yAxisId="right"
-                    orientation="right"
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                    label={{ value: 'Time (hr)', angle: 90, position: 'insideRight' }}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="distance" name="Distance (mi)" fill="hsl(var(--primary))" />
-                  <Bar yAxisId="left" dataKey="fuel" name="Fuel (gal)" fill="#82ca9d" />
-                  <Bar yAxisId="right" dataKey="time" name="Time (hr)" fill="#8884d8" />
-                  <Bar yAxisId="left" dataKey="emissions" name="CO2 (kg)" fill="#ffc658" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+              data={optimizationSummaryData} 
+              index="name" 
+              categories={["before", "after"]} 
+              colors={["#94a3b8", "#3b82f6"]} 
+              valueFormatter={(value: number) => `${value}${value > 1000 ? ' km' : value > 100 ? ' hr' : value > 30 ? ' gal' : ' kg'}`}
+              yAxisWidth={48}
+            />
           </CardContent>
         </Card>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>
             <CardTitle>Route Efficiency Improvements</CardTitle>
             <CardDescription>Savings per route after optimization</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={efficiencyData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  layout="vertical"
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    type="number" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    type="category"
-                    dataKey="name" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                    width={150}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="distanceSaved" name="Distance Saved (mi)" fill="hsl(var(--primary))" />
-                  <Bar dataKey="timeSaved" name="Time Saved (hr)" fill="#8884d8" />
-                  <Bar dataKey="fuelSaved" name="Fuel Saved (gal)" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Monthly Efficiency Trend</CardTitle>
-            <CardDescription>Showing route optimization gains over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={monthlyTrendData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="month" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="distance" 
-                    name="Total Distance (mi)"
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="fuel" 
-                    name="Fuel Consumption (gal)"
-                    stroke="#82ca9d" 
-                    strokeWidth={2}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="emissions" 
-                    name="CO2 Emissions (kg)"
-                    stroke="#ffc658" 
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+              data={efficiencyImprovementData} 
+              index="name" 
+              categories={["distance", "time", "fuel", "emissions"]} 
+              colors={["#3b82f6", "#f97316", "#16a34a", "#6b7280"]} 
+              valueFormatter={(value: number) => `${value}${value > 20 ? ' km' : value > 10 ? ' min' : value > 1.5 ? ' gal' : ' kg'}`}
+              yAxisWidth={48}
+            />
           </CardContent>
         </Card>
       </div>
 
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <CardTitle>New Route Optimization</CardTitle>
-          <CardDescription>Generate optimized routes based on your preferences</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Start Location</label>
-                <Input placeholder="Enter start location" value="Los Angeles Distribution Center" />
+      <div className="mb-6">
+        <Card>
+          <CardHeader className="bg-primary/5 border-b border-primary/10">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Route className="h-5 w-5" />
+              Route Management
+            </CardTitle>
+            <CardDescription>
+              View and manage all your routes in one place
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Tabs defaultValue="active" className="w-full">
+              <div className="px-6 pt-6">
+                <TabsList className="w-full grid grid-cols-4 mb-6">
+                  <TabsTrigger value="active" className="flex items-center gap-1">
+                    <AlertCircle className="h-4 w-4" />
+                    Active Routes
+                    <Badge className="ml-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                      {routes.active.length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="scheduled" className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    Scheduled
+                    <Badge className="ml-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                      {routes.scheduled.length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="completed" className="flex items-center gap-1">
+                    <BarChart3 className="h-4 w-4" />
+                    Completed
+                    <Badge className="ml-1 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+                      {routes.completed.length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="templates" className="flex items-center gap-1">
+                    <LineChart className="h-4 w-4" />
+                    Templates
+                    <Badge className="ml-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                      {routes.templates.length}
+                    </Badge>
+                  </TabsTrigger>
+                </TabsList>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium mb-2">Delivery Stops</label>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Input placeholder="Enter stop address" value="San Diego, CA" />
-                    <Button variant="outline" size="icon">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input placeholder="Enter stop address" value="Irvine, CA" />
-                    <Button variant="outline" size="icon">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input placeholder="Enter stop address" value="Bakersfield, CA" />
-                    <Button variant="outline" size="icon">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <Button variant="outline" className="w-full mt-2">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Another Stop
-                  </Button>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">End Location (Optional)</label>
-                <Input placeholder="Enter end location" value="Los Angeles Distribution Center" />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Vehicle Type</label>
-                <Select defaultValue="truck_large">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select vehicle type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="truck_large">Large Truck (53ft)</SelectItem>
-                    <SelectItem value="truck_medium">Medium Truck (26ft)</SelectItem>
-                    <SelectItem value="van">Delivery Van</SelectItem>
-                    <SelectItem value="ev_van">Electric Van</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Departure Time</label>
-                <Input type="time" value="08:00" />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Date</label>
-                <Input type="date" value="2023-08-21" />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Driver</label>
-                <Select defaultValue="michael">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select driver" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="michael">Michael Brown</SelectItem>
-                    <SelectItem value="sarah">Sarah Johnson</SelectItem>
-                    <SelectItem value="james">James Wilson</SelectItem>
-                    <SelectItem value="lisa">Lisa Chen</SelectItem>
-                    <SelectItem value="david">David Martinez</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Optimization Priority</label>
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Distance</span>
-                      <span className="text-sm font-medium">High</span>
-                    </div>
-                    <Slider defaultValue={[80]} max={100} step={1} />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Time</span>
-                      <span className="text-sm font-medium">Very High</span>
-                    </div>
-                    <Slider defaultValue={[90]} max={100} step={1} />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Fuel Efficiency</span>
-                      <span className="text-sm font-medium">Medium</span>
-                    </div>
-                    <Slider defaultValue={[60]} max={100} step={1} />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">CO2 Emissions</span>
-                      <span className="text-sm font-medium">Medium</span>
-                    </div>
-                    <Slider defaultValue={[50]} max={100} step={1} />
+              <TabsContent value="active" className="max-h-[calc(100vh-22rem)] overflow-y-auto mt-0">
+                <div className="px-6 pb-2">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Truck className="h-4 w-4 mr-2" />
+                    <span className="font-medium">Active routes in progress</span>
                   </div>
                 </div>
-              </div>
+                <RouteTable 
+                  routes={routes.active}
+                  status="active"
+                  onViewDetails={handleViewDetails}
+                  onComplete={handleCompleteRoute}
+                  onDuplicate={handleDuplicateRoute}
+                  onDelete={handleDeleteRoute}
+                />
+              </TabsContent>
               
-              <div className="pt-4">
-                <Button className="w-full">
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Generate Optimized Route
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Tabs defaultValue="active" className="mb-6">
-        <TabsList className="mb-4">
-          <TabsTrigger value="active">Active Routes</TabsTrigger>
-          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-          <TabsTrigger value="templates">Route Templates</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="active">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Current Active Routes</CardTitle>
-              <CardDescription>Monitor and manage ongoing delivery routes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Route ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Vehicle / Driver</TableHead>
-                    <TableHead>Stops</TableHead>
-                    <TableHead>Distance</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {routes.filter(route => route.status === 'active').map((route) => (
-                    <TableRow key={route.id}>
-                      <TableCell className="font-medium">{route.id}</TableCell>
-                      <TableCell>{route.name}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div>{route.vehicle}</div>
-                          <div className="text-sm text-muted-foreground">{route.driver}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{route.stops}</TableCell>
-                      <TableCell>{route.distance}</TableCell>
-                      <TableCell>{route.duration}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div>Start: {route.startTime}</div>
-                          <div className="text-sm text-muted-foreground">ETA: {route.expectedArrival}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={route.status === 'active' ? 'success' : 'secondary'}>
-                          {route.status.charAt(0).toUpperCase() + route.status.slice(1)}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="scheduled">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Scheduled Routes</CardTitle>
-              <CardDescription>Upcoming planned delivery routes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Route ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Vehicle / Driver</TableHead>
-                    <TableHead>Stops</TableHead>
-                    <TableHead>Distance</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {routes.filter(route => route.status === 'scheduled').map((route) => (
-                    <TableRow key={route.id}>
-                      <TableCell className="font-medium">{route.id}</TableCell>
-                      <TableCell>{route.name}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div>{route.vehicle}</div>
-                          <div className="text-sm text-muted-foreground">{route.driver}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{route.stops}</TableCell>
-                      <TableCell>{route.distance}</TableCell>
-                      <TableCell>{route.duration}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div>Start: {route.startTime}</div>
-                          <div className="text-sm text-muted-foreground">ETA: {route.expectedArrival}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={route.status === 'active' ? 'success' : 'warning'}>
-                          {route.status.charAt(0).toUpperCase() + route.status.slice(1)}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="completed">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Completed Routes</CardTitle>
-              <CardDescription>Historical route data and performance metrics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Route ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Vehicle / Driver</TableHead>
-                    <TableHead>Stops</TableHead>
-                    <TableHead>Distance</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Fuel / CO2</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {routes.filter(route => route.status === 'completed').map((route) => (
-                    <TableRow key={route.id}>
-                      <TableCell className="font-medium">{route.id}</TableCell>
-                      <TableCell>{route.name}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div>{route.vehicle}</div>
-                          <div className="text-sm text-muted-foreground">{route.driver}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{route.stops}</TableCell>
-                      <TableCell>{route.distance}</TableCell>
-                      <TableCell>{route.duration}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div>Fuel: {route.fuelConsumption}</div>
-                          <div className="text-sm text-muted-foreground">CO2: {route.co2Emission}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {route.status.charAt(0).toUpperCase() + route.status.slice(1)}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="templates">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground py-12">
-                Route templates would be displayed here. These are reusable route patterns for frequent deliveries.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              <TabsContent value="scheduled" className="max-h-[calc(100vh-22rem)] overflow-y-auto mt-0">
+                <div className="px-6 pb-2">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <span className="font-medium">Scheduled future routes</span>
+                  </div>
+                </div>
+                <RouteTable 
+                  routes={routes.scheduled}
+                  status="scheduled"
+                  onViewDetails={handleViewDetails}
+                  onStart={handleStartRoute}
+                  onEdit={() => {}}
+                  onOptimize={() => {}}
+                  onDuplicate={handleDuplicateRoute}
+                  onDelete={handleDeleteRoute}
+                />
+              </TabsContent>
+              
+              <TabsContent value="completed" className="max-h-[calc(100vh-22rem)] overflow-y-auto mt-0">
+                <div className="px-6 pb-2">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    <span className="font-medium">Completed route history</span>
+                  </div>
+                </div>
+                <RouteTable 
+                  routes={routes.completed}
+                  status="completed"
+                  onViewDetails={handleViewDetails}
+                  onDuplicate={handleDuplicateRoute}
+                  onDelete={handleDeleteRoute}
+                />
+              </TabsContent>
+              
+              <TabsContent value="templates" className="max-h-[calc(100vh-22rem)] overflow-y-auto mt-0">
+                <div className="px-6 pb-2">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Copy className="h-4 w-4 mr-2" />
+                    <span className="font-medium">Reusable route templates</span>
+                  </div>
+                </div>
+                <RouteTable 
+                  routes={routes.templates}
+                  status="template"
+                  onViewDetails={handleViewDetails}
+                  onEdit={() => {}}
+                  onOptimize={() => {}}
+                  onDuplicate={handleDuplicateRoute}
+                  onDelete={handleDeleteRoute}
+                />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Route Details Modal */}
+      <RouteDetails 
+        isOpen={isDetailsModalOpen} 
+        onClose={() => setIsDetailsModalOpen(false)} 
+        route={selectedRoute} 
+      />
+      
+      {/* Route Plan Modal */}
+      <RoutePlanModal 
+        isOpen={isRouteModalOpen} 
+        onClose={() => setIsRouteModalOpen(false)} 
+        onSuccess={handleAddRoute}
+      />
     </div>
   );
 }

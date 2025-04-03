@@ -1,108 +1,159 @@
 # LogiDash - Logistics Operations Dashboard
 
-A comprehensive logistics operations dashboard prototype built with React, TypeScript, and Shadcn UI. This application provides a complete visualization platform for fleet management, shipment tracking, warehouse operations, and more.
-
-![LogiDash Preview](./generated-icon.png)
+LogiDash is a comprehensive logistics operations dashboard that allows businesses to track fleet, shipments, warehouses, and more in real-time.
 
 ## Features
 
-### Dashboard & Analytics
-- Real-time KPI monitoring with interactive charts
-- Fleet status tracking and vehicle location mapping
-- Order status and delivery performance metrics
-- Interactive data visualization with Recharts
-
-### Fleet Management
-- Vehicle tracking and status monitoring
-- Maintenance scheduling and alerts
-- Performance metrics and fuel consumption analytics
-
-### Shipment & Order Management
-- Shipment tracking with status updates
-- Order processing and management
-- Delivery timeline visualization
-
-### Warehouse & Inventory
-- Warehouse capacity monitoring
-- Inventory tracking and stock alerts
-- Stock movement analysis
-
-### Supplier Management
-- Supplier performance metrics
-- Delivery reliability tracking
-- Evaluation and comparison tools
-
-### Route Optimization
-- Route planning and efficiency analysis
-- Fuel consumption and emissions tracking
-- Time and distance optimization
-
-### Reporting
-- Customizable reports generation
-- Performance analysis and trend identification
-- Data export capabilities
+- **Dashboard & Analytics**: Real-time KPI monitoring, fleet status tracking, and interactive data visualization.
+- **Fleet Management**: Vehicle tracking, maintenance scheduling, and performance metrics.
+- **Shipment & Order Management**: Shipment tracking, order processing, and delivery timeline visualization.
+- **Warehouse & Inventory**: Warehouse capacity monitoring, inventory tracking, and stock movement analysis.
+- **Route Optimization**: Route planning, fuel consumption tracking, and time/distance optimization.
+- **Reporting**: Customizable reports, performance analysis, and data export capabilities.
 
 ## Technology Stack
 
-- **Frontend**: React with TypeScript
-- **UI Components**: Shadcn UI (Tailwind CSS based components)
+- **Frontend**: React, TypeScript, Shadcn UI (based on Tailwind CSS)
 - **State Management**: React Query
 - **Routing**: Wouter
-- **Visualization**: Recharts, Leaflet Maps
-- **Backend**: Express (minimal API endpoints for demonstration)
+- **Visualization**: Recharts and Leaflet Maps
+- **Backend**: Express, Node.js
+- **Database**: PostgreSQL
+- **ORM**: Drizzle ORM
 
-## Theme & Design
+## Prerequisites
 
-- Fully responsive layout for desktop, tablet, and mobile
-- Dark/light mode toggle with system preference detection
-- Minimalist, clean interface with focus on data presentation
-- Consistent use of Shadcn UI components and Tailwind CSS
+- Node.js (v18 or later)
+- PostgreSQL (v14 or later)
+- npm (v9 or later)
 
-## Project Structure
+## Installation & Setup
 
-```
-/
-├── client/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── dashboard/      # Dashboard-specific components
-│   │   │   ├── layout/         # Layout components (Header, Sidebar)
-│   │   │   └── ui/             # Shadcn UI components
-│   │   ├── data/               # Mock data for demonstration
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── lib/                # Utility functions
-│   │   ├── pages/              # Page components
-│   │   └── App.tsx             # Main application component
-├── server/                     # Minimal Express backend
-└── shared/                     # Shared types and utilities
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/logidash.git
+cd logidash
 ```
 
-## Getting Started
+### 2. Install dependencies
 
-For detailed setup and deployment instructions, see the [Deployment Guide](./DEPLOYMENT.md).
+```bash
+npm install
+```
 
-### Quick Start
+### 3. Set up environment variables
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+Create a `.env` file in the root directory with the following content:
 
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
+```env
+# Database configuration
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/logidash
 
-3. Open your browser and navigate to `http://localhost:5000`
+# Node environment
+NODE_ENV=development
 
-## Usage
+# Server port
+PORT=5000
 
-This prototype is designed to demonstrate the UI and interaction patterns for a logistics management system. It uses mock data for demonstration purposes and does not require any external API connections.
+# JWT secret for authentication (if implemented later)
+JWT_SECRET=your_jwt_secret_key_here
+```
 
-## Contributing
+### 4. Set up the database
 
-This project is a prototype and demonstration only. For customization or extension, fork the repository and modify as needed.
+First, make sure PostgreSQL is running. Then run:
+
+```bash
+# Create database and tables
+npm run db:setup
+```
+
+### 5. Run the application in development mode
+
+```bash
+npm run dev
+```
+
+The application should now be accessible at http://localhost:5000.
+
+## Database Structure
+
+LogiDash uses a PostgreSQL database with the following tables:
+
+- **users**: User accounts and authentication information
+- **vehicles**: Fleet data including vehicle status and location
+- **warehouses**: Warehouse information including capacity and usage
+- **inventory**: Inventory items stored in warehouses
+- **shipments**: Shipment tracking information
+- **routes**: Route planning and optimization data
+
+## API Endpoints
+
+### Users
+
+- `GET /api/users/:id`: Get a user by ID
+- `POST /api/users`: Create a new user
+
+### Vehicles
+
+- `GET /api/vehicles`: Get all vehicles
+- `GET /api/vehicles/:id`: Get a vehicle by ID
+- `POST /api/vehicles`: Create a new vehicle
+- `PUT /api/vehicles/:id`: Update a vehicle
+- `DELETE /api/vehicles/:id`: Delete a vehicle
+
+### Warehouses
+
+- `GET /api/warehouses`: Get all warehouses
+- `GET /api/warehouses/:id`: Get a warehouse by ID
+- `POST /api/warehouses`: Create a new warehouse
+- `PUT /api/warehouses/:id`: Update a warehouse
+- `DELETE /api/warehouses/:id`: Delete a warehouse
+
+### Inventory
+
+- `GET /api/inventory`: Get all inventory items
+- `GET /api/inventory?warehouseId=1`: Get inventory items for a specific warehouse
+- `GET /api/inventory/:id`: Get an inventory item by ID
+- `POST /api/inventory`: Create a new inventory item
+- `PUT /api/inventory/:id`: Update an inventory item
+- `DELETE /api/inventory/:id`: Delete an inventory item
+
+### Shipments
+
+- `GET /api/shipments`: Get all shipments
+- `GET /api/shipments/:id`: Get a shipment by ID
+- `GET /api/shipments/:id?type=tracking`: Get a shipment by tracking number
+- `POST /api/shipments`: Create a new shipment
+- `PUT /api/shipments/:id`: Update a shipment
+- `DELETE /api/shipments/:id`: Delete a shipment
+
+### Routes
+
+- `GET /api/routes`: Get all routes
+- `GET /api/routes?vehicleId=1`: Get routes for a specific vehicle
+- `GET /api/routes/:id`: Get a route by ID
+- `POST /api/routes`: Create a new route
+- `PUT /api/routes/:id`: Update a route
+- `DELETE /api/routes/:id`: Delete a route
+
+### Dashboard
+
+- `GET /api/dashboard/summary`: Get a summary of all key metrics
+
+## Production Deployment
+
+To build and run the app in production mode:
+
+```bash
+# Build the application
+npm run build
+
+# Start the production server
+npm start
+```
 
 ## License
 
-This project is available for educational and demonstration purposes.
+MIT

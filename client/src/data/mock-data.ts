@@ -405,6 +405,63 @@ export const fuelConsumptionData = [
   { month: "Jul", diesel: 850, gasoline: 720, electric: 620 }
 ];
 
+// Cost analysis data
+export const costAnalysisData = [
+  { month: "Jan", fuel: 42500, maintenance: 18400, labor: 65200, insurance: 12500, other: 8300 },
+  { month: "Feb", fuel: 40100, maintenance: 22300, labor: 64800, insurance: 12500, other: 7800 },
+  { month: "Mar", fuel: 45600, maintenance: 16700, labor: 66100, insurance: 12500, other: 9100 },
+  { month: "Apr", fuel: 48800, maintenance: 25600, labor: 65400, insurance: 12500, other: 8600 },
+  { month: "May", fuel: 46200, maintenance: 19800, labor: 67300, insurance: 12500, other: 9400 },
+  { month: "Jun", fuel: 32400, maintenance: 21900, labor: 68700, insurance: 12500, other: 7800 },
+  { month: "Jul", fuel: 29000, maintenance: 17400, labor: 67600, insurance: 12500, other: 7200 }
+];
+
+// Maintenance cost breakdown by vehicle type
+export const maintenanceCostByVehicleType = [
+  { type: "Heavy Truck", preventive: 45, corrective: 32, emergency: 23 },
+  { type: "Medium Truck", preventive: 52, corrective: 28, emergency: 20 },
+  { type: "Delivery Van", preventive: 58, corrective: 25, emergency: 17 },
+  { type: "Electric Vehicle", preventive: 68, corrective: 22, emergency: 10 }
+];
+
+// Cost per mile trends
+export const costPerMileData = [
+  { month: "Jan", heavyTruck: 1.72, mediumTruck: 1.45, deliveryVan: 0.95, electric: 0.62 },
+  { month: "Feb", heavyTruck: 1.68, mediumTruck: 1.43, deliveryVan: 0.94, electric: 0.60 },
+  { month: "Mar", heavyTruck: 1.76, mediumTruck: 1.46, deliveryVan: 0.98, electric: 0.61 },
+  { month: "Apr", heavyTruck: 1.81, mediumTruck: 1.49, deliveryVan: 1.02, electric: 0.65 },
+  { month: "May", heavyTruck: 1.78, mediumTruck: 1.47, deliveryVan: 1.00, electric: 0.64 },
+  { month: "Jun", heavyTruck: 1.65, mediumTruck: 1.41, deliveryVan: 0.92, electric: 0.60 },
+  { month: "Jul", heavyTruck: 1.58, mediumTruck: 1.38, deliveryVan: 0.90, electric: 0.59 }
+];
+
+// Sustainability metrics
+export const sustainabilityData = [
+  { quarter: "Q1 2022", carbonEmissions: 1250, fuelEfficiency: 7.8, electricVehicles: 5, renewableEnergy: 12 },
+  { quarter: "Q2 2022", carbonEmissions: 1180, fuelEfficiency: 8.0, electricVehicles: 7, renewableEnergy: 15 },
+  { quarter: "Q3 2022", carbonEmissions: 1140, fuelEfficiency: 8.1, electricVehicles: 8, renewableEnergy: 18 },
+  { quarter: "Q4 2022", carbonEmissions: 1090, fuelEfficiency: 8.3, electricVehicles: 10, renewableEnergy: 22 },
+  { quarter: "Q1 2023", carbonEmissions: 1020, fuelEfficiency: 8.4, electricVehicles: 12, renewableEnergy: 25 },
+  { quarter: "Q2 2023", carbonEmissions: 950, fuelEfficiency: 8.6, electricVehicles: 15, renewableEnergy: 30 }
+];
+
+// Carbon offset projects
+export const carbonOffsetProjects = [
+  { project: "Reforestation Initiative", contribution: 48, offset: 320, status: "active" },
+  { project: "Solar Farm Investment", contribution: 35, offset: 280, status: "active" },
+  { project: "Wind Energy Credits", contribution: 12, offset: 150, status: "completed" },
+  { project: "EV Charging Network", contribution: 5, offset: 80, status: "planning" }
+];
+
+// Emissions by vehicle type and distance
+export const emissionsByVehicleData = [
+  { type: "Heavy Diesel Truck", emissions: 1.55, distance: 420000 },
+  { type: "Medium Diesel Truck", emissions: 0.95, distance: 380000 },
+  { type: "Gasoline Van", emissions: 0.45, distance: 320000 },
+  { type: "Hybrid Van", emissions: 0.28, distance: 180000 },
+  { type: "Electric Vehicle", emissions: 0.05, distance: 85000 }
+];
+
 // Alert data
 export const alertsData = [
   {

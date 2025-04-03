@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -19,6 +19,20 @@ import Analytics from "@/pages/Analytics";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 
+// Wrapper component to conditionally center content
+function ContentWrapper({ children }: { children: React.ReactNode }) {
+  const [location] = useLocation();
+  
+  // Only center these specific pages
+  const shouldCenter = ["/vehicles", "/shipments", "/analytics", "/routes"].includes(location);
+  
+  return (
+    <div className={shouldCenter ? "container mx-auto" : ""}>
+      {children}
+    </div>
+  );
+}
+
 function Router() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
@@ -34,8 +48,8 @@ function Router() {
     return () => window.removeEventListener("click", handleOutsideClick);
   }, [sidebarOpen]);
   
-  const toggleSidebar = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const toggleSidebar = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setSidebarOpen(!sidebarOpen);
   };
   
@@ -61,24 +75,26 @@ function Router() {
       </div>
       
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
-        <Header onMenuClick={() => toggleSidebar()} />
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <Header onMenuClick={toggleSidebar} />
         
-        <div className="h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar">
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/vehicles" component={Vehicles} />
-            <Route path="/shipments" component={Shipments} />
-            <Route path="/customers" component={Customers} />
-            <Route path="/suppliers" component={Suppliers} />
-            <Route path="/warehouse" component={Warehouse} />
-            <Route path="/orders" component={OrderManagement} />
-            <Route path="/routes" component={RouteOptimization} />
-            <Route path="/reports" component={Reports} />
-            <Route path="/analytics" component={Analytics} />
-            <Route path="/settings" component={Settings} />
-            <Route component={NotFound} />
-          </Switch>
+        <div className="flex-1 overflow-auto">
+          <ContentWrapper>
+            <Switch>
+              <Route path="/" component={Dashboard} />
+              <Route path="/vehicles" component={Vehicles} />
+              <Route path="/shipments" component={Shipments} />
+              <Route path="/customers" component={Customers} />
+              <Route path="/suppliers" component={Suppliers} />
+              <Route path="/warehouse" component={Warehouse} />
+              <Route path="/orders" component={OrderManagement} />
+              <Route path="/routes" component={RouteOptimization} />
+              <Route path="/reports" component={Reports} />
+              <Route path="/analytics" component={Analytics} />
+              <Route path="/settings" component={Settings} />
+              <Route component={NotFound} />
+            </Switch>
+          </ContentWrapper>
         </div>
       </main>
     </div>

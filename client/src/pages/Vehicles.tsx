@@ -1,60 +1,249 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { Plus, RefreshCw, Search, Filter, Pencil, Trash2, FileText, Truck, CalendarClock, Fuel, Settings, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Plus, RefreshCw } from "lucide-react";
-import { fleetData } from "@/data/mock-data";
+import { fleetService, FleetSummary } from "@/services/fleetService";
+import { Vehicle } from "@shared/schema";
+import { VehicleModal } from "@/components/vehicles/VehicleModal";
+import { EnhancedTable } from "@/components/table/EnhancedTable";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+// Extended Vehicle interface with additional properties that might be needed
+interface ExtendedVehicle extends Vehicle {
+  make?: string;
+  model?: string;
+  year?: number;
+  fuelLevel?: number;
+  mileage?: number;
+}
 
 export default function Vehicles() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  
-  // Filter vehicles based on search query and status filter
-  const filteredVehicles = fleetData.vehicles.filter(vehicle => {
-    const matchesSearch = vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         vehicle.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || vehicle.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
-  
-  // Get status badge variant
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case "active": return "secondary";
-      case "idle": return "default";
-      case "maintenance": return "warning";
-      case "out-of-service": return "destructive";
-      default: return "outline";
+  const [fleetSummary, setFleetSummary] = useState<FleetSummary | null>(null);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | undefined>();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [summary, vehiclesData] = await Promise.all([
+        fleetService.getFleetSummary(),
+        fleetService.getVehicles()
+      ]);
+      setFleetSummary(summary);
+      setVehicles(vehiclesData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+    } finally {
+      setLoading(false);
     }
   };
-  
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleAddVehicle = () => {
+    setSelectedVehicle(undefined);
+    setModalOpen(true);
+  };
+
+  const handleEditVehicle = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setModalOpen(true);
+  };
+
+  const handleDeleteVehicle = (vehicle: Vehicle) => {
+    setVehicleToDelete(vehicle);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!vehicleToDelete) return;
+    
+    try {
+      await fleetService.deleteVehicle(vehicleToDelete.id);
+      await fetchData();
+      setDeleteDialogOpen(false);
+      setVehicleToDelete(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete vehicle');
+    }
+  };
+
+  const filteredVehicles = vehicles.filter(vehicle => {
+    const matchesStatus = statusFilter === "all" || vehicle.status === statusFilter;
+    return matchesStatus;
+  });
+
+  // Define columns for the vehicle table
+  const vehicleColumns = [
+    {
+      id: "id",
+      header: "ID",
+      accessorKey: "id",
+      enableSorting: true,
+      meta: {
+        className: "w-[80px]"
+      }
+    },
+    {
+      id: "name",
+      header: "Vehicle",
+      accessorKey: "name",
+      enableSorting: true,
+      cell: (vehicle: ExtendedVehicle) => (
+        <div>
+          <div className="font-medium flex items-center">
+            <Truck className="h-4 w-4 mr-2 text-primary" />
+            {vehicle.name}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            {vehicle.make || 'N/A'} {vehicle.model || ''} {vehicle.year ? `(${vehicle.year})` : ''}
+          </div>
+        </div>
+      )
+    },
+    {
+      id: "type",
+      header: "Type",
+      accessorKey: "type",
+      enableSorting: true
+    },
+    {
+      id: "status",
+      header: "Status",
+      accessorKey: "status",
+      enableSorting: true
+    },
+    {
+      id: "lastMaintenance",
+      header: "Last Maintenance",
+      accessorKey: "lastMaintenance",
+      enableSorting: true,
+      cell: (vehicle: ExtendedVehicle) => (
+        <div className="flex items-center">
+          <CalendarClock className="h-4 w-4 mr-2 text-muted-foreground" />
+          <span>
+            {vehicle.lastMaintenance 
+              ? (typeof vehicle.lastMaintenance === 'string' 
+                ? vehicle.lastMaintenance 
+                : new Date(vehicle.lastMaintenance).toLocaleDateString()) 
+              : "N/A"}
+          </span>
+        </div>
+      )
+    },
+    {
+      id: "fuelLevel",
+      header: "Fuel Level",
+      accessorKey: "fuelLevel",
+      enableSorting: true,
+      meta: {
+        align: "center" as const
+      },
+      cell: (vehicle: ExtendedVehicle) => (
+        <div className="flex flex-col items-center">
+          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[80px]">
+            <div 
+              className="bg-primary h-2 rounded-full" 
+              style={{ width: `${vehicle.fuelLevel || 0}%` }}
+            />
+          </div>
+          <div className="text-xs mt-1 text-muted-foreground">{vehicle.fuelLevel || 0}%</div>
+        </div>
+      )
+    },
+    {
+      id: "mileage",
+      header: "Mileage",
+      accessorKey: "mileage",
+      enableSorting: true,
+      cell: (vehicle: ExtendedVehicle) => (
+        <div>
+          {vehicle.mileage ? vehicle.mileage.toLocaleString() : 0} mi
+        </div>
+      )
+    }
+  ];
+
+  // Define actions for the vehicle table
+  const vehicleActions = [
+    {
+      label: "View Details",
+      icon: <FileText className="h-4 w-4" />,
+      onClick: (vehicle: Vehicle) => console.log("View details", vehicle.id)
+    },
+    {
+      label: "Maintenance Log",
+      icon: <Settings className="h-4 w-4" />,
+      onClick: (vehicle: Vehicle) => console.log("Maintenance log", vehicle.id)
+    },
+    {
+      label: "Edit Vehicle",
+      icon: <Pencil className="h-4 w-4" />,
+      onClick: handleEditVehicle
+    },
+    {
+      label: "Delete Vehicle",
+      icon: <Trash2 className="h-4 w-4" />,
+      onClick: handleDeleteVehicle,
+      variant: "destructive" as const
+    }
+  ];
+
+  // Status color map
+  const statusColorMap = {
+    active: { color: "green", label: "Active" },
+    maintenance: { color: "amber", label: "Maintenance" },
+    inactive: { color: "red", label: "Inactive" }
+  };
+
+  if (loading) {
+    return <div className="container px-4 py-8">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="container px-4 py-8">
+        <div className="text-red-500">Error: {error}</div>
+        <Button onClick={fetchData} className="mt-4">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="container px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Fleet Management</h1>
         <div className="flex gap-2">
-          <Button>
+          <Button onClick={handleAddVehicle}>
             <Plus className="h-4 w-4 mr-2" />
             Add Vehicle
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={fetchData}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -67,8 +256,7 @@ export default function Vehicles() {
             <CardTitle className="text-sm font-medium">Total Vehicles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{fleetData.summary.totalVehicles}</div>
-            <p className="text-xs text-muted-foreground">+{fleetData.summary.newVehicles} this month</p>
+            <div className="text-2xl font-bold">{fleetSummary?.totalVehicles}</div>
           </CardContent>
         </Card>
         <Card>
@@ -76,8 +264,8 @@ export default function Vehicles() {
             <CardTitle className="text-sm font-medium">Active Vehicles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">{fleetData.summary.activeVehicles}</div>
-            <p className="text-xs text-muted-foreground">{fleetData.summary.activePercentage}% of fleet</p>
+            <div className="text-2xl font-bold text-green-500">{fleetSummary?.activeVehicles}</div>
+            <p className="text-xs text-muted-foreground">{fleetSummary?.activePercentage}% of fleet</p>
           </CardContent>
         </Card>
         <Card>
@@ -85,8 +273,8 @@ export default function Vehicles() {
             <CardTitle className="text-sm font-medium">Maintenance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-500">{fleetData.summary.inMaintenance}</div>
-            <p className="text-xs text-muted-foreground">{fleetData.summary.maintenancePercentage}% of fleet</p>
+            <div className="text-2xl font-bold text-amber-500">{fleetSummary?.inMaintenance}</div>
+            <p className="text-xs text-muted-foreground">{fleetSummary?.maintenancePercentage}% of fleet</p>
           </CardContent>
         </Card>
         <Card>
@@ -94,26 +282,20 @@ export default function Vehicles() {
             <CardTitle className="text-sm font-medium">Out of Service</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{fleetData.summary.outOfService}</div>
-            <p className="text-xs text-muted-foreground">{fleetData.summary.outOfServicePercentage}% of fleet</p>
+            <div className="text-2xl font-bold text-red-500">{fleetSummary?.outOfService}</div>
+            <p className="text-xs text-muted-foreground">{fleetSummary?.outOfServicePercentage}% of fleet</p>
           </CardContent>
         </Card>
       </div>
       
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Vehicle Inventory</CardTitle>
+          <CardTitle className="flex items-center">
+            <Truck className="h-5 w-5 mr-2 text-primary" />
+            Vehicle Inventory
+          </CardTitle>
           <div className="flex flex-col md:flex-row gap-4 mt-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by vehicle ID or name..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 ml-auto">
               <div className="flex items-center">
                 <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
                 <span className="text-sm mr-2">Status:</span>
@@ -125,94 +307,51 @@ export default function Vehicles() {
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="idle">Idle</SelectItem>
                   <SelectItem value="maintenance">Maintenance</SelectItem>
-                  <SelectItem value="out-of-service">Out of Service</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Vehicle ID</TableHead>
-                <TableHead>Vehicle Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Location</TableHead>
-                <TableHead>Last Updated</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredVehicles.map((vehicle) => (
-                <TableRow key={vehicle.id}>
-                  <TableCell className="font-medium">{vehicle.id}</TableCell>
-                  <TableCell>{vehicle.name}</TableCell>
-                  <TableCell>{vehicle.type}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadge(vehicle.status)}>
-                      {vehicle.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{vehicle.lastLocation}</TableCell>
-                  <TableCell>{vehicle.lastUpdated}</TableCell>
-                </TableRow>
-              ))}
-              {filteredVehicles.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6">
-                    No vehicles found matching your filters
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <EnhancedTable
+            data={filteredVehicles}
+            columns={vehicleColumns}
+            actions={vehicleActions}
+            searchKey="name"
+            searchPlaceholder="Search vehicles..."
+            statusKey="status"
+            statusMap={statusColorMap}
+            emptyMessage="No vehicles found"
+          />
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Maintenance Schedule</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Vehicle ID</TableHead>
-                <TableHead>Service Type</TableHead>
-                <TableHead>Scheduled Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Priority</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {fleetData.maintenanceSchedule.map((schedule, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{schedule.vehicleId}</TableCell>
-                  <TableCell>{schedule.serviceType}</TableCell>
-                  <TableCell>{schedule.scheduledDate}</TableCell>
-                  <TableCell>
-                    <Badge variant={schedule.status === "completed" ? "success" : 
-                                     schedule.status === "scheduled" ? "secondary" : 
-                                     "warning"}>
-                      {schedule.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={schedule.priority === "high" ? "destructive" : 
-                                     schedule.priority === "medium" ? "warning" : 
-                                     "outline"}>
-                      {schedule.priority}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <VehicleModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSuccess={fetchData}
+        vehicle={selectedVehicle}
+      />
+      
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the vehicle {vehicleToDelete?.name}. 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

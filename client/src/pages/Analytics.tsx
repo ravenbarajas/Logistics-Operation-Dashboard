@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -25,7 +26,16 @@ import {
   Share2, 
   RefreshCw 
 } from "lucide-react";
-import { fuelConsumptionData, deliveryPerformanceData } from "@/data/mock-data";
+import { 
+  fuelConsumptionData, 
+  deliveryPerformanceData, 
+  costAnalysisData,
+  costPerMileData,
+  maintenanceCostByVehicleType,
+  sustainabilityData,
+  carbonOffsetProjects,
+  emissionsByVehicleData 
+} from "@/data/mock-data";
 import {
   Tabs,
   TabsContent,
@@ -39,6 +49,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EnhancedDataTable } from "@/components/ui/enhanced-data-table";
+import { Badge } from "@/components/ui/badge";
+import { 
+  fuelConsumptionColumns, 
+  fuelEfficiencyColumns, 
+  fuelSupplierColumns,
+  fuelEfficiencyData,
+  fuelSupplierData 
+} from "@/components/analytics/FuelAnalyticsTable";
+
+import { 
+  costAnalysisColumns, 
+  costPerMileColumns, 
+  maintenanceCostColumns 
+} from "@/components/analytics/CostAnalysisTable";
+
+import { 
+  sustainabilityColumns, 
+  carbonOffsetColumns, 
+  emissionsColumns 
+} from "@/components/analytics/SustainabilityTable";
 
 export default function Analytics() {
   // Sample data for various charts
@@ -75,6 +106,75 @@ export default function Analytics() {
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
   
+  // Calculate the data for the tables
+  const calculatedFuelData = fuelConsumptionData.map(item => {
+    const diesel = item.diesel;
+    const gasoline = item.gasoline;
+    const electric = item.electric;
+    const gasolineEquivalent = gasoline * 0.88;
+    const electricEquivalent = electric * 0.03;
+    const total = diesel + gasolineEquivalent + electricEquivalent;
+    
+    const dieselCost = diesel * 3.85;
+    const gasolineCost = gasoline * 3.65;
+    const electricCost = electric * 0.15;
+    const cost = dieselCost + gasolineCost + electricCost;
+    
+    return {
+      ...item,
+      total,
+      cost
+    };
+  });
+  
+  const calculatedCostData = costAnalysisData.map(item => ({
+    ...item,
+    total: item.fuel + item.maintenance + item.labor + item.insurance + item.other
+  }));
+  
+  const calculatedEmissionsData = emissionsByVehicleData.map(item => ({
+    ...item,
+    emissionsPerMile: item.emissions * item.distance / 1000
+  }));
+
+  const [activeTab, setActiveTab] = useState({
+    fuel: "consumption",
+    cost: "costBreakdown",
+    sustainability: "metrics"
+  });
+
+  useEffect(() => {
+    // Initialize tabs based on URL hash
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'consumption' || hash === 'efficiency' || hash === 'suppliers') {
+      setActiveTab({...activeTab, fuel: hash});
+    } else if (hash === 'costBreakdown' || hash === 'costPerMile' || hash === 'maintenance') {
+      setActiveTab({...activeTab, cost: hash});
+    } else if (hash === 'metrics' || hash === 'carbOffset' || hash === 'emissions') {
+      setActiveTab({...activeTab, sustainability: hash});
+    }
+    
+    // Add hash change listener
+    const handleHashChange = () => {
+      const newHash = window.location.hash.replace('#', '');
+      if (newHash === 'consumption' || newHash === 'efficiency' || newHash === 'suppliers') {
+        setActiveTab({...activeTab, fuel: newHash});
+      } else if (newHash === 'costBreakdown' || newHash === 'costPerMile' || newHash === 'maintenance') {
+        setActiveTab({...activeTab, cost: newHash});
+      } else if (newHash === 'metrics' || newHash === 'carbOffset' || newHash === 'emissions') {
+        setActiveTab({...activeTab, sustainability: newHash});
+      }
+    };
+    
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+  
+  const handleTabChange = (section: 'fuel' | 'cost' | 'sustainability', tab: string) => {
+    setActiveTab({...activeTab, [section]: tab});
+    window.location.hash = tab;
+  };
+
   return (
     <div className="container px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -337,20 +437,20 @@ export default function Analytics() {
       </div>
       
       <Tabs defaultValue="fuel" className="mb-6">
-        <TabsList className="mb-4">
+        <TabsList className="mb-2">
           <TabsTrigger value="fuel">Fuel Analytics</TabsTrigger>
           <TabsTrigger value="cost">Cost Analysis</TabsTrigger>
           <TabsTrigger value="sustainability">Sustainability</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="fuel">
+        <TabsContent value="fuel" className="max-h-[calc(100vh-20rem)] overflow-y-auto">
           <Card>
-            <CardHeader>
+            <CardHeader className="py-4">
               <CardTitle>Fuel Consumption Trends</CardTitle>
               <CardDescription>Monthly consumption patterns across fleet</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
+              <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={fuelConsumptionData}
@@ -389,14 +489,14 @@ export default function Analytics() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="cost">
+        <TabsContent value="cost" className="max-h-[calc(100vh-20rem)] overflow-y-auto">
           <Card>
-            <CardHeader>
+            <CardHeader className="py-4">
               <CardTitle>Operational Cost Breakdown</CardTitle>
               <CardDescription>Analysis of transportation costs</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
+              <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -433,14 +533,14 @@ export default function Analytics() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="sustainability">
+        <TabsContent value="sustainability" className="max-h-[calc(100vh-20rem)] overflow-y-auto">
           <Card>
-            <CardHeader>
+            <CardHeader className="py-4">
               <CardTitle>Carbon Footprint</CardTitle>
               <CardDescription>CO2 emissions by transport mode</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
+              <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={[

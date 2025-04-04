@@ -1,0 +1,31 @@
+/* Ensure leaflet layers don't overlap with modals */
+.leaflet-pane,
+.leaflet-control,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 400 !important;
+}
+
+.leaflet-container {
+  z-index: 10 !important;
+}
+
+/* Ensure dialog components have higher z-index than Leaflet */
+[data-part="content"],
+[data-part="overlay"] {
+  z-index: 9999 !important;
+}
+
+/* Hide scrollbars while keeping content scrollable */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* Internet Explorer and Edge */
+  scrollbar-width: none;  /* Firefox */
+  overflow-x: auto;  /* Ensure horizontal scrolling works */
+  overflow-y: hidden;  /* Prevent vertical scrollbar */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+  width: 0;  /* Additional fix for some WebKit browsers */
+  height: 0;  /* Additional fix for horizontal scrollbars */
+} 

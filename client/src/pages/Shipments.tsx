@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
+import {
   Search, Plus, Filter, Calendar, Clock, RefreshCw, MapPin, Edit, Trash, 
-  ChevronDown, Package, Truck, User, FileText, ExternalLink, Clipboard, AlertCircle 
+  ChevronDown, Package, Truck, User, FileText, ExternalLink, Clipboard, AlertCircle,
+  BarChartBig, Activity, Zap, TrendingUp, Target, LineChart as LineChartIcon, Route, Droplet
 } from "lucide-react";
 import {
   Select,
@@ -29,6 +30,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  ShipmentSummary,
+  ShipmentPerformanceByMonth,
+  ShipmentVolumeByRegion,
+  TopCustomer,
+  PerformanceMetrics,
+} from "@/services/shipmentService";
+import {
+  AreaChart,
+  BarChart,
+  DonutChart,
+  LineChart,
+  Legend,
+} from "@tremor/react";
 
 // Extended Shipment interface with additional properties that might be needed
 interface ExtendedShipment extends Shipment {
@@ -41,6 +56,10 @@ interface ExtendedShipment extends Shipment {
   deliveryTime?: string;
   distance?: number;
   departureDate?: string;
+  fuelConsumption?: number;
+  co2Emissions?: number;
+  routeEfficiency?: number;
+  loadUtilization?: number;
 }
 
 export default function Shipments() {
@@ -49,6 +68,18 @@ export default function Shipments() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Analytics state
+  const [summary, setSummary] = useState<ShipmentSummary | null>(null);
+  const [performanceByMonth, setPerformanceByMonth] = useState<ShipmentPerformanceByMonth[]>([]);
+  const [volumeByRegion, setVolumeByRegion] = useState<ShipmentVolumeByRegion[]>([]);
+  const [topCustomers, setTopCustomers] = useState<TopCustomer[]>([]);
+  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics | null>(null);
+  const [routeEfficiencyData, setRouteEfficiencyData] = useState<{category: string, efficiency: number, target: number}[]>([]);
+  const [emissionsData, setEmissionsData] = useState<{month: string, emissions: number, distance: number}[]>([]);
+  const [carrierPerformance, setCarrierPerformance] = useState<{carrier: string, onTime: number, cost: number, volume: number}[]>([]);
+  const [operationalKPIs, setOperationalKPIs] = useState<{metric: string, value: number, target: number, trend: number}[]>([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
@@ -71,8 +102,72 @@ export default function Shipments() {
     }
   };
 
+  const fetchAnalyticsData = async () => {
+    try {
+      setAnalyticsLoading(true);
+      const [
+        summaryData,
+        performanceData,
+        volumeData,
+        customersData,
+        metricsData
+      ] = await Promise.all([
+        shipmentService.getShipmentSummary(),
+        shipmentService.getShipmentPerformanceByMonth(),
+        shipmentService.getShipmentVolumeByRegion(),
+        shipmentService.getTopCustomers(),
+        shipmentService.getPerformanceMetrics()
+      ]);
+
+      setSummary(summaryData);
+      setPerformanceByMonth(performanceData);
+      setVolumeByRegion(volumeData);
+      setTopCustomers(customersData);
+      setPerformanceMetrics(metricsData);
+      
+      // Mock data for new analytics components
+      setRouteEfficiencyData([
+        { category: 'Urban', efficiency: 87, target: 90 },
+        { category: 'Suburban', efficiency: 92, target: 95 },
+        { category: 'Rural', efficiency: 76, target: 80 },
+        { category: 'Highway', efficiency: 94, target: 95 },
+        { category: 'International', efficiency: 81, target: 85 }
+      ]);
+      
+      setEmissionsData([
+        { month: 'Jan', emissions: 42, distance: 12400 },
+        { month: 'Feb', emissions: 38, distance: 11200 },
+        { month: 'Mar', emissions: 45, distance: 13500 },
+        { month: 'Apr', emissions: 39, distance: 11800 },
+        { month: 'May', emissions: 47, distance: 14100 },
+        { month: 'Jun', emissions: 41, distance: 12300 }
+      ]);
+      
+      setCarrierPerformance([
+        { carrier: 'SpeedFreight', onTime: 94, cost: 5200, volume: 120 },
+        { carrier: 'GlobalLogix', onTime: 88, cost: 4800, volume: 105 },
+        { carrier: 'ExpressCarry', onTime: 92, cost: 5500, volume: 130 },
+        { carrier: 'TransitPro', onTime: 90, cost: 5100, volume: 118 },
+        { carrier: 'PremiumHaul', onTime: 96, cost: 5800, volume: 125 }
+      ]);
+      
+      setOperationalKPIs([
+        { metric: 'Warehouse Utilization', value: 78, target: 85, trend: 5 },
+        { metric: 'Load Optimization', value: 92, target: 95, trend: 3 },
+        { metric: 'Cross-dock Efficiency', value: 83, target: 90, trend: -2 },
+        { metric: 'Fleet Utilization', value: 87, target: 90, trend: 4 },
+        { metric: 'Inventory Accuracy', value: 96, target: 98, trend: 1 }
+      ]);
+    } catch (error) {
+      console.error("Error fetching analytics data:", error);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchAnalyticsData();
   }, []);
 
   const handleAddShipment = () => {
@@ -121,6 +216,44 @@ export default function Shipments() {
   const scheduledShipments = shipments.filter(s => 
     s.status === 'pending' || s.status === 'scheduled'
   );
+
+  // Prepare data for charts
+  const deliveryPerformanceData = performanceByMonth?.map(month => ({
+    month: month.month,
+    "On Time": month.onTimeDelivery,
+    "Delayed": month.delayedDelivery,
+    "Cancelled": month.cancelled,
+    Total: month.totalShipments,
+  })) || [];
+
+  const regionData = volumeByRegion?.map(region => ({
+    region: region.region,
+    value: region.count,
+    percentage: region.percentage,
+  })) || [];
+  
+  // Filter shipments based on search query and status filter
+  const filteredActiveShipments = activeShipments.filter((shipment: ExtendedShipment) => {
+    const matchesSearch = searchQuery === "" || 
+      (shipment.trackingNumber && shipment.trackingNumber.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (shipment.description && shipment.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesStatus = statusFilter === "all" || shipment.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+  
+  const filteredCompletedShipments = completedShipments.filter((shipment: ExtendedShipment) => {
+    return searchQuery === "" || 
+      (shipment.trackingNumber && shipment.trackingNumber.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (shipment.description && shipment.description.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
+
+  const filteredScheduledShipments = scheduledShipments.filter((shipment: ExtendedShipment) => {
+    return searchQuery === "" || 
+      (shipment.trackingNumber && shipment.trackingNumber.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (shipment.description && shipment.description.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
 
   // Define columns for active shipments
   const activeShipmentColumns = [
@@ -408,72 +541,357 @@ export default function Shipments() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* Analytics Overview */}
+      <div className="mb-6">
+        
+        {analyticsLoading || !summary ? (
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex justify-center py-8">
+                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <div className="mr-2 p-2 bg-primary/10 rounded-full text-primary">
+                      <Package className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{summary.totalShipments}</div>
+                      <div className="text-xs text-muted-foreground flex items-center mt-1 gap-2">
+                        <Badge variant="outline" className="font-normal rounded-sm">
+                          {summary.inTransit} In Transit
+                        </Badge>
+                        <Badge variant="outline" className="font-normal rounded-sm">
+                          {summary.pending} Pending
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">On Time Delivery Rate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <div className="mr-2 p-2 bg-green-500/10 rounded-full text-green-500">
+                      <Calendar className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{summary.onTimeDeliveryRate}%</div>
+                      <div className="text-xs text-muted-foreground flex items-center mt-1 gap-2">
+                        <Badge variant="destructive" className="font-normal rounded-sm">
+                          {summary.delayedShipments} Delayed
+                        </Badge>
+                        <Badge variant="default" className="bg-green-500 font-normal rounded-sm">
+                          {summary.delivered} Delivered
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Avg. Delivery Time</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <div className="mr-2 p-2 bg-blue-500/10 rounded-full text-blue-500">
+                      <Clock className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{summary.averageDeliveryTime} hrs</div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Based on {summary.delivered} completed shipments
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Distance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center">
+                    <div className="mr-2 p-2 bg-amber-500/10 rounded-full text-amber-500">
+                      <MapPin className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">{summary.totalDistance.toLocaleString()} mi</div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Avg. {Math.round(summary.totalDistance / summary.totalShipments)} miles per shipment
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Charts Row 1 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Active Shipments</CardTitle>
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-primary" />
+                    Monthly Shipment Performance
+                  </CardTitle>
+                  <CardDescription>
+                    Number of shipments by status over time
+                  </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inTransit}</div>
-            <p className="text-xs text-muted-foreground">
-              {inTransit > 0 
-                ? `${Math.round((inTransit / totalShipments) * 100)}% of total shipments` 
-                : 'No active shipments'}
-            </p>
+                  <AreaChart
+                    className="h-72"
+                    data={deliveryPerformanceData}
+                    index="month"
+                    categories={["On Time", "Delayed", "Cancelled"]}
+                    colors={["emerald", "amber", "rose"]}
+                    valueFormatter={(value: number) => `${value} shipments`}
+                  />
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Delivered Today</CardTitle>
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <MapPin className="h-4 w-4 mr-2 text-primary" />
+                    Shipment Volume by Region
+                  </CardTitle>
+                  <CardDescription>
+                    Distribution of shipments across geographic regions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <DonutChart
+                    className="h-72"
+                    data={regionData}
+                    category="value"
+                    index="region"
+                    colors={["indigo", "cyan", "amber", "emerald", "rose"]}
+                    valueFormatter={(value: number) => `${value} shipments`}
+                    label="Total Shipments"
+                  />
+                  <Legend
+                    className="mt-3"
+                    categories={regionData.map(r => r.region)}
+                    colors={["indigo", "cyan", "amber", "emerald", "rose"]}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Operational KPIs Row */}
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold mb-3 flex items-center">
+                <Activity className="h-5 w-5 mr-2 text-primary" />
+                Operational KPIs
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {operationalKPIs.map((kpi, index) => (
+                  <Card key={index}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">{kpi.metric}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">{delivered}</div>
-            <p className="text-xs text-muted-foreground">
-              {delivered > 0 && 'Successfully delivered'}
-            </p>
+                      <div className="flex items-center justify-between">
+                        <div className="text-2xl font-bold">{kpi.value}%</div>
+                        <div className={`flex items-center ${
+                          kpi.trend > 0 ? 'text-green-500' : kpi.trend < 0 ? 'text-red-500' : 'text-gray-500'
+                        }`}>
+                          {kpi.trend > 0 ? (
+                            <TrendingUp className="h-4 w-4 mr-1" />
+                          ) : kpi.trend < 0 ? (
+                            <TrendingUp className="h-4 w-4 mr-1 rotate-180" />
+                          ) : (
+                            <LineChartIcon className="h-4 w-4 mr-1" />
+                          )}
+                          <span className="text-sm">{Math.abs(kpi.trend)}%</span>
+                        </div>
+                      </div>
+                      <div className="mt-2 h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+                        <div 
+                          className={`h-full ${kpi.value >= kpi.target ? 'bg-green-500' : 'bg-amber-500'}`} 
+                          style={{ width: `${kpi.value}%` }}
+                        />
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground flex justify-between">
+                        <span>Current</span>
+                        <span>Target: {kpi.target}%</span>
+                      </div>
           </CardContent>
         </Card>
+                ))}
+              </div>
+            </div>
+            
+            {/* Charts Row 2 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <Route className="h-4 w-4 mr-2 text-primary" />
+                    Route Efficiency by Category
+                  </CardTitle>
+                  <CardDescription>
+                    Analysis of operational efficiency across different route types
+                  </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-500">{pending}</div>
-            <p className="text-xs text-muted-foreground">
-              {pending > 0 
-                ? `${Math.round((pending / totalShipments) * 100)}% of total shipments` 
-                : 'No pending shipments'}
-            </p>
+                  <BarChart
+                    className="h-72"
+                    data={routeEfficiencyData}
+                    index="category"
+                    categories={["efficiency", "target"]}
+                    colors={["blue", "gray"]}
+                    valueFormatter={(value: number) => `${value}%`}
+                  />
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <Droplet className="h-4 w-4 mr-2 text-primary" />
+                    CO₂ Emissions vs. Distance
+                  </CardTitle>
+                  <CardDescription>
+                    Environmental impact relative to delivery distances
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <LineChart
+                    className="h-72"
+                    data={emissionsData}
+                    index="month"
+                    categories={["emissions", "distance"]}
+                    colors={["green", "blue"]}
+                    valueFormatter={(value: number, category) => {
+                      if (category === "emissions") return `${value} tons`;
+                      return `${value} mi`;
+                    }}
+                    yAxisWidth={60}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Carrier Performance */}
+            <Card className="mb-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">
+                  <Zap className="h-4 w-4 mr-2 text-primary" />
+                  Carrier Performance Analysis
+                </CardTitle>
+                <CardDescription>
+                  Comparative analysis of carrier metrics across on-time performance, cost, and volume
+                </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalShipments}</div>
-            <p className="text-xs text-muted-foreground">All time</p>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div>
+                    <h4 className="text-sm font-medium mb-2 text-center">On-Time Performance (%)</h4>
+                    <BarChart
+                      className="h-48"
+                      data={carrierPerformance}
+                      index="carrier"
+                      categories={["onTime"]}
+                      colors={["emerald"]}
+                      valueFormatter={(value: number) => `${value}%`}
+                      layout="vertical"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium mb-2 text-center">Cost Efficiency ($)</h4>
+                    <BarChart
+                      className="h-48"
+                      data={carrierPerformance}
+                      index="carrier"
+                      categories={["cost"]}
+                      colors={["amber"]}
+                      valueFormatter={(value: number) => `$${value}`}
+                      layout="vertical"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium mb-2 text-center">Shipment Volume</h4>
+                    <BarChart
+                      className="h-48"
+                      data={carrierPerformance}
+                      index="carrier"
+                      categories={["volume"]}
+                      colors={["indigo"]}
+                      valueFormatter={(value: number) => `${value}`}
+                      layout="vertical"
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="flex flex-col items-center">
+                      <div className="font-medium">Best On-Time</div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Badge className="bg-emerald-500">PremiumHaul</Badge>
+                        <span className="text-xs">96%</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="font-medium">Most Cost-Effective</div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Badge className="bg-amber-500">GlobalLogix</Badge>
+                        <span className="text-xs">$4,800</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="font-medium">Highest Volume</div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Badge className="bg-indigo-500">ExpressCarry</Badge>
+                        <span className="text-xs">130 shipments</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
           </CardContent>
         </Card>
+          </>
+        )}
       </div>
       
       <Tabs defaultValue="active" className="mb-8">
         <TabsList className="mb-4">
-          <TabsTrigger value="active">Active Shipments</TabsTrigger>
-          <TabsTrigger value="history">Shipment History</TabsTrigger>
-          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+          <TabsTrigger value="active">Active Shipments ({filteredActiveShipments.length})</TabsTrigger>
+          <TabsTrigger value="history">Shipment History ({filteredCompletedShipments.length})</TabsTrigger>
+          <TabsTrigger value="scheduled">Scheduled ({filteredScheduledShipments.length})</TabsTrigger>
         </TabsList>
         
         <TabsContent value="active" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Truck className="h-5 w-5 mr-2 text-primary" />
-                Active Shipments
-              </CardTitle>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <CardTitle className="flex items-center mb-1">
+                    <Truck className="h-5 w-5 mr-2 text-primary" />
+                    Active Shipments ({filteredActiveShipments.length})
+                  </CardTitle>
               <CardDescription>Manage your current shipments in progress</CardDescription>
-              <div className="flex flex-col md:flex-row gap-4 mt-4">
-                <div className="flex gap-2 ml-auto">
+                </div>
+                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                  <div className="flex gap-2 items-center">
                   <div className="flex items-center">
                     <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span className="text-sm mr-2">Status:</span>
@@ -485,15 +903,20 @@ export default function Shipments() {
                     <SelectContent>
                       <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="in-transit">In Transit</SelectItem>
-                      <SelectItem value="processing">Processing</SelectItem>
+                        <SelectItem value="processing">Processing</SelectItem>
+                        <SelectItem value="delivered">Delivered</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="scheduled">Scheduled</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
+                  </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <EnhancedTable
-                data={activeShipments}
+                data={filteredActiveShipments}
                 columns={activeShipmentColumns}
                 actions={activeShipmentActions}
                 searchKey="trackingNumber"
@@ -517,7 +940,7 @@ export default function Shipments() {
             </CardHeader>
             <CardContent>
               <EnhancedTable
-                data={completedShipments}
+                data={filteredCompletedShipments}
                 columns={completedShipmentColumns}
                 actions={completedShipmentActions}
                 searchKey="trackingNumber"
@@ -541,7 +964,7 @@ export default function Shipments() {
             </CardHeader>
             <CardContent>
               <EnhancedTable
-                data={scheduledShipments}
+                data={filteredScheduledShipments}
                 columns={scheduledShipmentColumns}
                 actions={scheduledShipmentActions}
                 searchKey="trackingNumber"

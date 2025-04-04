@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -24,7 +24,14 @@ import {
   BarChart3, 
   PieChart as PieChartIcon, 
   Share2, 
-  RefreshCw 
+  RefreshCw,
+  AlertTriangle,
+  Clipboard,
+  TrendingUp,
+  Clock,
+  Truck,
+  Network,
+  MapPin
 } from "lucide-react";
 import { 
   fuelConsumptionData, 
@@ -34,7 +41,9 @@ import {
   maintenanceCostByVehicleType,
   sustainabilityData,
   carbonOffsetProjects,
-  emissionsByVehicleData 
+  emissionsByVehicleData,
+  networkAnalyticsData,
+  logisticsPerformanceData
 } from "@/data/mock-data";
 import {
   Tabs,
@@ -70,6 +79,10 @@ import {
   carbonOffsetColumns, 
   emissionsColumns 
 } from "@/components/analytics/SustainabilityTable";
+
+import NetworkAnalytics from "@/components/analytics/NetworkAnalytics";
+import LogisticsPerformanceMatrix from "@/components/analytics/LogisticsPerformanceMatrix";
+import html2pdf from 'html2pdf.js';
 
 export default function Analytics() {
   // Sample data for various charts
@@ -175,14 +188,69 @@ export default function Analytics() {
     window.location.hash = tab;
   };
 
+  const analyticsSectionRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  
+  const handleExportReport = async () => {
+    if (!analyticsSectionRef.current) return;
+    
+    try {
+      setIsExporting(true);
+      
+      // Configure PDF options with A4 as default
+      const options = {
+        margin: 10,
+        filename: `logistics_analytics_report_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          logging: false,
+          letterRendering: true,
+          allowTaint: true,
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait' as 'portrait' | 'landscape'
+        }
+      };
+      
+      // Wait for charts to render completely
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Generate the PDF
+      await html2pdf().from(analyticsSectionRef.current).set(options).save();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
-    <div className="container px-4 py-8">
+    <div className="container px-4 py-8" ref={analyticsSectionRef}>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Analytics & Reports</h1>
-        <div className="flex gap-2">
-          <Button>
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
+        <div className="flex gap-2 items-center">
+          <Button 
+            onClick={handleExportReport} 
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Exporting...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                Export Report
+              </>
+            )}
           </Button>
           <Button variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -355,87 +423,577 @@ export default function Analytics() {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Route Efficiency Analysis</CardTitle>
-            <CardDescription>Planned vs actual delivery times by route</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={routeEfficiencyData}
-                  layout="vertical"
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    type="number" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    dataKey="route" 
-                    type="category" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                    width={100}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
+      {/* Risk Assessment and Improvement Opportunities - Extracted from tabs */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-4">Risk Assessment & Improvement Analysis</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Risk Assessment */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="flex items-center">
+                    <AlertTriangle className="h-5 w-5 mr-2 text-primary" />
+                    Risk Assessment Matrix
+                  </CardTitle>
+                  <CardDescription>
+                    Logistics operational risks with impact and mitigation readiness
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="h-8 w-8" 
+                    onClick={() => {
+                      const container = document.getElementById('risks-container');
+                      if (container) {
+                        container.scrollBy({ top: -200, behavior: 'smooth' });
+                      }
                     }}
-                  />
-                  <Legend />
-                  <Bar dataKey="plannedTime" name="Planned Time (hrs)" fill="hsl(var(--primary))" />
-                  <Bar dataKey="actualTime" name="Actual Time (hrs)" fill="hsl(var(--secondary))" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Transport Mode Distribution</CardTitle>
-            <CardDescription>Breakdown of shipments by transport type</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80 flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={transportModeData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
-                    {transportModeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="h-8 w-8" 
+                    onClick={() => {
+                      const container = document.getElementById('risks-container');
+                      if (container) {
+                        container.scrollBy({ top: 200, behavior: 'smooth' });
+                      }
                     }}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div id="risks-container" className="max-h-64 overflow-y-hidden hide-scrollbar">
+                <table className="w-full min-w-[500px]">
+                  <thead className="sticky top-0 bg-background z-10">
+                    <tr className="border-b dark:border-gray-700">
+                      <th className="py-2 px-4 text-left text-sm font-medium">Risk Category</th>
+                      <th className="py-2 px-4 text-left text-sm font-medium">Probability</th>
+                      <th className="py-2 px-4 text-left text-sm font-medium">Impact</th>
+                      <th className="py-2 px-4 text-left text-sm font-medium">Readiness</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {logisticsPerformanceData.riskAssessment.map((risk, index) => (
+                      <tr key={index} className="border-b dark:border-gray-700">
+                        <td className="py-2 px-4 text-sm">{risk.category}</td>
+                        <td className="py-2 px-4">
+                          <Badge className={`${risk.probability > 7 ? 'bg-red-500' : risk.probability > 4 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                            {risk.probability}/10
+                          </Badge>
+                        </td>
+                        <td className="py-2 px-4">
+                          <Badge className={`${risk.impact > 7 ? 'bg-red-500' : risk.impact > 4 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                            {risk.impact}/10
+                          </Badge>
+                        </td>
+                        <td className="py-2 px-4">
+                          <Badge className={`${risk.readiness < 5 ? 'bg-red-500' : risk.readiness < 8 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                            {risk.readiness}/10
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Improvement Opportunities */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="flex items-center">
+                    <Clipboard className="h-5 w-5 mr-2 text-primary" />
+                    Improvement Opportunities
+                  </CardTitle>
+                  <CardDescription>
+                    High-impact areas for performance enhancement
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="h-8 w-8" 
+                    onClick={() => {
+                      const container = document.getElementById('opportunities-container');
+                      if (container) {
+                        container.scrollBy({ top: -200, behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="h-8 w-8" 
+                    onClick={() => {
+                      const container = document.getElementById('opportunities-container');
+                      if (container) {
+                        container.scrollBy({ top: 200, behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div id="opportunities-container" className="max-h-64 overflow-y-hidden hide-scrollbar">
+                <div className="space-y-4">
+                  {logisticsPerformanceData.improvementOpportunities.map((opportunity, index) => (
+                    <div key={index} className="border rounded-md p-3 dark:border-gray-700">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium">{opportunity.area}</span>
+                        <Badge className={`${opportunity.priority > 7 ? 'bg-red-500' : opportunity.priority > 4 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                          Priority: {opportunity.priority}/10
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Potential Impact</div>
+                          <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+                            <div 
+                              className="h-full bg-blue-500" 
+                              style={{ width: `${opportunity.potential * 10}%` }}
+                            />
+                          </div>
+                          <div className="text-right text-xs mt-1">{opportunity.potential}/10</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">Implementation Effort</div>
+                          <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+                            <div 
+                              className="h-full bg-amber-500" 
+                              style={{ width: `${opportunity.effort * 10}%` }}
+                            />
+                          </div>
+                          <div className="text-right text-xs mt-1">{opportunity.effort}/10</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
       
+      {/* Performance Insights */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-4">Performance Insights</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* KPI Trends - Circular Progress Indicators */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2 text-primary" />
+                KPI Performance Indicators
+              </CardTitle>
+              <CardDescription>
+                Current performance against targets across key indicators
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {logisticsPerformanceData.kpiTrend.slice(0, 6).map((kpi, index) => {
+                  const percentage = Math.round((kpi.value / kpi.target) * 100);
+                  const color = percentage >= 100 ? 'text-green-500' : 
+                                percentage >= 80 ? 'text-emerald-500' : 
+                                percentage >= 60 ? 'text-amber-500' : 'text-red-500';
+                  
+                  return (
+                    <div key={index} className="flex flex-col items-center">
+                      <div className="relative w-20 h-20">
+                        <svg className="w-full h-full" viewBox="0 0 100 100">
+                          <circle 
+                            className="text-gray-200 stroke-current" 
+                            strokeWidth="10" 
+                            cx="50" 
+                            cy="50" 
+                            r="40" 
+                            fill="transparent"
+                          />
+                          <circle 
+                            className={`${color} stroke-current`} 
+                            strokeWidth="10" 
+                            strokeLinecap="round" 
+                            cx="50" 
+                            cy="50" 
+                            r="40" 
+                            fill="transparent"
+                            strokeDasharray={`${Math.min(percentage, 100) * 2.51}, 251`}
+                            transform="rotate(-90 50 50)"
+                          />
+                          <text 
+                            x="50%" 
+                            y="50%" 
+                            dy=".3em" 
+                            textAnchor="middle" 
+                            className={`${color} fill-current text-lg font-bold`}
+                          >
+                            {percentage}%
+                          </text>
+                        </svg>
+                      </div>
+                      <div className="mt-2 text-center">
+                        <div className="text-sm font-medium truncate max-w-[100px] mx-auto">
+                          {kpi.category}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {kpi.value}/{kpi.target}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Performance Tracking - Line Chart */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center">
+                <Clock className="h-5 w-5 mr-2 text-primary" />
+                Daily Performance Tracking
+              </CardTitle>
+              <CardDescription>
+                Consolidated performance across domains for the past 7 days
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={logisticsPerformanceData.dailyPerformance}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="date" 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <YAxis 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                      domain={[60, 100]}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="operations" name="Operations" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="delivery" name="Delivery" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="warehouse" name="Warehouse" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="customer" name="Customer" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      
+      {/* Route and Bottleneck Analysis */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-4">Route & Network Analysis</h2>
+        
+        {/* Network Bottlenecks - Full Width Row */}
+        <Card className="mb-6">
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="flex items-center">
+                  <AlertTriangle className="h-5 w-5 mr-2 text-primary" />
+                  Critical Network Bottlenecks
+                </CardTitle>
+                <CardDescription>
+                  Key congestion points currently impacting logistics flow
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8" 
+                  onClick={() => {
+                    const container = document.getElementById('bottlenecks-container');
+                    if (container) {
+                      container.scrollBy({ left: -300, behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8" 
+                  onClick={() => {
+                    const container = document.getElementById('bottlenecks-container');
+                    if (container) {
+                      container.scrollBy({ left: 300, behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Horizontal scrolling cards with no scrollbar + navigation buttons */}
+            <div 
+              id="bottlenecks-container"
+              className="flex overflow-x-hidden pb-4 hide-scrollbar" 
+            >
+              <div className="flex gap-4 py-1 px-0.5 min-w-full">
+                {networkAnalyticsData.bottlenecks.map((bottleneck, index) => (
+                  <div key={index} className="min-w-[220px] max-w-[250px] flex-shrink-0 border rounded-lg p-4 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="font-medium truncate max-w-[150px]">{bottleneck.location}</div>
+                      <Badge className={`${bottleneck.severity > 7 ? 'bg-red-500' : bottleneck.severity > 5 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                        {bottleneck.severity.toFixed(1)}/10
+                      </Badge>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1 flex justify-between">
+                          <span>Impacted Shipments</span>
+                          <span className="font-medium">{bottleneck.impactedShipments}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+                          <div 
+                            className="h-full bg-red-500" 
+                            style={{ width: `${(bottleneck.impactedShipments / 2000) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1 flex justify-between">
+                          <span>Avg Delay</span>
+                          <span className="font-medium">{bottleneck.avgDelay} hrs</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+                          <div 
+                            className="h-full bg-amber-500" 
+                            style={{ width: `${(bottleneck.avgDelay / 15) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+
+              {/* Average Network Delay - Key Metrics */}
+              <div className="border rounded-lg p-4 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-2 text-blue-500" />
+                    <span className="font-medium">Average Network Delay</span>
+                  </div>
+                  <Badge className="bg-amber-500 text-white">+5.2%</Badge>
+                </div>
+                <div className="text-2xl font-bold mb-2">6.8 hrs</div>
+                <div className="text-xs text-muted-foreground">
+                  Increased from 6.5 hrs last month • 2.3 hrs above target
+                </div>
+                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800 mt-2">
+                  <div className="h-full bg-amber-500" style={{ width: "68%" }} />
+                </div>
+              </div>
+              
+              {/* Most Affected Hub - Key Metrics */}
+              <div className="border rounded-lg p-4 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                    <span className="font-medium">Most Affected Hub</span>
+                  </div>
+                  <Badge className="bg-red-500 text-white">Critical</Badge>
+                </div>
+                <div className="text-2xl font-bold mb-2">Chicago Hub</div>
+                <div className="text-xs text-muted-foreground">
+                  1,240 shipments impacted • Avg delay 5.8 hrs
+                </div>
+                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800 mt-2">
+                  <div className="h-full bg-red-500" style={{ width: "82%" }} />
+                </div>
+              </div>
+              
+              {/* Rerouting Efficiency - Key Metrics */}
+              <div className="border rounded-lg p-4 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <Truck className="h-4 w-4 mr-2 text-green-500" />
+                    <span className="font-medium">Rerouting Efficiency</span>
+                  </div>
+                  <Badge className="bg-green-500 text-white">+12%</Badge>
+                </div>
+                <div className="text-2xl font-bold mb-2">76.4%</div>
+                <div className="text-xs text-muted-foreground">
+                  425 shipments successfully rerouted • 2.1 hrs saved on average
+                </div>
+                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800 mt-2">
+                  <div className="h-full bg-green-500" style={{ width: "76%" }} />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* New Two Column Layout - Replacing Previous Components */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Hub Throughput Capacity - Replacing Route Performance */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center">
+                <Truck className="h-5 w-5 mr-2 text-primary" />
+                Hub Throughput Capacity
+              </CardTitle>
+              <CardDescription>
+                Current utilization vs maximum capacity by hub
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={networkAnalyticsData.hubPerformance.map(hub => ({
+                        name: hub.hub,
+                        value: hub.utilization
+                      }))}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={30}
+                      outerRadius={60}
+                      fill="#8884d8"
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {networkAnalyticsData.hubPerformance.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'][index % 6]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                      formatter={(value, name, props) => [`${value}% utilized`, `${name}`]}
+                    />
+                    <Legend 
+                      formatter={(value, entry, index) => {
+                        const hub = networkAnalyticsData.hubPerformance[index];
+                        return `${value} (${hub.throughput.toLocaleString()} units)`;
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {networkAnalyticsData.hubPerformance.slice(0, 3).map((hub, index) => (
+                  <div key={index} className="text-center bg-muted/30 rounded p-2">
+                    <div className="text-xs font-medium mb-1">{hub.hub}</div>
+                    <div className="text-sm">🔄 {hub.throughput.toLocaleString()}</div>
+                    <div className="text-sm">⏱️ {hub.deliveryTime}h avg</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Seasonal Transit Time Variations - Replacing Network Connection Strength */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center">
+                <Network className="h-5 w-5 mr-2 text-primary" />
+                Seasonal Transit Time Variations
+              </CardTitle>
+              <CardDescription>
+                Analysis of transit time fluctuations across seasons
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { season: 'Winter', chicago: 35.2, newyork: 28.4, losangeles: 22.8, dallas: 24.2 },
+                      { season: 'Spring', chicago: 29.8, newyork: 25.6, losangeles: 21.5, dallas: 22.7 },
+                      { season: 'Summer', chicago: 27.4, newyork: 26.1, losangeles: 23.2, dallas: 25.8 },
+                      { season: 'Fall', chicago: 31.6, newyork: 27.5, losangeles: 22.1, dallas: 23.4 }
+                    ]}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="season" 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <YAxis 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                      label={{ value: 'Hours', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                      formatter={(value, name) => [`${value} hours`, name === 'chicago' ? 'Chicago' : 
+                                                             name === 'newyork' ? 'New York' : 
+                                                             name === 'losangeles' ? 'Los Angeles' : 'Dallas']}
+                    />
+                    <Legend 
+                      formatter={(value) => value === 'chicago' ? 'Chicago' : 
+                                            value === 'newyork' ? 'New York' : 
+                                            value === 'losangeles' ? 'Los Angeles' : 'Dallas'}
+                    />
+                    <Bar dataKey="chicago" fill="#3b82f6" />
+                    <Bar dataKey="newyork" fill="#10b981" />
+                    <Bar dataKey="losangeles" fill="#f59e0b" />
+                    <Bar dataKey="dallas" fill="#8b5cf6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      
+      {/* Fuel Analytics - Line Chart // Cost Analytics - Pie Chart // Sustainability - Bar Chart */}
       <Tabs defaultValue="fuel" className="mb-6">
         <TabsList className="mb-2">
           <TabsTrigger value="fuel">Fuel Analytics</TabsTrigger>

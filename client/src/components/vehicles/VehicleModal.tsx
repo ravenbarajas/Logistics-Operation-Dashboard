@@ -84,8 +84,8 @@ export function VehicleModal({ isOpen, onClose, vehicle, onSuccess }: VehicleMod
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={onClose} forceMount>
+      <DialogContent className="z-[10000]">
         <DialogHeader>
           <DialogTitle>{vehicle ? "Edit Vehicle" : "Add New Vehicle"}</DialogTitle>
         </DialogHeader>

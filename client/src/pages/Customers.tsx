@@ -754,8 +754,8 @@ export default function Customers() {
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
-                  <CardTitle>Customer List</CardTitle>
-                  <CardDescription>Manage and track all customer information</CardDescription>
+              <CardTitle>Customer List</CardTitle>
+              <CardDescription>Manage and track all customer information</CardDescription>
                 </div>
                 <RenderFilters />
               </div>
@@ -777,13 +777,13 @@ export default function Customers() {
                 <TableBody>
                   {getFilteredCustomers().length > 0 ? (
                     getFilteredCustomers().map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell className="font-medium">
-                          <div>
-                            <div className="font-medium">{customer.name}</div>
-                            <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
-                          </div>
-                        </TableCell>
+                    <TableRow key={customer.id}>
+                      <TableCell className="font-medium">
+                        <div>
+                          <div className="font-medium">{customer.name}</div>
+                          <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
+                        </div>
+                      </TableCell>
                         <TableCell>
                           <div className="flex flex-col text-sm">
                             <div className="flex items-center">
@@ -794,41 +794,41 @@ export default function Customers() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>{customer.location}</TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            customer.status === 'active' ? 'success' : 
-                            customer.status === 'inactive' ? 'secondary' : 
-                            'warning'
-                          }>
-                            {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{customer.orders}</TableCell>
-                        <TableCell>{customer.lastOrder}</TableCell>
-                        <TableCell>{customer.totalSpent}</TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <TableCell>{customer.location}</TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          customer.status === 'active' ? 'success' : 
+                          customer.status === 'inactive' ? 'secondary' : 
+                          'warning'
+                        }>
+                          {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{customer.orders}</TableCell>
+                      <TableCell>{customer.lastOrder}</TableCell>
+                      <TableCell>{customer.totalSpent}</TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
                                 Edit customer
                               </DropdownMenuItem>
-                              <DropdownMenuItem>View orders</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
-                                Deactivate
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                            <DropdownMenuItem>View orders</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive">
+                              Deactivate
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
                     ))
                   ) : (
                     <TableRow>

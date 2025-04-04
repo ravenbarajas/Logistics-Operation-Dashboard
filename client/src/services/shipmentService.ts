@@ -213,37 +213,136 @@ const mockShipments = [
   }
 ];
 
+// New types for analytics
 export interface ShipmentSummary {
   totalShipments: number;
   inTransit: number;
   delivered: number;
   pending: number;
   onTimeDeliveryRate: number;
+  averageDeliveryTime: number; // in hours
+  totalDistance: number; // in miles
+  delayedShipments: number;
+}
+
+export interface ShipmentPerformanceByMonth {
+  month: string;
+  totalShipments: number;
+  onTimeDelivery: number;
+  delayedDelivery: number;
+  cancelled: number;
+}
+
+export interface ShipmentVolumeByRegion {
+  region: string;
+  count: number;
+  percentage: number;
+}
+
+export interface TopCustomer {
+  name: string;
+  shipments: number;
+  totalDistance: number;
+  averageDeliveryTime: number;
+}
+
+export interface PerformanceMetrics {
+  fuelEfficiency: number; // miles per gallon
+  co2Emissions: number; // metric tons
+  operationalCosts: number; // dollars
+  loadUtilization: number; // percentage
 }
 
 export const shipmentService = {
   async getShipmentSummary(): Promise<ShipmentSummary> {
-    const totalShipments = mockShipments.length;
-    const inTransit = mockShipments.filter(s => s.status === 'in-transit').length;
+    // Calculate summary data
+    const total = mockShipments.length;
+    const inTransit = mockShipments.filter(s => s.status === 'in-transit' || s.status === 'processing').length;
     const delivered = mockShipments.filter(s => s.status === 'delivered').length;
-    const pending = mockShipments.filter(s => s.status === 'pending').length;
+    const pending = mockShipments.filter(s => s.status === 'pending' || s.status === 'scheduled').length;
+    const delayed = mockShipments.filter(s => {
+      if (s.actualDelivery && s.estimatedDelivery) {
+        return s.actualDelivery > s.estimatedDelivery;
+      }
+      return false;
+    }).length;
+
+    // Calculate on-time delivery rate
+    const completedDeliveries = mockShipments.filter(s => s.status === 'delivered').length;
+    const onTimeDeliveries = completedDeliveries - delayed;
+    const onTimeRate = completedDeliveries > 0 ? (onTimeDeliveries / completedDeliveries) * 100 : 100;
+
+    // Calculate average delivery time (for completed shipments)
+    const deliveryTimes = mockShipments
+      .filter(s => s.status === 'delivered' && s.actualDelivery && s.createdAt)
+      .map(s => {
+        const createdTime = new Date(s.createdAt).getTime();
+        const deliveredTime = new Date(s.actualDelivery!).getTime();
+        return (deliveredTime - createdTime) / (1000 * 60 * 60); // Convert to hours
+      });
     
-    // Calculate on-time delivery rate (delivered shipments that were delivered before or on estimated date)
-    const onTimeDeliveries = mockShipments.filter(s => 
-      s.status === 'delivered' && 
-      s.actualDelivery && 
-      s.estimatedDelivery && 
-      s.actualDelivery <= s.estimatedDelivery
-    ).length;
-    
-    const onTimeDeliveryRate = delivered > 0 ? Math.round((onTimeDeliveries / delivered) * 100) : 0;
+    const averageDeliveryTime = deliveryTimes.length > 0 
+      ? deliveryTimes.reduce((sum, time) => sum + time, 0) / deliveryTimes.length 
+      : 0;
+
+    // Calculate total distance
+    const totalDistance = mockShipments
+      .filter(s => s.distance)
+      .reduce((sum, s) => sum + (s.distance || 0), 0);
 
     return {
-      totalShipments,
+      totalShipments: total,
       inTransit,
       delivered,
       pending,
-      onTimeDeliveryRate
+      onTimeDeliveryRate: Math.round(onTimeRate),
+      averageDeliveryTime: parseFloat(averageDeliveryTime.toFixed(1)),
+      totalDistance,
+      delayedShipments: delayed
+    };
+  },
+
+  async getShipmentPerformanceByMonth(): Promise<ShipmentPerformanceByMonth[]> {
+    // Mock data for shipment performance by month
+    return [
+      { month: "Jan", totalShipments: 128, onTimeDelivery: 110, delayedDelivery: 12, cancelled: 6 },
+      { month: "Feb", totalShipments: 145, onTimeDelivery: 126, delayedDelivery: 14, cancelled: 5 },
+      { month: "Mar", totalShipments: 132, onTimeDelivery: 115, delayedDelivery: 10, cancelled: 7 },
+      { month: "Apr", totalShipments: 148, onTimeDelivery: 132, delayedDelivery: 8, cancelled: 8 },
+      { month: "May", totalShipments: 156, onTimeDelivery: 142, delayedDelivery: 9, cancelled: 5 },
+      { month: "Jun", totalShipments: 165, onTimeDelivery: 148, delayedDelivery: 13, cancelled: 4 }
+    ];
+  },
+
+  async getShipmentVolumeByRegion(): Promise<ShipmentVolumeByRegion[]> {
+    // Mock data for shipment volume by region
+    return [
+      { region: "West", count: 98, percentage: 25 },
+      { region: "Midwest", count: 76, percentage: 19 },
+      { region: "Northeast", count: 87, percentage: 22 },
+      { region: "South", count: 112, percentage: 28 },
+      { region: "International", count: 24, percentage: 6 }
+    ];
+  },
+
+  async getTopCustomers(limit: number = 5): Promise<TopCustomer[]> {
+    // Mock data for top customers
+    return [
+      { name: "Tech Solutions", shipments: 38, totalDistance: 6245, averageDeliveryTime: 46.2 },
+      { name: "Global Industries", shipments: 32, totalDistance: 5890, averageDeliveryTime: 52.8 },
+      { name: "Retail Partners", shipments: 27, totalDistance: 4320, averageDeliveryTime: 38.5 },
+      { name: "Electronics Retailers", shipments: 25, totalDistance: 5125, averageDeliveryTime: 42.7 },
+      { name: "FoodCo Distributors", shipments: 21, totalDistance: 3980, averageDeliveryTime: 32.1 }
+    ];
+  },
+
+  async getPerformanceMetrics(): Promise<PerformanceMetrics> {
+    // Mock data for performance metrics
+    return {
+      fuelEfficiency: 7.8, // mpg
+      co2Emissions: 32.4, // metric tons
+      operationalCosts: 14250, // dollars
+      loadUtilization: 78 // percentage
     };
   },
 
@@ -306,4 +405,23 @@ export const shipmentService = {
     
     mockShipments.splice(index, 1);
   },
+
+  async updateShipmentStatus(id: number, status: string): Promise<Shipment> {
+    const index = mockShipments.findIndex(s => s.id === id);
+    if (index === -1) {
+      throw new Error('Shipment not found');
+    }
+    
+    const now = new Date();
+    const updatedShipment = {
+      ...mockShipments[index],
+      status,
+      updatedAt: now,
+      // If status is delivered, set actualDelivery to now
+      actualDelivery: status === 'delivered' ? now : mockShipments[index].actualDelivery
+    };
+    
+    mockShipments[index] = updatedShipment;
+    return { ...updatedShipment };
+  }
 }; 

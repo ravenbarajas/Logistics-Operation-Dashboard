@@ -745,53 +745,7 @@ export default function Shipments() {
               </div>
             </div>
             
-            {/* Charts Row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <Route className="h-4 w-4 mr-2 text-primary" />
-                    Route Efficiency by Category
-                  </CardTitle>
-                  <CardDescription>
-                    Analysis of operational efficiency across different route types
-                  </CardDescription>
-          </CardHeader>
-          <CardContent>
-                  <BarChart
-                    className="h-72"
-                    data={routeEfficiencyData}
-                    index="category"
-                    categories={["efficiency", "target"]}
-                    colors={["blue", "gray"]}
-                    valueFormatter={(value: number) => `${value}%`}
-                  />
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <Droplet className="h-4 w-4 mr-2 text-primary" />
-                    CO₂ Emissions vs. Distance
-                  </CardTitle>
-                  <CardDescription>
-                    Environmental impact relative to delivery distances
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <LineChart
-                    className="h-72"
-                    data={emissionsData}
-                    index="month"
-                    categories={["emissions", "distance"]}
-                    colors={["green", "blue"]}
-                    valueFormatter={(value: number) => `${value}`}
-                    yAxisWidth={60}
-                  />
-                </CardContent>
-              </Card>
-            </div>
 
             {/* Carrier Performance */}
             <Card className="mb-6">

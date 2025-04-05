@@ -619,7 +619,7 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Severities</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="critical">Critical</SelectItem>
                     <SelectItem value="high">High</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>

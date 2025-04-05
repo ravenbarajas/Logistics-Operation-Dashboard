@@ -140,16 +140,16 @@ export default function RouteOptimization() {
   return (
     <div className="container px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Route Optimization</h1>
+          <h1 className="text-3xl font-bold">Route Optimization</h1>
         <Button 
           onClick={() => setIsRouteModalOpen(true)}
           className="flex items-center gap-2"
         >
           <PlusCircle className="h-4 w-4" />
-          New Route Plan
-        </Button>
+            New Route Plan
+          </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardContent className="pt-6 flex items-start justify-between">
@@ -215,7 +215,7 @@ export default function RouteOptimization() {
           </CardContent>
         </Card>
       </div>
-      
+
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>
@@ -262,7 +262,7 @@ export default function RouteOptimization() {
             <CardDescription>
               View and manage all your routes in one place
             </CardDescription>
-          </CardHeader>
+        </CardHeader>
           <CardContent className="p-0">
             <Tabs defaultValue="active" className="w-full">
               <div className="px-6 pt-6">
@@ -320,8 +320,8 @@ export default function RouteOptimization() {
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4 mr-2" />
                     <span className="font-medium">Scheduled future routes</span>
-                  </div>
-                </div>
+              </div>
+            </div>
                 <RouteTable 
                   routes={routes.scheduled}
                   status="scheduled"
@@ -355,8 +355,8 @@ export default function RouteOptimization() {
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Copy className="h-4 w-4 mr-2" />
                     <span className="font-medium">Reusable route templates</span>
-                  </div>
-                </div>
+              </div>
+            </div>
                 <RouteTable 
                   routes={routes.templates}
                   status="template"
@@ -368,9 +368,9 @@ export default function RouteOptimization() {
                 />
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+        </CardContent>
+      </Card>
+                        </div>
       
       {/* Route Details Modal */}
       <RouteDetails 

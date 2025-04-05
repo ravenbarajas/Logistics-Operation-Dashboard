@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Search, Plus, Filter, Calendar, Clock, RefreshCw, MapPin, Edit, Trash, 
   ChevronDown, Package, Truck, User, FileText, ExternalLink, Clipboard, AlertCircle,
-  BarChartBig, Activity, Zap, TrendingUp, Target, LineChart as LineChartIcon, Route, Droplet
+  BarChartBig, Activity, Zap, TrendingUp, Target, LineChart as LineChartIcon, Route, Droplet,
+  AlertTriangleIcon, RouteIcon, Leaf, TruckIcon
 } from "lucide-react";
 import {
   Select,
@@ -44,6 +45,10 @@ import {
   LineChart,
   Legend,
 } from "@tremor/react";
+import { ShipmentTracking } from "@/components/shipments/ShipmentTracking";
+import { RouteEfficiencyAnalyzer } from "@/components/shipments/RouteEfficiencyAnalyzer";
+import { EnvironmentalImpactCalculator } from "@/components/shipments/EnvironmentalImpactCalculator";
+import { ShipmentExceptionHandler } from "@/components/shipments/ShipmentExceptionHandler";
 
 // Extended Shipment interface with additional properties that might be needed
 interface ExtendedShipment extends Shipment {
@@ -550,7 +555,7 @@ export default function Shipments() {
               <div className="flex justify-center py-8">
                 <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
               </div>
-            </CardContent>
+            </CardContent>  
           </Card>
         ) : (
           <>
@@ -781,10 +786,7 @@ export default function Shipments() {
                     index="month"
                     categories={["emissions", "distance"]}
                     colors={["green", "blue"]}
-                    valueFormatter={(value: number, category) => {
-                      if (category === "emissions") return `${value} tons`;
-                      return `${value} mi`;
-                    }}
+                    valueFormatter={(value: number) => `${value}`}
                     yAxisWidth={60}
                   />
                 </CardContent>
@@ -924,6 +926,8 @@ export default function Shipments() {
                 statusKey="status"
                 statusMap={statusColorMap}
                 emptyMessage="No active shipments found"
+                onRowClick={(shipment) => setSelectedShipment(shipment)}
+                rowClassName="cursor-pointer hover:bg-muted/50"
               />
             </CardContent>
           </Card>
@@ -948,6 +952,8 @@ export default function Shipments() {
                 statusKey="status"
                 statusMap={statusColorMap}
                 emptyMessage="No shipment history found"
+                onRowClick={(shipment) => setSelectedShipment(shipment)}
+                rowClassName="cursor-pointer hover:bg-muted/50"
               />
             </CardContent>
           </Card>
@@ -972,11 +978,49 @@ export default function Shipments() {
                 statusKey="status"
                 statusMap={statusColorMap}
                 emptyMessage="No scheduled shipments found"
+                onRowClick={(shipment) => setSelectedShipment(shipment)}
+                rowClassName="cursor-pointer hover:bg-muted/50"
               />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* Shipment Tracking - Only shown when a shipment is selected */}
+      {selectedShipment && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4 flex items-center">
+            <TruckIcon className="h-6 w-6 mr-2 text-primary" />
+            Shipment Tracking
+          </h2>
+          <ShipmentTracking 
+            shipment={selectedShipment} 
+            onRefresh={fetchData}
+          />
+        </div>
+      )}
+      
+      {/* Exception Handler Section */}
+      <div className="mb-8">
+        <ShipmentExceptionHandler 
+          shipments={shipments} 
+          onResolveException={(shipmentId, resolution) => {
+            console.log(`Resolving exception for shipment ${shipmentId}: ${resolution}`);
+            // You can add actual implementation here
+          }}
+          onRefresh={fetchData}
+        />
+      </div>
+      
+      {/* Route Efficiency Section */}
+      <div className="mb-8">
+        <RouteEfficiencyAnalyzer shipments={shipments} />
+      </div>
+      
+      {/* Environmental Impact Section */}
+      <div className="mb-8">
+        <EnvironmentalImpactCalculator shipments={shipments} />
+      </div>
       
       <ShipmentModal
         isOpen={modalOpen}

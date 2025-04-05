@@ -792,8 +792,8 @@ export default function Customers() {
                             <div className="flex items-center mt-1">
                               <Phone className="h-3 w-3 mr-1" /> {customer.phone}
                             </div>
-                          </div>
-                        </TableCell>
+                        </div>
+                      </TableCell>
                       <TableCell>{customer.location}</TableCell>
                       <TableCell>
                         <Badge variant={

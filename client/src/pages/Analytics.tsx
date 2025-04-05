@@ -227,7 +227,7 @@ export default function Analytics() {
       setIsExporting(false);
     }
   };
-
+  
   return (
     <div className="container px-4 py-8" ref={analyticsSectionRef}>
       <div className="flex justify-between items-center mb-6">
@@ -247,8 +247,8 @@ export default function Analytics() {
               </>
             ) : (
               <>
-                <Download className="h-4 w-4 mr-2" />
-                Export Report
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
               </>
             )}
           </Button>
@@ -527,7 +527,7 @@ export default function Analytics() {
                     size="icon" 
                     className="h-8 w-8" 
                     onClick={() => {
-                      const container = document.getElementById('opportunities-container');
+                      const container = document.getElementById('improvements-container');
                       if (container) {
                         container.scrollBy({ top: -200, behavior: 'smooth' });
                       }
@@ -540,7 +540,7 @@ export default function Analytics() {
                     size="icon" 
                     className="h-8 w-8" 
                     onClick={() => {
-                      const container = document.getElementById('opportunities-container');
+                      const container = document.getElementById('improvements-container');
                       if (container) {
                         container.scrollBy({ top: 200, behavior: 'smooth' });
                       }
@@ -552,7 +552,7 @@ export default function Analytics() {
               </div>
             </CardHeader>
             <CardContent>
-              <div id="opportunities-container" className="max-h-64 overflow-y-hidden hide-scrollbar">
+              <div id="improvements-container" className="max-h-64 overflow-y-hidden hide-scrollbar">
                 <div className="space-y-4">
                   {logisticsPerformanceData.improvementOpportunities.map((opportunity, index) => (
                     <div key={index} className="border rounded-md p-3 dark:border-gray-700">
@@ -675,39 +675,39 @@ export default function Analytics() {
               <CardDescription>
                 Consolidated performance across domains for the past 7 days
               </CardDescription>
-            </CardHeader>
-            <CardContent>
+          </CardHeader>
+          <CardContent>
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={logisticsPerformanceData.dailyPerformance}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
                       dataKey="date" 
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                    />
-                    <YAxis 
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
+                    className="text-xs" 
+                    tick={{fill: 'hsl(var(--foreground))'}}
+                  />
+                  <YAxis 
+                    className="text-xs" 
+                    tick={{fill: 'hsl(var(--foreground))'}}
                       domain={[60, 100]}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
-                    />
-                    <Legend />
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      borderColor: 'hsl(var(--border))',
+                      color: 'hsl(var(--foreground))'
+                    }}
+                  />
+                  <Legend />
                     <Line type="monotone" dataKey="operations" name="Operations" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
                     <Line type="monotone" dataKey="delivery" name="Delivery" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
                     <Line type="monotone" dataKey="warehouse" name="Warehouse" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
                     <Line type="monotone" dataKey="customer" name="Customer" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
                   </LineChart>
-                </ResponsiveContainer>
+              </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -865,11 +865,11 @@ export default function Analytics() {
             </div>
           </CardContent>
         </Card>
-
+        
         {/* New Two Column Layout - Replacing Previous Components */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Hub Throughput Capacity - Replacing Route Performance */}
-          <Card>
+        <Card>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center">
                 <Truck className="h-5 w-5 mr-2 text-primary" />
@@ -878,37 +878,37 @@ export default function Analytics() {
               <CardDescription>
                 Current utilization vs maximum capacity by hub
               </CardDescription>
-            </CardHeader>
-            <CardContent>
+          </CardHeader>
+          <CardContent>
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
                       data={networkAnalyticsData.hubPerformance.map(hub => ({
                         name: hub.hub,
                         value: hub.utilization
                       }))}
-                      cx="50%"
-                      cy="50%"
+                    cx="50%"
+                    cy="50%"
                       innerRadius={30}
                       outerRadius={60}
-                      fill="#8884d8"
+                    fill="#8884d8"
                       paddingAngle={2}
-                      dataKey="value"
+                    dataKey="value"
                     >
                       {networkAnalyticsData.hubPerformance.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
                           fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'][index % 6]}
                         />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      borderColor: 'hsl(var(--border))',
+                      color: 'hsl(var(--foreground))'
+                    }}
                       formatter={(value, name, props) => [`${value}% utilized`, `${name}`]}
                     />
                     <Legend 
@@ -917,9 +917,9 @@ export default function Analytics() {
                         return `${value} (${hub.throughput.toLocaleString()} units)`;
                       }}
                     />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
               <div className="grid grid-cols-3 gap-2 mt-2">
                 {networkAnalyticsData.hubPerformance.slice(0, 3).map((hub, index) => (
                   <div key={index} className="text-center bg-muted/30 rounded p-2">
@@ -986,10 +986,10 @@ export default function Analytics() {
                     <Bar dataKey="losangeles" fill="#f59e0b" />
                     <Bar dataKey="dallas" fill="#8b5cf6" />
                   </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
         </div>
       </div>
       

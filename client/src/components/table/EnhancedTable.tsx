@@ -59,6 +59,8 @@ interface EnhancedTableProps {
   statusMap?: Record<string, StatusConfig>;
   statusKey?: string;
   emptyMessage?: string;
+  onRowClick?: (item: any) => void;
+  rowClassName?: string;
 }
 
 export function EnhancedTable({
@@ -70,7 +72,9 @@ export function EnhancedTable({
   pageSize = 5,
   statusMap,
   statusKey,
-  emptyMessage = "No results found"
+  emptyMessage = "No results found",
+  onRowClick,
+  rowClassName
 }: EnhancedTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -245,11 +249,15 @@ export function EnhancedTable({
           </TableHeader>
           <TableBody>
             {currentItems.length > 0 ? (
-              currentItems.map((item, index) => (
-                <TableRow key={index}>
+              currentItems.map((item) => (
+                <TableRow 
+                  key={item.id} 
+                  onClick={onRowClick ? () => onRowClick(item) : undefined}
+                  className={onRowClick ? rowClassName : ""}
+                >
                   {columns.map((column) => (
                     <TableCell 
-                      key={`${index}-${column.id}`}
+                      key={`${item.id}-${column.id}`}
                       className={`px-4 py-3 ${column.meta?.className || ""} ${column.meta?.align === "center" ? "text-center" : ""}`}
                     >
                       {column.cell 

@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { Plus, RefreshCw, Search, Filter, Pencil, Trash2, FileText, Truck, CalendarClock, Fuel, Settings, AlertCircle, Map, TrendingUp } from "lucide-react";
+import { 
+  Plus, RefreshCw, Search, Filter, Pencil, Trash2, FileText, Truck, 
+  CalendarClock, Fuel, Settings, AlertCircle, Map, TrendingUp, Activity, 
+  User, Download, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, 
+  Award, Shield, ThumbsUp, BarChart, Clock, X, Calendar, Wrench, AlertTriangle, 
+  CheckCircle, Navigation, Check, CircleOff, DollarSign, Gauge, UserRound
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -32,6 +38,11 @@ import {
 } from "@/components/ui/dialog";
 import { FleetMap } from "@/components/fleet/FleetMap";
 import { ExtendedVehicle } from "@/types/vehicle";
+import { VehicleHealthMonitor } from "@/components/fleet/VehicleHealthMonitor";
+import { DriversPerformanceAnalyzer } from "@/components/fleet/DriversPerformanceAnalyzer";
+import { Pagination } from "@/components/ui/pagination";
+import { MapComponent } from "@/components/MapComponent";
+import { formatDate, getMaintenanceStatus, addMockVehicleDetails } from "@/components/VehicleDetailsHelper";
 
 // Sample maintenance records data
 const maintenanceRecords = [
@@ -546,7 +557,22 @@ export default function Vehicles() {
   const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
   const [quickStatusOpen, setQuickStatusOpen] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [driversSearch, setDriversSearch] = useState("");
+  const [driversPerformanceFilter, setDriversPerformanceFilter] = useState("all");
+  const [driversSortMetric, setDriversSortMetric] = useState("safety");
+  const [selectedDrivers, setSelectedDrivers] = useState<string[]>([]);
+  const [driversCurrentPage, setDriversCurrentPage] = useState(1);
+  const [driversPageSize, setDriversPageSize] = useState(5);
+  const [selectedDriverForDetails, setSelectedDriverForDetails] = useState<any>(null);
+  const [driverDetailsPanelOpen, setDriverDetailsPanelOpen] = useState(false);
+  const [driverForEdit, setDriverForEdit] = useState<any>(null);
+  const [driverEditModalOpen, setDriverEditModalOpen] = useState(false);
+  const [driverToDelete, setDriverToDelete] = useState<any>(null);
+  const [driverDeleteDialogOpen, setDriverDeleteDialogOpen] = useState(false);
 
+  // Update the fetchData function to use the mock data enhancements
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -555,22 +581,27 @@ export default function Vehicles() {
       // Simulating API call with expanded data
       // In a real app, this would be an actual API call
       const vehiclesData = expandedFleetData;
-      const activeTrucks = vehiclesData.filter(v => v.status === 'active').length;
-      const inMaintenance = vehiclesData.filter(v => v.status === 'maintenance').length;
-      const outOfService = vehiclesData.filter(v => v.status === 'inactive').length;
+      
+      // Add mock details data for the demo
+      const enhancedVehicles = addMockVehicleDetails(vehiclesData);
+      
+      const activeTrucks = enhancedVehicles.filter(v => v.status === 'active').length;
+      const inMaintenance = enhancedVehicles.filter(v => v.status === 'maintenance').length;
+      const outOfService = enhancedVehicles.filter(v => v.status === 'inactive').length;
       
       const summary: FleetSummary = {
-        totalVehicles: vehiclesData.length,
+        totalVehicles: enhancedVehicles.length,
         activeVehicles: activeTrucks,
         inMaintenance: inMaintenance,
         outOfService: outOfService,
-        activePercentage: Math.round((activeTrucks / vehiclesData.length) * 100),
-        maintenancePercentage: Math.round((inMaintenance / vehiclesData.length) * 100),
-        outOfServicePercentage: Math.round((outOfService / vehiclesData.length) * 100),
+        activePercentage: Math.round((activeTrucks / enhancedVehicles.length) * 100),
+        maintenancePercentage: Math.round((inMaintenance / enhancedVehicles.length) * 100),
+        outOfServicePercentage: Math.round((outOfService / enhancedVehicles.length) * 100),
       };
       
       setFleetSummary(summary);
-      setVehicles(vehiclesData);
+      setVehicles(enhancedVehicles);
+      setLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
@@ -678,188 +709,162 @@ export default function Vehicles() {
     }, {});
   };
 
-  // Define columns for the vehicle table
-  const vehicleColumns = [
+  const paginatedVehicles = filteredVehicles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.ceil(filteredVehicles.length / pageSize);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
+
+  // Driver data
+  const driversData = [
     {
-      id: "selection",
-      header: ({ table }: any) => (
-        <input
-          type="checkbox"
-          checked={table?.getIsAllRowsSelected?.() || false}
-          onChange={(e) => handleSelectAll(e.target.checked)}
-          className="h-4 w-4 rounded border-gray-300"
-        />
-      ),
-      cell: ({ row }: any) => {
-        if (!row?.original) return null;
-        return (
-          <input
-            type="checkbox"
-            checked={selectedVehicles.includes(row.original.id.toString())}
-            onChange={() => handleToggleVehicleSelection(row.original.id.toString())}
-            className="h-4 w-4 rounded border-gray-300"
-          />
-        );
-      },
-      meta: {
-        className: "w-[40px]"
-      }
+      id: "1",
+      name: "Michael Johnson",
+      avatar: null,
+      safetyScore: 94,
+      fuelEfficiency: 87,
+      timeManagement: 92,
+      vehicleHandling: 88,
+      customerSatisfaction: 95,
+      idleTime: 8,
+      mileage: 24568,
+      trips: 342,
+      incidents: 0
     },
     {
-      id: "id",
-      header: "ID",
-      accessorKey: "id",
-      enableSorting: true,
-      meta: {
-        className: "w-[80px]"
-      }
+      id: "2",
+      name: "Sarah Williams",
+      avatar: null,
+      safetyScore: 92,
+      fuelEfficiency: 90,
+      timeManagement: 85,
+      vehicleHandling: 91,
+      customerSatisfaction: 96,
+      idleTime: 12,
+      mileage: 18975,
+      trips: 278,
+      incidents: 1
     },
     {
-      id: "name",
-      header: "Vehicle",
-      accessorKey: "name",
-      enableSorting: true,
-      cell: (vehicle: ExtendedVehicle) => (
-        <div>
-          <div className="font-medium flex items-center">
-            <Truck className="h-4 w-4 mr-2 text-primary" />
-            {vehicle.name}
-          </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {vehicle.make || 'N/A'} {vehicle.model || ''} {vehicle.year ? `(${vehicle.year})` : ''}
-          </div>
-        </div>
-      )
+      id: "3",
+      name: "David Rodriguez",
+      avatar: null,
+      safetyScore: 88,
+      fuelEfficiency: 82,
+      timeManagement: 90,
+      vehicleHandling: 85,
+      customerSatisfaction: 89,
+      idleTime: 14,
+      mileage: 31250,
+      trips: 405,
+      incidents: 2
     },
     {
-      id: "type",
-      header: "Type",
-      accessorKey: "type",
-      enableSorting: true
+      id: "4",
+      name: "Emily Chen",
+      avatar: null,
+      safetyScore: 96,
+      fuelEfficiency: 94,
+      timeManagement: 93,
+      vehicleHandling: 92,
+      customerSatisfaction: 97,
+      idleTime: 6,
+      mileage: 15820,
+      trips: 215,
+      incidents: 0
     },
     {
-      id: "status",
-      header: "Status",
-      accessorKey: "status",
-      enableSorting: true,
-      cell: (vehicle: Vehicle) => {
-        const statusMap: Record<string, { color: string, label: string }> = {
-          active: { color: "green", label: "Active" },
-          maintenance: { color: "amber", label: "Maintenance" },
-          inactive: { color: "red", label: "Inactive" }
-        };
-        
-        const status = statusMap[vehicle.status] || { color: "gray", label: vehicle.status };
-        
-        return (
-          <Badge className={`bg-${status.color}-500/10 text-${status.color}-500 border-${status.color}-500/20`}>
-            {status.label}
-          </Badge>
-        );
-      }
-    },
-    {
-      id: "lastMaintenance",
-      header: "Last Maintenance",
-      accessorKey: "lastMaintenance",
-      enableSorting: true,
-      cell: (vehicle: ExtendedVehicle) => (
-        <div className="flex items-center">
-          <CalendarClock className="h-4 w-4 mr-2 text-muted-foreground" />
-          <span>
-            {vehicle.lastMaintenance 
-              ? (typeof vehicle.lastMaintenance === 'string' 
-                ? vehicle.lastMaintenance 
-                : new Date(vehicle.lastMaintenance).toLocaleDateString()) 
-              : "N/A"}
-          </span>
-        </div>
-      )
-    },
-    {
-      id: "fuelLevel",
-      header: "Fuel Level",
-      accessorKey: "fuelLevel",
-      enableSorting: true,
-      meta: {
-        align: "center" as const
-      },
-      cell: (vehicle: ExtendedVehicle) => (
-        <div className="flex flex-col items-center">
-          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[80px]">
-            <div 
-              className="bg-primary h-2 rounded-full" 
-              style={{ width: `${vehicle.fuelLevel || 0}%` }}
-            />
-          </div>
-          <div className="text-xs mt-1 text-muted-foreground">{vehicle.fuelLevel || 0}%</div>
-        </div>
-      )
-    },
-    {
-      id: "mileage",
-      header: "Mileage",
-      accessorKey: "mileage",
-      enableSorting: true,
-      cell: (vehicle: ExtendedVehicle) => (
-        <div>
-          {vehicle.mileage ? vehicle.mileage.toLocaleString() : 0} mi
-        </div>
-      )
-    },
-    {
-      id: "licensePlate",
-      header: "License Plate",
-      accessorKey: "licensePlate",
-      enableSorting: true,
-      cell: (vehicle: ExtendedVehicle) => (
-        <div className="font-mono">{vehicle.licensePlate || "N/A"}</div>
-      )
-    },
-    {
-      id: "assignedDriver",
-      header: "Driver",
-      accessorKey: "assignedDriver",
-      enableSorting: true,
-      cell: (vehicle: ExtendedVehicle) => (
-        <div>{vehicle.assignedDriver || "Unassigned"}</div>
-      )
-    },
-    {
-      id: "departmentName",
-      header: "Department",
-      accessorKey: "departmentName",
-      enableSorting: true,
-      cell: (vehicle: ExtendedVehicle) => (
-        <div>{vehicle.departmentName || "Unassigned"}</div>
-      )
+      id: "5",
+      name: "James Wilson",
+      avatar: null,
+      safetyScore: 85,
+      fuelEfficiency: 79,
+      timeManagement: 82,
+      vehicleHandling: 86,
+      customerSatisfaction: 88,
+      idleTime: 18,
+      mileage: 28430,
+      trips: 356,
+      incidents: 3
     }
   ];
 
-  // Define actions for the vehicle table
-  const vehicleActions = [
-    {
-      label: "View Details",
-      icon: <FileText className="h-4 w-4" />,
-      onClick: handleViewDetails
-    },
-    {
-      label: "Maintenance Log",
-      icon: <Settings className="h-4 w-4" />,
-      onClick: (vehicle: Vehicle) => console.log("Maintenance log", vehicle.id)
-    },
-    {
-      label: "Edit Vehicle",
-      icon: <Pencil className="h-4 w-4" />,
-      onClick: handleEditVehicle
-    },
-    {
-      label: "Delete Vehicle",
-      icon: <Trash2 className="h-4 w-4" />,
-      onClick: handleDeleteVehicle,
-      variant: "destructive" as const
+  // Filter drivers based on search and performance filter
+  const filteredDrivers = driversData.filter((driver) => {
+    // Calculate overall score
+    const overallScore = Math.round(
+      (driver.safetyScore + 
+      driver.fuelEfficiency + 
+      driver.timeManagement + 
+      driver.vehicleHandling + 
+      driver.customerSatisfaction) / 5
+    );
+    
+    // Filter by performance category
+    const matchesPerformance = 
+      driversPerformanceFilter === "all" || 
+      (driversPerformanceFilter === "high" && overallScore >= 90) ||
+      (driversPerformanceFilter === "average" && overallScore >= 85 && overallScore < 90) ||
+      (driversPerformanceFilter === "low" && overallScore < 85);
+    
+    // Filter by search query
+    const matchesSearch = driversSearch.trim() === "" || 
+      driver.name.toLowerCase().includes(driversSearch.toLowerCase());
+    
+    return matchesPerformance && matchesSearch;
+  });
+
+  // Sort drivers based on selected metric
+  const sortedDrivers = [...filteredDrivers].sort((a, b) => {
+    if (driversSortMetric === "safety") {
+      return b.safetyScore - a.safetyScore;
+    } else if (driversSortMetric === "fuel") {
+      return b.fuelEfficiency - a.fuelEfficiency;
+    } else if (driversSortMetric === "time") {
+      return b.timeManagement - a.timeManagement;
+    } else if (driversSortMetric === "handling") {
+      return b.vehicleHandling - a.vehicleHandling;
+    } else if (driversSortMetric === "satisfaction") {
+      return b.customerSatisfaction - a.customerSatisfaction;
     }
-  ];
+    return 0;
+  });
+
+  // Paginate drivers
+  const driversTotalPages = Math.ceil(filteredDrivers.length / driversPageSize);
+  const paginatedDrivers = sortedDrivers.slice(
+    (driversCurrentPage - 1) * driversPageSize, 
+    driversCurrentPage * driversPageSize
+  );
+
+  // Get a consistent color for driver avatar based on name
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500',
+      'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500', 'bg-cyan-500'
+    ];
+    
+    // Generate a consistent index based on the name
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Ensure positive index
+    hash = Math.abs(hash);
+    return colors[hash % colors.length];
+  };
+
+  // Get driver initials
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('');
+  };
 
   if (loading) {
     return <div className="container px-4 py-8">Loading...</div>;
@@ -893,235 +898,1427 @@ export default function Vehicles() {
         </div>
       </div>
       
+      {/* Fleet Summary Cards Section */}
       {fleetSummary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Truck className="h-6 w-6 text-primary" />
-                </div>
-                <span className="text-muted-foreground text-sm">Total</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Vehicles</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{fleetSummary.totalVehicles}</div>
+              <div className="flex items-center">
+                <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">Fleet inventory count</p>
               </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-bold">{fleetSummary.totalVehicles}</h3>
-                <p className="text-muted-foreground text-sm">Total Vehicles</p>
-              </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
           
-        <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-green-500" />
-                </div>
-                <span className="text-muted-foreground text-sm">Active</span>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Active Vehicles</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-500">{fleetSummary.activeVehicles}</div>
+              <div className="flex items-center">
+                <TrendingUp className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{fleetSummary.activePercentage}% of total fleet</p>
               </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-bold">{fleetSummary.activeVehicles}</h3>
-                <p className="text-muted-foreground text-sm">{fleetSummary.activePercentage}% of fleet</p>
-              </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
           
-        <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-12 w-12 bg-amber-500/10 rounded-full flex items-center justify-center">
-                  <Settings className="h-6 w-6 text-amber-500" />
-                </div>
-                <span className="text-muted-foreground text-sm">Maintenance</span>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">In Maintenance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-500">{fleetSummary.inMaintenance}</div>
+              <div className="flex items-center">
+                <Settings className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{fleetSummary.maintenancePercentage}% of total fleet</p>
               </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-bold">{fleetSummary.inMaintenance}</h3>
-                <p className="text-muted-foreground text-sm">{fleetSummary.maintenancePercentage}% of fleet</p>
-              </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
           
-        <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-12 w-12 bg-red-500/10 rounded-full flex items-center justify-center">
-                  <AlertCircle className="h-6 w-6 text-red-500" />
-                </div>
-                <span className="text-muted-foreground text-sm">Inactive</span>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Out of Service</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-500">{fleetSummary.outOfService}</div>
+              <div className="flex items-center">
+                <AlertCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{fleetSummary.outOfServicePercentage}% of total fleet</p>
               </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-bold">{fleetSummary.outOfService}</h3>
-                <p className="text-muted-foreground text-sm">{fleetSummary.outOfServicePercentage}% of fleet</p>
-              </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full md:w-auto">
-          <TabsTrigger value="vehicles">
-            <Truck className="h-4 w-4 mr-2" />
-            <span className="hidden md:inline">Vehicles</span>
-          </TabsTrigger>
-          <TabsTrigger value="maintenance">
-            <Settings className="h-4 w-4 mr-2" />
-            <span className="hidden md:inline">Maintenance</span>
-          </TabsTrigger>
-          <TabsTrigger value="fuel">
-            <Fuel className="h-4 w-4 mr-2" />
-            <span className="hidden md:inline">Fuel</span>
-          </TabsTrigger>
-          <TabsTrigger value="analytics">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            <span className="hidden md:inline">Analytics</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="vehicles" className="space-y-6">
-          {/* Batch Operations Button */}
-          {selectedVehicles.length > 0 && (
-            <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-              <span className="text-sm font-medium">{selectedVehicles.length} vehicles selected</span>
-              <div className="ml-auto flex gap-2">
-                <Select open={quickStatusOpen} onOpenChange={setQuickStatusOpen}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Change Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active" onClick={() => handleBatchStatusChange("active")}>Set Active</SelectItem>
-                    <SelectItem value="maintenance" onClick={() => handleBatchStatusChange("maintenance")}>Set Maintenance</SelectItem>
-                    <SelectItem value="inactive" onClick={() => handleBatchStatusChange("inactive")}>Set Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" size="sm" onClick={() => setSelectedVehicles([])}>
-                  Clear Selection
+      {/* Interactive Fleet Map */}
+      <div className="mb-6">
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-background border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center text-xl">
+                  <Map className="h-5 w-5 mr-2 text-primary" />
+                  Fleet Location Overview
+                </CardTitle>
+                <CardDescription>Real-time locations and status of all fleet vehicles</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filter Map
+                </Button>
+                <Button variant="outline" size="sm">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
                 </Button>
               </div>
             </div>
-          )}
+          </CardHeader>
+          <CardContent className="p-0">
+            <FleetMap 
+              vehicles={filteredVehicles as ExtendedVehicle[]} 
+              height="400px"
+              onVehicleSelect={handleViewDetails}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
-          {/* Interactive Fleet Map */}
-          <Card className="mb-6">
-        <CardHeader>
-              <CardTitle className="flex items-center">
-                <Map className="h-5 w-5 mr-2 text-primary" />
-                Fleet Location Overview
-              </CardTitle>
-              <CardDescription>Real-time locations and status of all fleet vehicles</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <FleetMap 
-                vehicles={filteredVehicles as ExtendedVehicle[]} 
-                height="400px"
-                onVehicleSelect={handleViewDetails}
-              />
-            </CardContent>
-          </Card>
+      {/* Tab Content Section */}
+      <div className="mb-6">
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+          <TabsList className="grid grid-cols-3 w-full md:w-auto">
+            <TabsTrigger value="vehicles">
+              <Truck className="h-4 w-4 mr-2" />
+              <span className="hidden md:inline">Vehicles</span>
+            </TabsTrigger>
+            <TabsTrigger value="drivers">
+              <User className="h-4 w-4 mr-2" />
+              <span className="hidden md:inline">Drivers</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              <span className="hidden md:inline">Analytics</span>
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Main Vehicle Inventory Table */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-muted/50 p-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-2 md:space-y-0">
-          <CardTitle>Vehicle Inventory</CardTitle>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                      type="text"
-                      placeholder="Search vehicles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8 w-full md:w-[250px]"
-              />
-            </div>
-                  <Select defaultValue={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full md:w-[180px]">
-                      <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="maintenance">In Maintenance</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select defaultValue={groupByOption} onValueChange={setGroupByOption}>
-                    <SelectTrigger className="w-full md:w-[180px]">
-                      <SelectValue placeholder="Group by..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No Grouping</SelectItem>
-                      <SelectItem value="type">Group by Type</SelectItem>
-                      <SelectItem value="status">Group by Status</SelectItem>
-                      <SelectItem value="department">Group by Department</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-            <CardContent className="p-0">
-              {groupByOption ? (
-                <div className="space-y-4 p-4">
-                  {Object.entries(groupedVehicles()).map(([groupName, groupVehicles]) => (
-                    <Card key={groupName} className="overflow-hidden">
-                      <CardHeader className="py-2 px-4 bg-muted/30">
-                        <CardTitle className="text-base">{groupName} ({groupVehicles.length})</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        <EnhancedTable
-                          data={groupVehicles}
-                          columns={vehicleColumns}
-                          actions={vehicleActions}
-                        />
-                      </CardContent>
-                    </Card>
-                  ))}
+          <TabsContent value="vehicles" className="space-y-6">
+            <Card className="overflow-hidden">
+              <CardHeader className="bg-background border-b">
+                <div className="flex flex-col space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center text-xl">
+                        <Truck className="h-5 w-5 mr-2 text-primary" />
+                        Vehicle Inventory
+                      </CardTitle>
+                      <CardDescription>Manage your fleet vehicles and their details</CardDescription>
+                    </div>
+                    <Button onClick={handleAddVehicle}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Vehicle
+                    </Button>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Search vehicles..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8 w-full h-9"
+                      />
+                    </div>
+                    
+                    <Select defaultValue={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[150px] h-9">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="maintenance">In Maintenance</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
+                        <Select
+                          value={pageSize.toString()}
+                          onValueChange={(size) => handlePageSizeChange(Number(size))}
+                        >
+                        <SelectTrigger className="h-9 w-[70px]">
+                          <SelectValue placeholder={pageSize.toString()} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[5, 10, 25, 50].map((size) => (
+                            <SelectItem key={size} value={size.toString()}>
+                              {size}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                
+                    <Button variant="outline" className="h-9 ml-auto" onClick={fetchData}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
                 </div>
-              ) : (
-                <EnhancedTable
-                  data={filteredVehicles as ExtendedVehicle[]}
-                  columns={vehicleColumns}
-                  actions={[
-                    ...vehicleActions,
-                    {
-                      label: "View Details",
-                      icon: <FileText className="h-4 w-4" />,
-                      onClick: handleViewDetails
-                    }
-                  ]}
-                />
+              </CardHeader>
+              
+              {/* Batch Operations */}
+              {selectedVehicles.length > 0 && (
+                <div className="p-3 bg-muted/30 border-b">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center">
+                      <Badge variant="secondary" className="mr-2">{selectedVehicles.length}</Badge>
+                      <span className="text-sm font-medium">vehicles selected</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Select defaultValue="" onValueChange={(value) => value && handleBatchStatusChange(value)}>
+                        <SelectTrigger className="h-8 w-[180px]">
+                          <SelectValue placeholder="Change Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Set Active</SelectItem>
+                          <SelectItem value="maintenance">Set Maintenance</SelectItem>
+                          <SelectItem value="inactive">Set Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button variant="outline" size="sm" className="h-8" onClick={() => setSelectedVehicles([])}>
+                        Clear Selection
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              
+              <CardContent className="p-0">
+                {filteredVehicles.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-64 p-6">
+                    <Truck className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                    <h3 className="text-lg font-medium text-center mb-2">No vehicles found</h3>
+                    <p className="text-sm text-muted-foreground text-center mb-4">
+                      {searchQuery || statusFilter !== "all" 
+                        ? "Try adjusting your search filters to find what you're looking for." 
+                        : "Get started by adding your first vehicle to the fleet."}
+                    </p>
+                    {!searchQuery && statusFilter === "all" && (
+                      <Button onClick={handleAddVehicle}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Vehicle
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <div className="overflow-auto">
+                      <table className="w-full">
+                        <thead className="bg-muted/50 text-sm">
+                          <tr>
+                            <th className="py-3 px-4 text-left font-medium w-[40px]">
+                              <input
+                                type="checkbox"
+                                checked={selectedVehicles.length === paginatedVehicles.length && paginatedVehicles.length > 0}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedVehicles(paginatedVehicles.map(v => v.id.toString()));
+                                  } else {
+                                    setSelectedVehicles([]);
+                                  }
+                                }}
+                                className="h-4 w-4 rounded border-gray-300"
+                              />
+                            </th>
+                            <th className="py-3 px-4 text-left font-medium w-[60px]">ID</th>
+                            <th className="py-3 px-4 text-left font-medium">Vehicle</th>
+                            <th className="py-3 px-4 text-left font-medium">Type</th>
+                            <th className="py-3 px-4 text-left font-medium">Status</th>
+                            <th className="py-3 px-4 text-left font-medium">Last Maintenance</th>
+                            <th className="py-3 px-4 text-center font-medium">Fuel</th>
+                            <th className="py-3 px-4 text-right font-medium">Mileage</th>
+                            <th className="py-3 px-4 text-left font-medium">Driver</th>
+                            <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {paginatedVehicles.map((vehicle) => {
+                            const statusColor = vehicle.status === 'active' ? 'green' : 
+                              vehicle.status === 'maintenance' ? 'amber' : 'red';
+                            const statusLabel = vehicle.status.charAt(0).toUpperCase() + vehicle.status.slice(1);
+                            
+                            return (
+                              <tr 
+                                key={vehicle.id} 
+                                className="hover:bg-muted/50 transition-colors"
+                              >
+                                <td className="py-3 px-4">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedVehicles.includes(vehicle.id.toString())}
+                                    onChange={() => handleToggleVehicleSelection(vehicle.id.toString())}
+                                    className="h-4 w-4 rounded border-gray-300"
+                                  />
+                                </td>
+                                <td className="py-3 px-4 text-sm">{vehicle.id}</td>
+                                <td className="py-3 px-4">
+                                  <div className="font-medium flex items-center">
+                                    <Truck className="h-4 w-4 mr-2 text-primary" />
+                                    {vehicle.name}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {(vehicle as ExtendedVehicle).make || 'N/A'} {(vehicle as ExtendedVehicle).model || ''} 
+                                    {(vehicle as ExtendedVehicle).year ? ` (${(vehicle as ExtendedVehicle).year})` : ''}
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4 text-sm">{vehicle.type}</td>
+                                <td className="py-3 px-4">
+                                  <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
+                                    {statusLabel}
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-4 text-sm">
+                                  <div className="flex items-center">
+                                    <CalendarClock className="h-4 w-4 mr-2 text-muted-foreground" />
+                                    <span>
+                                      {(vehicle as ExtendedVehicle).lastMaintenance 
+                                        ? (typeof (vehicle as ExtendedVehicle).lastMaintenance === 'string' 
+                                          ? (vehicle as ExtendedVehicle).lastMaintenance 
+                                          : ((vehicle as ExtendedVehicle).lastMaintenance instanceof Date)
+                                              ? (vehicle as ExtendedVehicle).lastMaintenance.toLocaleDateString()
+                                              : String((vehicle as ExtendedVehicle).lastMaintenance))
+                                        : "N/A"}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div className="flex flex-col items-center">
+                                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[80px]">
+                                      <div 
+                                        className="bg-primary h-2 rounded-full" 
+                                        style={{ width: `${(vehicle as ExtendedVehicle).fuelLevel ?? 0}%` }}
+                                      />
+                                    </div>
+                                    <div className="text-xs mt-1 text-muted-foreground">
+                                      {(vehicle as ExtendedVehicle).fuelLevel ?? 0}%
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4 text-sm text-right">
+                                  {(vehicle as ExtendedVehicle).mileage ? (vehicle as ExtendedVehicle).mileage.toLocaleString() : 0} mi
+                                </td>
+                                <td className="py-3 px-4 text-sm">
+                                  {(vehicle as ExtendedVehicle).assignedDriver || "Unassigned"}
+                                </td>
+                                <td className="py-3 px-4 text-right">
+                                  <div className="flex items-center justify-end space-x-2">
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      onClick={() => handleViewDetails(vehicle as ExtendedVehicle)} 
+                                      className="h-8 w-8"
+                                      title="View Details"
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      onClick={() => handleEditVehicle(vehicle)} 
+                                      className="h-8 w-8"
+                                      title="Edit Vehicle"
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      onClick={() => handleDeleteVehicle(vehicle)} 
+                                      className="h-8 w-8 text-destructive hover:text-destructive"
+                                      title="Delete Vehicle"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    <div className="border-t">
+                      <div className="flex items-center justify-between py-4 px-6">
+                        <div className="flex-1 text-sm text-muted-foreground">
+                          Showing {Math.min((currentPage - 1) * pageSize + 1, filteredVehicles.length)} to {Math.min(currentPage * pageSize, filteredVehicles.length)} of {filteredVehicles.length} {filteredVehicles.length === 1 ? 'vehicle' : 'vehicles'}
+                        </div>
+                        
+                        <div className="flex-1 flex justify-center">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handlePageChange(1)}
+                              disabled={currentPage === 1}
+                              className="h-8 w-8"
+                              aria-label="First page"
+                            >
+                              <ChevronsLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              disabled={currentPage === 1}
+                              className="h-8 w-8"
+                              aria-label="Previous page"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            
+                            {totalPages <= 5 ? (
+                              // Show all pages if 5 or fewer
+                              [...Array(totalPages)].map((_, i) => (
+                                <Button
+                                  key={`page-${i+1}`}
+                                  variant={currentPage === i+1 ? "default" : "outline"}
+                                  size="icon"
+                                  onClick={() => handlePageChange(i+1)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${i+1}`}
+                                  aria-current={currentPage === i+1 ? "page" : undefined}
+                                >
+                                  {i+1}
+                                </Button>
+                              ))
+                            ) : (
+                              // Show limited pages with ellipsis
+                              <>
+                                <Button
+                                  variant={currentPage === 1 ? "default" : "outline"}
+                                  size="icon"
+                                  onClick={() => handlePageChange(1)}
+                                  className="h-8 w-8"
+                                  aria-label="Page 1"
+                                >
+                                  1
+                                </Button>
+                                
+                                {currentPage > 3 && <span className="mx-1">...</span>}
+                                
+                                {currentPage > 2 && (
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${currentPage - 1}`}
+                                  >
+                                    {currentPage - 1}
+                                  </Button>
+                                )}
+                                
+                                {currentPage !== 1 && currentPage !== totalPages && (
+                                  <Button
+                                    variant="default"
+                                    size="icon"
+                                    onClick={() => handlePageChange(currentPage)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${currentPage}`}
+                                    aria-current="page"
+                                  >
+                                    {currentPage}
+                                  </Button>
+                                )}
+                                
+                                {currentPage < totalPages - 1 && (
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${currentPage + 1}`}
+                                  >
+                                    {currentPage + 1}
+                                  </Button>
+                                )}
+                                
+                                {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                                
+                                <Button
+                                  variant={currentPage === totalPages ? "default" : "outline"}
+                                  size="icon"
+                                  onClick={() => handlePageChange(totalPages)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${totalPages}`}
+                                >
+                                  {totalPages}
+                                </Button>
+                              </>
+                            )}
+                            
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                              className="h-8 w-8"
+                              aria-label="Next page"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handlePageChange(totalPages)}
+                              disabled={currentPage === totalPages}
+                              className="h-8 w-8"
+                              aria-label="Last page"
+                            >
+                              <ChevronsRight className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1 flex justify-end">
+                          
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="maintenance">
-          <MaintenanceTracker 
-            records={maintenanceRecords}
-            vehicles={vehicles.map(v => ({ id: v.id, name: v.name }))}
-            onAddRecord={(record) => console.log("Add maintenance record", record)}
-          />
-        </TabsContent>
+          <TabsContent value="drivers" className="space-y-6">
+            <Card className="overflow-hidden">
+              <CardHeader className="bg-background border-b">
+                <div className="flex flex-col space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center text-xl">
+                        <User className="h-5 w-5 mr-2 text-primary" />
+                        Driver Performance Analysis
+                      </CardTitle>
+                      <CardDescription>Comprehensive metrics and analytics for your fleet drivers</CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Driver
+                    </Button>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Search drivers..."
+                        className="pl-8 w-full h-9"
+                        value={driversSearch}
+                        onChange={(e) => setDriversSearch(e.target.value)}
+                      />
+                    </div>
+                    
+                    <Select 
+                      defaultValue={driversPerformanceFilter}
+                      onValueChange={setDriversPerformanceFilter}
+                    >
+                      <SelectTrigger className="w-[180px] h-9">
+                        <SelectValue placeholder="Filter by performance" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Drivers</SelectItem>
+                        <SelectItem value="high">High Performers</SelectItem>
+                        <SelectItem value="average">Average Performers</SelectItem>
+                        <SelectItem value="low">Needs Improvement</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select 
+                      defaultValue={driversSortMetric}
+                      onValueChange={setDriversSortMetric}
+                    >
+                      <SelectTrigger className="w-[180px] h-9">
+                        <SelectValue placeholder="Sort by metric" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="safety">Safety Score</SelectItem>
+                        <SelectItem value="fuel">Fuel Efficiency</SelectItem>
+                        <SelectItem value="time">Time Management</SelectItem>
+                        <SelectItem value="handling">Vehicle Handling</SelectItem>
+                        <SelectItem value="satisfaction">Customer Satisfaction</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Button variant="outline" className="h-9 ml-auto" onClick={fetchData}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {/* Drivers Table */}
+                <div>
+                  <div className="overflow-auto">
+                    <Tabs defaultValue="drivers-table" className="w-full">
+                      <TabsList className="mx-6 mt-4 mb-2">
+                        <TabsTrigger value="drivers-table">
+                          <User className="h-4 w-4 mr-2" />
+                          Drivers Table
+                        </TabsTrigger>
+                        <TabsTrigger value="leaderboards">
+                          <Award className="h-4 w-4 mr-2" />
+                          Leaderboards
+                        </TabsTrigger>
+                        <TabsTrigger value="performance-kpis">
+                          <Activity className="h-4 w-4 mr-2" />
+                          Performance KPIs
+                        </TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="drivers-table" className="mt-0">
+                        <table className="w-full">
+                          <thead className="bg-muted/50 text-sm">
+                            <tr>
+                              <th className="py-3 px-4 text-left font-medium w-[40px]">
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4 rounded border-gray-300"
+                                  checked={selectedDrivers.length === paginatedDrivers.length && paginatedDrivers.length > 0}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedDrivers(paginatedDrivers.map(d => d.id));
+                                    } else {
+                                      setSelectedDrivers([]);
+                                    }
+                                  }}
+                                />
+                              </th>
+                              <th className="py-3 px-4 text-left font-medium w-[240px]">Driver</th>
+                              <th className="py-3 px-4 text-center font-medium">Safety Score</th>
+                              <th className="py-3 px-4 text-center font-medium">Fuel Efficiency</th>
+                              <th className="py-3 px-4 text-center font-medium">Time Management</th>
+                              <th className="py-3 px-4 text-center font-medium">Vehicle Handling</th>
+                              <th className="py-3 px-4 text-center font-medium">Customer Satisfaction</th>
+                              <th className="py-3 px-4 text-center font-medium">Overall Rating</th>
+                              <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {paginatedDrivers.map(driver => {
+                              const overallScore = Math.round(
+                                (driver.safetyScore + 
+                                driver.fuelEfficiency + 
+                                driver.timeManagement + 
+                                driver.vehicleHandling + 
+                                driver.customerSatisfaction) / 5
+                              );
+                              
+                              let performanceCategory = "average";
+                              if (overallScore >= 90) performanceCategory = "high";
+                              else if (overallScore < 85) performanceCategory = "low";
+                              
+                              const categoryColors = {
+                                high: "green",
+                                average: "blue",
+                                low: "amber"
+                              };
+                              
+                              const performanceColor = categoryColors[performanceCategory as keyof typeof categoryColors];
+                              
+                              return (
+                                <tr key={driver.id} className="hover:bg-muted/50 transition-colors">
+                                  <td className="py-3 px-4">
+                                    <input
+                                      type="checkbox"
+                                      className="h-4 w-4 rounded border-gray-300"
+                                      checked={selectedDrivers.includes(driver.id)}
+                                      onChange={() => {
+                                        if (selectedDrivers.includes(driver.id)) {
+                                          setSelectedDrivers(selectedDrivers.filter(id => id !== driver.id));
+                                        } else {
+                                          setSelectedDrivers([...selectedDrivers, driver.id]);
+                                        }
+                                      }}
+                                    />
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <div className="flex items-center">
+                                      <div className="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden mr-3">
+                                        <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white font-semibold`}>
+                                          <User className="h-5 w-5" />
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div className="font-medium">{driver.name}</div>
+                                        <div className="text-xs text-muted-foreground">
+                                          ID: {driver.id} • {driver.trips} trips
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                      {driver.safetyScore}%
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                      {driver.fuelEfficiency}%
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                      {driver.timeManagement}%
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                      {driver.vehicleHandling}%
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                      {driver.customerSatisfaction}%
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">
+                                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${performanceColor}-100 text-${performanceColor}-800`}>
+                                      {overallScore}%
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-right">
+                                    <div className="flex items-center justify-end space-x-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        title="View Details"
+                                        onClick={() => {
+                                          setSelectedDriverForDetails(driver);
+                                          setDriverDetailsPanelOpen(true);
+                                        }}
+                                      >
+                                        <FileText className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        title="Edit Driver"
+                                        onClick={() => {
+                                          setDriverForEdit(driver);
+                                          setDriverEditModalOpen(true);
+                                        }}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                                        title="Delete Driver"
+                                        onClick={() => {
+                                          setDriverToDelete(driver);
+                                          setDriverDeleteDialogOpen(true);
+                                        }}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </TabsContent>
+                      
+                      <TabsContent value="leaderboards" className="mt-0 p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center">
+                                <Award className="h-5 w-5 mr-2 text-yellow-500" />
+                                Top Performers Overall
+                              </CardTitle>
+                              <CardDescription>Drivers with the highest combined scores</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                {[...driversData]
+                                  .sort((a, b) => {
+                                    const aScore = (a.safetyScore + a.fuelEfficiency + a.timeManagement + a.vehicleHandling + a.customerSatisfaction) / 5;
+                                    const bScore = (b.safetyScore + b.fuelEfficiency + b.timeManagement + b.vehicleHandling + b.customerSatisfaction) / 5;
+                                    return bScore - aScore;
+                                  })
+                                  .slice(0, 5)
+                                  .map((driver, index) => {
+                                    const overallScore = Math.round((driver.safetyScore + driver.fuelEfficiency + driver.timeManagement + driver.vehicleHandling + driver.customerSatisfaction) / 5);
+                                    return (
+                                      <div key={driver.id} className="flex items-center">
+                                        <div className="w-8 text-center font-bold">
+                                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                        </div>
+                                        <div className="flex items-center flex-1 ml-2">
+                                          <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
+                                            <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
+                                              <User className="h-4 w-4" />
+                                            </div>
+                                          </div>
+                                          <div className="font-medium">{driver.name}</div>
+                                        </div>
+                                        <div className="flex justify-end mr-2">
+                                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${overallScore >= 90 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                                            {overallScore}%
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center">
+                                <Shield className="h-5 w-5 mr-2 text-green-500" />
+                                Safety Champions
+                              </CardTitle>
+                              <CardDescription>Drivers with the best safety records</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                {[...driversData]
+                                  .sort((a, b) => b.safetyScore - a.safetyScore)
+                                  .slice(0, 5)
+                                  .map((driver, index) => (
+                                    <div key={driver.id} className="flex items-center">
+                                      <div className="w-8 text-center font-bold">
+                                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                      </div>
+                                      <div className="flex items-center flex-1 ml-2">
+                                        <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
+                                          <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
+                                            <User className="h-4 w-4" />
+                                          </div>
+                                        </div>
+                                        <div className="font-medium">{driver.name}</div>
+                                      </div>
+                                      <div className="flex justify-end mr-2">
+                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                          {driver.safetyScore}%
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
 
-        <TabsContent value="fuel">
-          <FuelTracker 
-            records={fuelRecords}
-            vehicles={vehicles.map(v => ({ id: v.id, name: v.name, type: v.type }))}
-            vehiclesFuelData={vehicleFuelData}
-            onAddFuelRecord={(record) => console.log("Add fuel record", record)}
-          />
-        </TabsContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center">
+                                <Fuel className="h-5 w-5 mr-2 text-blue-500" />
+                                Fuel Efficiency Leaders
+                              </CardTitle>
+                              <CardDescription>Drivers with the best fuel economy</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                {[...driversData]
+                                  .sort((a, b) => b.fuelEfficiency - a.fuelEfficiency)
+                                  .slice(0, 5)
+                                  .map((driver, index) => (
+                                    <div key={driver.id} className="flex items-center">
+                                      <div className="w-8 text-center font-bold">
+                                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                      </div>
+                                      <div className="flex items-center flex-1 ml-2">
+                                        <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
+                                          <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
+                                            <User className="h-4 w-4" />
+                                          </div>
+                                        </div>
+                                        <div className="font-medium">{driver.name}</div>
+                                      </div>
+                                      <div className="flex justify-end mr-2">
+                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                          {driver.fuelEfficiency}%
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center">
+                                <ThumbsUp className="h-5 w-5 mr-2 text-indigo-500" />
+                                Customer Satisfaction Leaders
+                              </CardTitle>
+                              <CardDescription>Drivers with the best customer ratings</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                {[...driversData]
+                                  .sort((a, b) => b.customerSatisfaction - a.customerSatisfaction)
+                                  .slice(0, 5)
+                                  .map((driver, index) => (
+                                    <div key={driver.id} className="flex items-center">
+                                      <div className="w-8 text-center font-bold">
+                                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                      </div>
+                                      <div className="flex items-center flex-1 ml-2">
+                                        <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
+                                          <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
+                                            <User className="h-4 w-4" />
+                                          </div>
+                                        </div>
+                                        <div className="font-medium">{driver.name}</div>
+                                      </div>
+                                      <div className="flex justify-end mr-2">
+                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                          {driver.customerSatisfaction}%
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="performance-kpis" className="mt-0 p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-medium">Fleet Safety Score</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-2xl font-bold text-green-500">
+                                {Math.round(driversData.reduce((acc, driver) => acc + driver.safetyScore, 0) / driversData.length)}%
+                              </div>
+                              <div className="flex items-center">
+                                <Shield className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <p className="text-xs text-muted-foreground">Average driver safety rating</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-medium">Fuel Efficiency</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-2xl font-bold text-blue-500">
+                                {Math.round(driversData.reduce((acc, driver) => acc + driver.fuelEfficiency, 0) / driversData.length)}%
+                              </div>
+                              <div className="flex items-center">
+                                <Fuel className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <p className="text-xs text-muted-foreground">Average fuel optimization</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-medium">Customer Satisfaction</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-2xl font-bold text-indigo-500">
+                                {Math.round(driversData.reduce((acc, driver) => acc + driver.customerSatisfaction, 0) / driversData.length)}%
+                              </div>
+                              <div className="flex items-center">
+                                <ThumbsUp className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <p className="text-xs text-muted-foreground">Average customer rating</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center">
+                                <TrendingUp className="h-5 w-5 mr-2 text-primary" />
+                                Key Performance Indicators
+                              </CardTitle>
+                              <CardDescription>Critical metrics across all drivers</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <Shield className="h-5 w-5 mr-2 text-green-500" />
+                                    <span>Average Safety Score</span>
+                                  </div>
+                                  <div className="font-semibold">
+                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.safetyScore, 0) / driversData.length)}%
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <Fuel className="h-5 w-5 mr-2 text-blue-500" />
+                                    <span>Average Fuel Efficiency</span>
+                                  </div>
+                                  <div className="font-semibold">
+                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.fuelEfficiency, 0) / driversData.length)}%
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <Clock className="h-5 w-5 mr-2 text-purple-500" />
+                                    <span>Average Time Management</span>
+                                  </div>
+                                  <div className="font-semibold">
+                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.timeManagement, 0) / driversData.length)}%
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <Truck className="h-5 w-5 mr-2 text-orange-500" />
+                                    <span>Average Vehicle Handling</span>
+                                  </div>
+                                  <div className="font-semibold">
+                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.vehicleHandling, 0) / driversData.length)}%
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <ThumbsUp className="h-5 w-5 mr-2 text-indigo-500" />
+                                    <span>Average Customer Satisfaction</span>
+                                  </div>
+                                  <div className="font-semibold">
+                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.customerSatisfaction, 0) / driversData.length)}%
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <AlertCircle className="h-5 w-5 mr-2 text-red-500" />
+                                    <span>Incidents per Driver</span>
+                                  </div>
+                                  <div className="font-semibold">
+                                    {(driversData.reduce((acc, driver) => acc + driver.incidents, 0) / driversData.length).toFixed(2)}
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <Map className="h-5 w-5 mr-2 text-cyan-500" />
+                                    <span>Average Mileage per Driver</span>
+                                  </div>
+                                  <div className="font-semibold">
+                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.mileage, 0) / driversData.length).toLocaleString()} mi
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center">
+                                <Activity className="h-5 w-5 mr-2 text-primary" />
+                                Performance Distribution
+                              </CardTitle>
+                              <CardDescription>Driver performance by category</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-5">
+                                <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-sm font-medium">High Performers (90%+)</span>
+                                    <span className="text-sm font-medium">
+                                      {driversData.filter(d => 
+                                        (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 >= 90
+                                      ).length} drivers
+                                    </span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                    <div className="bg-green-500 h-2.5 rounded-full" style={{ 
+                                      width: `${(driversData.filter(d => 
+                                        (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 >= 90
+                                      ).length / driversData.length) * 100}%` 
+                                    }}></div>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-sm font-medium">Average Performers (85-89%)</span>
+                                    <span className="text-sm font-medium">
+                                      {driversData.filter(d => {
+                                        const avg = (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5;
+                                        return avg >= 85 && avg < 90;
+                                      }).length} drivers
+                                    </span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                    <div className="bg-blue-500 h-2.5 rounded-full" style={{ 
+                                      width: `${(driversData.filter(d => {
+                                        const avg = (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5;
+                                        return avg >= 85 && avg < 90;
+                                      }).length / driversData.length) * 100}%` 
+                                    }}></div>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-sm font-medium">Needs Improvement (Below 85%)</span>
+                                    <span className="text-sm font-medium">
+                                      {driversData.filter(d => 
+                                        (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 < 85
+                                      ).length} drivers
+                                    </span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                    <div className="bg-amber-500 h-2.5 rounded-full" style={{ 
+                                      width: `${(driversData.filter(d => 
+                                        (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 < 85
+                                      ).length / driversData.length) * 100}%` 
+                                    }}></div>
+                                  </div>
+                                </div>
+                                
+                                <div className="pt-4 border-t">
+                                  <h4 className="font-medium mb-3 text-sm">Incidents by Driver</h4>
+                                  <div className="grid grid-cols-5 gap-2">
+                                    {driversData.map(driver => (
+                                      <div key={driver.id} className="text-center">
+                                        <div className={`h-8 w-8 rounded-full mx-auto flex items-center justify-center ${
+                                          driver.incidents === 0 
+                                            ? 'bg-green-100 text-green-800' 
+                                            : driver.incidents === 1 
+                                              ? 'bg-amber-100 text-amber-800' 
+                                              : 'bg-red-100 text-red-800'
+                                        }`}>
+                                          {driver.incidents}
+                                        </div>
+                                        <div className="text-xs mt-1 overflow-hidden text-ellipsis whitespace-nowrap" title={driver.name}>
+                                          {driver.name.split(' ')[0]}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                        
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg flex items-center">
+                              <BarChart className="h-5 w-5 mr-2 text-primary" />
+                              Comparative Analytics
+                            </CardTitle>
+                            <CardDescription>Overall fleet performance analytics</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-80">
+                              <div className="flex items-center justify-center h-full">
+                                <div className="text-center text-muted-foreground">
+                                  <BarChart className="h-16 w-16 mx-auto mb-2 text-muted-foreground/50" />
+                                  <p>Performance comparison chart would be displayed here</p>
+                                  <p className="text-sm mt-2">Using the fleet performance data from all drivers</p>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                  
+                  {/* Pagination for Drivers */}
+                  <div className="border-t">
+                    <div className="flex items-center justify-between py-4 px-6">
+                      <div className="flex-1 text-sm text-muted-foreground">
+                        Showing {Math.min((driversCurrentPage - 1) * driversPageSize + 1, filteredDrivers.length)} to {Math.min(driversCurrentPage * driversPageSize, filteredDrivers.length)} of {filteredDrivers.length} {filteredDrivers.length === 1 ? 'driver' : 'drivers'}
+                      </div>
+                      
+                      <div className="flex-1 flex justify-center">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setDriversCurrentPage(1)}
+                            disabled={driversCurrentPage === 1}
+                            className="h-8 w-8"
+                            aria-label="First page"
+                          >
+                            <ChevronsLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setDriversCurrentPage(driversCurrentPage - 1)}
+                            disabled={driversCurrentPage === 1}
+                            className="h-8 w-8"
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          
+                          {driversTotalPages <= 5 ? (
+                            // Show all pages if 5 or fewer
+                            [...Array(driversTotalPages)].map((_, i) => (
+                              <Button
+                                key={`page-${i+1}`}
+                                variant={driversCurrentPage === i+1 ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => setDriversCurrentPage(i+1)}
+                                className="h-8 w-8"
+                                aria-label={`Page ${i+1}`}
+                                aria-current={driversCurrentPage === i+1 ? "page" : undefined}
+                              >
+                                {i+1}
+                              </Button>
+                            ))
+                          ) : (
+                            // Show limited pages with ellipsis
+                            <>
+                              <Button
+                                variant={driversCurrentPage === 1 ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => setDriversCurrentPage(1)}
+                                className="h-8 w-8"
+                                aria-label="Page 1"
+                              >
+                                1
+                              </Button>
+                              
+                              {driversCurrentPage > 3 && <span className="mx-1">...</span>}
+                              
+                              {driversCurrentPage > 2 && (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => setDriversCurrentPage(driversCurrentPage - 1)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${driversCurrentPage - 1}`}
+                                >
+                                  {driversCurrentPage - 1}
+                                </Button>
+                              )}
+                              
+                              {driversCurrentPage !== 1 && driversCurrentPage !== driversTotalPages && (
+                                <Button
+                                  variant="default"
+                                  size="icon"
+                                  onClick={() => setDriversCurrentPage(driversCurrentPage)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${driversCurrentPage}`}
+                                  aria-current="page"
+                                >
+                                  {driversCurrentPage}
+                                </Button>
+                              )}
+                              
+                              {driversCurrentPage < driversTotalPages - 1 && (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => setDriversCurrentPage(driversCurrentPage + 1)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${driversCurrentPage + 1}`}
+                                >
+                                  {driversCurrentPage + 1}
+                                </Button>
+                              )}
+                              
+                              {driversCurrentPage < driversTotalPages - 2 && <span className="mx-1">...</span>}
+                              
+                              <Button
+                                variant={driversCurrentPage === driversTotalPages ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => setDriversCurrentPage(driversTotalPages)}
+                                className="h-8 w-8"
+                                aria-label={`Page ${driversTotalPages}`}
+                              >
+                                {driversTotalPages}
+                              </Button>
+                            </>
+                          )}
+                          
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setDriversCurrentPage(driversCurrentPage + 1)}
+                            disabled={driversCurrentPage === driversTotalPages}
+                            className="h-8 w-8"
+                            aria-label="Next page"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setDriversCurrentPage(driversTotalPages)}
+                            disabled={driversCurrentPage === driversTotalPages}
+                            className="h-8 w-8"
+                            aria-label="Last page"
+                          >
+                            <ChevronsRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 flex justify-end">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
+                          <Select
+                            value={driversPageSize.toString()}
+                            onValueChange={(size) => {
+                              setDriversPageSize(Number(size));
+                              setDriversCurrentPage(1);
+                            }}
+                          >
+                            <SelectTrigger className="h-8 w-[70px]">
+                              <SelectValue placeholder={driversPageSize.toString()} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[5, 10, 25, 50].map((size) => (
+                                <SelectItem key={size} value={size.toString()}>
+                                  {size}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="analytics">
-          <FleetAnalytics 
-            vehicleTypes={analyticsData.vehicleTypes}
-            vehicleStatus={analyticsData.vehicleStatus}
-            fuelConsumption={analyticsData.fuelConsumption}
-            monthlyMileage={analyticsData.monthlyMileage}
-            metrics={analyticsData.metrics}
-          />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="analytics" className="space-y-6">
+            <Card className="overflow-hidden">
+              <CardHeader className="bg-background border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center text-xl">
+                      <TrendingUp className="h-5 w-5 mr-2 text-primary" />
+                      Fleet Analytics Dashboard
+                    </CardTitle>
+                    <CardDescription>Performance metrics and operational insights for your fleet</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Select defaultValue="month">
+                      <SelectTrigger className="w-[150px] h-9">
+                        <SelectValue placeholder="Time Period" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="week">This Week</SelectItem>
+                        <SelectItem value="month">This Month</SelectItem>
+                        <SelectItem value="quarter">This Quarter</SelectItem>
+                        <SelectItem value="year">This Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="p-6">
+                  <FleetAnalytics 
+                    vehicleTypes={analyticsData.vehicleTypes}
+                    vehicleStatus={analyticsData.vehicleStatus}
+                    fuelConsumption={analyticsData.fuelConsumption}
+                    monthlyMileage={analyticsData.monthlyMileage}
+                    metrics={analyticsData.metrics}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+      
+      {/* Vehicle Health Monitor */}
+      <div className="mb-6">
+        <Card className="overflow-hidden">
+          <CardContent className="p-6">
+            <VehicleHealthMonitor 
+              vehicles={vehicles.map(v => ({
+                id: v.id.toString(),
+                name: v.name,
+                type: v.type,
+                status: v.status,
+                healthScore: Math.floor(Math.random() * 30) + 70 // Mock health score between 70-100
+              }))}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Maintenance Tracker */}
+      <div className="mb-6">
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-background border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center text-xl">
+                  <Settings className="h-5 w-5 mr-2 text-primary" />
+                  Fleet Maintenance Manager
+                </CardTitle>
+                <CardDescription>Track and schedule maintenance for all vehicles</CardDescription>
+              </div>
+              <Button variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Schedule Maintenance
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <MaintenanceTracker 
+              records={maintenanceRecords}
+              vehicles={vehicles.map(v => ({ id: v.id, name: v.name }))}
+              onAddRecord={(record) => console.log("Add maintenance record", record)}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Fuel Tracker */}
+      <div className="mb-6">
+        <Card className="overflow-hidden">
+          <CardContent className="p-6">
+            <FuelTracker 
+              records={fuelRecords}
+              vehicles={vehicles.map(v => ({ id: v.id, name: v.name, type: v.type }))}
+              vehiclesFuelData={vehicleFuelData}
+              onAddFuelRecord={(record) => console.log("Add fuel record", record)}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
       <VehicleModal
         isOpen={modalOpen}
@@ -1151,178 +2348,400 @@ export default function Vehicles() {
 
       {/* Vehicle Detail Panel */}
       <Dialog open={detailPanelOpen} onOpenChange={setDetailPanelOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Vehicle Details</DialogTitle>
-          </DialogHeader>
-          
+        <DialogContent className="min-w-[50vw] h-[90vh] p-0">
           {vehicleForDetails && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Truck className="h-8 w-8 text-primary" />
-                    <div>
-                      <h3 className="text-lg font-medium">{vehicleForDetails.name}</h3>
-                      <Badge className={
-                        vehicleForDetails.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                        vehicleForDetails.status === 'maintenance' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                        'bg-red-500/10 text-red-500 border-red-500/20'
-                      }>
-                        {vehicleForDetails.status.charAt(0).toUpperCase() + vehicleForDetails.status.slice(1)}
-                      </Badge>
+            <div className="h-full flex flex-col">
+              <DialogHeader className="px-6 py-4 border-b sticky top-0 bg-background z-10">
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-xl">Vehicle Details</DialogTitle>
+                  <DialogDescription className="sr-only">Detailed information about the selected vehicle</DialogDescription>
+                  <Button variant="ghost" size="icon" onClick={() => setDetailPanelOpen(false)} className="rounded-full">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </DialogHeader>
+              
+              <div className="flex-1 overflow-y-auto">
+                {/* Top Row - Vehicle Details */}
+                <div className="p-6 pb-3">
+                  <div className="flex items-center gap-4 p-4 bg-muted/20 rounded-lg">
+                    <Truck className="h-12 w-12 text-primary p-2 bg-primary/10 rounded-full" />
+                    <div className="flex-1">
+                      <h3 className="text-xl font-medium">{vehicleForDetails.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge className={
+                          vehicleForDetails.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                          vehicleForDetails.status === 'maintenance' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                          'bg-red-500/10 text-red-500 border-red-500/20'
+                        }>
+                          {vehicleForDetails.status.charAt(0).toUpperCase() + vehicleForDetails.status.slice(1)}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {vehicleForDetails.make || 'N/A'} {vehicleForDetails.model || 'N/A'} • {vehicleForDetails.year || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          setDetailPanelOpen(false);
+                          handleEditVehicle(vehicleForDetails);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit Vehicle
+                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">Make & Model:</span>
-                      <span className="font-medium">{vehicleForDetails.make || 'N/A'} {vehicleForDetails.model || 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">Year:</span>
-                      <span className="font-medium">{vehicleForDetails.year || 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">License Plate:</span>
-                      <span className="font-mono font-medium">{vehicleForDetails.licensePlate || 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">VIN:</span>
-                      <span className="font-mono font-medium">{vehicleForDetails.vinNumber || 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">Mileage:</span>
-                      <span className="font-medium">{vehicleForDetails.mileage?.toLocaleString() || '0'} mi</span>
-                    </div>
-                    <div className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">Fuel Level:</span>
-                      <span className="font-medium">{vehicleForDetails.fuelLevel || '0'}%</span>
-                    </div>
-                    <div className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">Department:</span>
-                      <span className="font-medium">{vehicleForDetails.departmentName || 'Unassigned'}</span>
-                    </div>
-                    <div className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">Assigned Driver:</span>
-                      <span className="font-medium">{vehicleForDetails.assignedDriver || 'Unassigned'}</span>
+                </div>
+
+                <div className="px-6 grid grid-cols-4 gap-6">
+                  {/* Left Column (spans 3 cols) */}
+                  <div className="col-span-3 space-y-6">
+                    {/* Second Row - Location Map */}
+                    <Card className="shadow-sm">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-base flex items-center">
+                          <Map className="h-4 w-4 mr-2 text-primary" />
+                          Vehicle Location
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0 h-[250px] overflow-hidden rounded-b-lg">
+                        {vehicleForDetails.location ? (
+                          <MapComponent 
+                            location={vehicleForDetails.location}
+                            locationName={vehicleForDetails.location.address}
+                          />
+                        ) : (
+                          <div className="h-full bg-muted/20 flex items-center justify-center">
+                            <div className="text-center text-muted-foreground">
+                              <Map className="h-8 w-8 mx-auto mb-1 text-muted-foreground/50" />
+                              <p className="text-sm">No location data available</p>
+                              <p className="text-xs mt-1">Vehicle location tracking disabled or offline</p>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Third Row - Vehicle Information */}
+                    <Card className="shadow-sm">
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-base flex items-center">
+                          <FileText className="h-4 w-4 mr-2 text-primary" />
+                          Vehicle Information
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="px-4 pb-4 pt-0">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm border-b pb-2">
+                              <span className="text-muted-foreground">License Plate:</span>
+                              <span className="font-mono font-medium">{vehicleForDetails.licensePlate || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between text-sm border-b pb-2">
+                              <span className="text-muted-foreground">VIN:</span>
+                              <span className="font-mono font-medium">{vehicleForDetails.vinNumber || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between text-sm border-b pb-2">
+                              <span className="text-muted-foreground">Mileage:</span>
+                              <span className="font-medium">{vehicleForDetails.mileage?.toLocaleString() || '0'} mi</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Department:</span>
+                              <span className="font-medium">{vehicleForDetails.departmentName || 'Unassigned'}</span>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm border-b pb-2">
+                              <span className="text-muted-foreground">Last Maintenance:</span>
+                              <span className="font-medium">
+                                {vehicleForDetails.lastMaintenance 
+                                  ? (typeof vehicleForDetails.lastMaintenance === 'string' 
+                                    ? vehicleForDetails.lastMaintenance 
+                                    : vehicleForDetails.lastMaintenance instanceof Date
+                                      ? vehicleForDetails.lastMaintenance.toLocaleDateString()
+                                      : String(vehicleForDetails.lastMaintenance)) 
+                                  : "N/A"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm border-b pb-2">
+                              <span className="text-muted-foreground">Registration Expires:</span>
+                              <span className="font-medium">
+                                {vehicleForDetails.registrationExpiry ? new Date(vehicleForDetails.registrationExpiry).toLocaleDateString() : 'N/A'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm border-b pb-2">
+                              <span className="text-muted-foreground">Insurance Expires:</span>
+                              <span className="font-medium">
+                                {vehicleForDetails.insuranceExpiry ? new Date(vehicleForDetails.insuranceExpiry).toLocaleDateString() : 'N/A'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Assigned Driver:</span>
+                              <span className="font-medium">{vehicleForDetails.assignedDriver || 'Unassigned'}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <span className="text-sm text-muted-foreground">Fuel Level:</span>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex-1 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div 
+                                className={`h-2 rounded-full ${vehicleForDetails.fuelLevel! > 60 ? 'bg-green-500' : vehicleForDetails.fuelLevel! > 25 ? 'bg-amber-500' : 'bg-red-500'}`}
+                                style={{ width: `${vehicleForDetails.fuelLevel || 0}%` }}
+                              />
+                            </div>
+                            <span className="font-medium">{vehicleForDetails.fuelLevel || '0'}%</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Fourth Row - Grid with Performance Metrics and Fuel Records */}
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Performance Summary */}
+                      <Card className="shadow-sm">
+                        <CardHeader className="p-4">
+                          <CardTitle className="text-base flex items-center">
+                            <Activity className="h-4 w-4 mr-2 text-primary" />
+                            Performance Metrics
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="px-4 pb-4 pt-0 max-h-[250px] overflow-y-auto">
+                          <div className="space-y-4">
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-muted-foreground">Efficiency Rating</span>
+                                <span className="font-medium">
+                                  {vehicleForDetails.fuelEfficiency ? `${vehicleForDetails.fuelEfficiency}%` : 'N/A'}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                                <div 
+                                  className="bg-blue-500 h-1.5 rounded-full"
+                                  style={{ width: `${vehicleForDetails.fuelEfficiency || 0}%` }}
+                                />
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-muted-foreground">Utilization Rate</span>
+                                <span className="font-medium">
+                                  {vehicleForDetails.utilizationRate ? `${vehicleForDetails.utilizationRate}%` : 'N/A'}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                                <div 
+                                  className="bg-purple-500 h-1.5 rounded-full"
+                                  style={{ width: `${vehicleForDetails.utilizationRate || 0}%` }}
+                                />
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-muted-foreground">Maintenance Score</span>
+                                <span className="font-medium">
+                                  {vehicleForDetails.maintenanceScore ? `${vehicleForDetails.maintenanceScore}%` : 'N/A'}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                                <div 
+                                  className="bg-green-500 h-1.5 rounded-full"
+                                  style={{ width: `${vehicleForDetails.maintenanceScore || 0}%` }}
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="pt-2 border-t">
+                              <div className="flex justify-between mb-2">
+                                <span className="text-sm font-medium">Monthly Cost Average</span>
+                                <span className="text-sm font-medium text-primary">
+                                  ${vehicleForDetails.monthlyCost?.toFixed(2) || '0.00'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Based on maintenance and fuel records from the last 3 months
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Fuel History Summary */}
+                      <Card className="shadow-sm">
+                        <CardHeader className="p-4 flex flex-row items-center justify-between">
+                          <CardTitle className="text-base flex items-center">
+                            <Fuel className="h-4 w-4 mr-2 text-primary" />
+                            Recent Fuel Records
+                          </CardTitle>
+                          <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">View All</Button>
+                        </CardHeader>
+                        <CardContent className="px-4 pb-4 pt-0 max-h-[250px] overflow-y-auto">
+                          <div className="space-y-3 text-sm">
+                            {fuelRecords
+                              .filter(r => r.vehicleId === vehicleForDetails.id)
+                              .sort((a, b) => b.date.getTime() - a.date.getTime())
+                              .slice(0, 3)
+                              .map(record => (
+                                <div key={record.id} className="p-2 border rounded-md">
+                                  <div className="flex justify-between mb-1">
+                                    <span className="font-medium">{record.gallons.toFixed(2)} gallons</span>
+                                    <span className="text-primary font-medium">${record.cost.toFixed(2)}</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>{record.date.toLocaleDateString()}</span>
+                                    <span>{record.mileage.toLocaleString()} miles</span>
+                                  </div>
+                                  {record.mpg && (
+                                    <div className="flex items-center mt-1">
+                                      <div className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                                        {record.mpg.toFixed(1)} MPG
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            {fuelRecords.filter(r => r.vehicleId === vehicleForDetails.id).length === 0 && (
+                              <div className="py-3 text-center text-muted-foreground">
+                                <p>No fuel records found</p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   </div>
 
-                  <div className="pt-2">
-                    <h4 className="text-sm font-medium mb-2">Important Dates</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm border-b pb-1">
-                        <span className="text-muted-foreground">Last Maintenance:</span>
-                        <span className="font-medium">
-                          {vehicleForDetails.lastMaintenance 
-                            ? (typeof vehicleForDetails.lastMaintenance === 'string' 
-                              ? vehicleForDetails.lastMaintenance 
-                              : new Date(vehicleForDetails.lastMaintenance).toLocaleDateString()) 
-                            : "N/A"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm border-b pb-1">
-                        <span className="text-muted-foreground">Registration Expires:</span>
-                        <span className="font-medium">
-                          {vehicleForDetails.registrationExpiry ? new Date(vehicleForDetails.registrationExpiry).toLocaleDateString() : 'N/A'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm border-b pb-1">
-                        <span className="text-muted-foreground">Insurance Expires:</span>
-                        <span className="font-medium">
-                          {vehicleForDetails.insuranceExpiry ? new Date(vehicleForDetails.insuranceExpiry).toLocaleDateString() : 'N/A'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                {/* Location Map Placeholder */}
-                <div className="h-48 bg-muted rounded-md flex items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <Map className="h-8 w-8 mx-auto mb-1" />
-                    <p className="text-sm">Vehicle Location</p>
-                    <p className="text-xs">
-                      {vehicleForDetails.location ? 
-                        `Last updated: ${new Date(vehicleForDetails.location.lastUpdated).toLocaleString()}` :
-                        'Location data not available'}
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Maintenance History Summary */}
-                <Card>
-                  <CardHeader className="p-3">
-                    <CardTitle className="text-sm font-medium">Recent Maintenance</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3">
-                    <div className="space-y-2 text-sm">
-                      {maintenanceRecords
-                        .filter(r => r.vehicleId === vehicleForDetails.id)
-                        .sort((a, b) => b.date.getTime() - a.date.getTime())
-                        .slice(0, 3)
-                        .map(record => (
-                          <div key={record.id} className="border-b pb-2">
-                            <div className="flex justify-between">
-                              <span className="font-medium">{record.type}</span>
-                              <span>{record.date.toLocaleDateString()}</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground">{record.description}</p>
-                          </div>
-                        ))}
-                      {maintenanceRecords.filter(r => r.vehicleId === vehicleForDetails.id).length === 0 && (
-                        <p className="text-muted-foreground">No maintenance records found</p>
-                      )}
-                    </div>
-        </CardContent>
-      </Card>
-      
-                {/* Fuel History Summary */}
-      <Card>
-                  <CardHeader className="p-3">
-                    <CardTitle className="text-sm font-medium">Recent Fuel Records</CardTitle>
-        </CardHeader>
-                  <CardContent className="p-3">
-                    <div className="space-y-2 text-sm">
-                      {fuelRecords
-                        .filter(r => r.vehicleId === vehicleForDetails.id)
-                        .sort((a, b) => b.date.getTime() - a.date.getTime())
-                        .slice(0, 3)
-                        .map(record => (
-                          <div key={record.id} className="border-b pb-2">
-                            <div className="flex justify-between">
-                              <span className="font-medium">{record.gallons.toFixed(2)} gallons</span>
-                              <span>${record.cost.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>{record.date.toLocaleDateString()}</span>
-                              <span>{record.mileage.toLocaleString()} miles</span>
+                  {/* Right Column (Maintenance History) - spans vertically */}
+                  <div className="col-span-1">
+                    {/* Maintenance History Summary (spans vertically from row 2-5) */}
+                    <Card className="shadow-sm h-full flex flex-col">
+                      <CardHeader className="p-4 flex flex-row items-center justify-between">
+                        <div>
+                          <CardTitle className="text-base flex items-center">
+                            <Settings className="h-4 w-4 mr-2 text-primary" />
+                            Maintenance History
+                          </CardTitle>
+                          <CardDescription className="text-xs mt-1">
+                            Service records, repairs and maintenance schedule
+                          </CardDescription>
+                        </div>
+                        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">View All</Button>
+                      </CardHeader>
+                      <CardContent className="px-4 pb-4 pt-0 flex-1 overflow-y-auto">
+                        {vehicleForDetails.notes && (
+                          <div className="mb-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+                            <div className="flex items-start">
+                              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
+                              <div>
+                                <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Maintenance Note</div>
+                                <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">{vehicleForDetails.notes}</div>
+                              </div>
                             </div>
                           </div>
-                        ))}
-                      {fuelRecords.filter(r => r.vehicleId === vehicleForDetails.id).length === 0 && (
-                        <p className="text-muted-foreground">No fuel records found</p>
-                      )}
-                    </div>
-        </CardContent>
-      </Card>
-                
-                {/* Quick Actions */}
-                <div className="flex gap-2 mt-4">
-                  <Button className="flex-1" onClick={() => {
-                    setDetailPanelOpen(false);
-                    handleEditVehicle(vehicleForDetails);
-                  }}>
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Edit Vehicle
-                  </Button>
-                  <Button variant="outline" className="flex-1" onClick={() => console.log("View full maintenance history", vehicleForDetails.id)}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Maintenance Log
-                  </Button>
+                        )}
+
+                        <div className="flex items-center justify-between mb-4 border-b pb-3">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex flex-col">
+                              <span className="text-xs text-muted-foreground">Next Service</span>
+                              <span className="text-sm font-medium">
+                                {formatDate(vehicleForDetails.nextServiceDue)}
+                              </span>
+                            </div>
+                          </div>
+                          <Badge variant={
+                            getMaintenanceStatus(vehicleForDetails.nextServiceDue) === 'overdue' ? 'destructive' :
+                            getMaintenanceStatus(vehicleForDetails.nextServiceDue) === 'due-soon' ? 'outline' :
+                            'success'
+                          }>
+                            {getMaintenanceStatus(vehicleForDetails.nextServiceDue) === 'overdue' ? 'Overdue' :
+                             getMaintenanceStatus(vehicleForDetails.nextServiceDue) === 'due-soon' ? 'Due Soon' :
+                             'On Schedule'}
+                          </Badge>
+                        </div>
+
+                        <div className="space-y-3 text-sm">
+                          {maintenanceRecords
+                            .filter(r => r.vehicleId === vehicleForDetails.id)
+                            .sort((a, b) => b.date.getTime() - a.date.getTime())
+                            .map(record => (
+                              <div key={record.id} className="p-3 border rounded-md hover:bg-muted/30 transition-colors">
+                                <div className="flex justify-between mb-1.5">
+                                  <div className="flex items-center">
+                                    {record.type === 'oil change' && <Fuel className="h-3.5 w-3.5 mr-1.5 text-blue-500" />}
+                                    {record.type === 'tire replacement' && <CircleOff className="h-3.5 w-3.5 mr-1.5 text-gray-500" />}
+                                    {record.type === 'brake service' && <Gauge className="h-3.5 w-3.5 mr-1.5 text-red-500" />}
+                                    {record.type === 'inspection' && <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />}
+                                    {record.type === 'repair' && <Wrench className="h-3.5 w-3.5 mr-1.5 text-amber-500" />}
+                                    {!['oil change', 'tire replacement', 'brake service', 'inspection', 'repair'].includes(record.type) && 
+                                      <Settings className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                                    }
+                                    <span className="font-medium capitalize">{record.type}</span>
+                                  </div>
+                                  <Badge variant={
+                                    record.status === 'completed' ? 'success' : 
+                                    record.status === 'scheduled' ? 'outline' : 'destructive'
+                                  } className="text-[10px] py-0 h-5">
+                                    {record.status === 'completed' && <Check className="h-3 w-3 mr-1" />}
+                                    {record.status === 'scheduled' && <Calendar className="h-3 w-3 mr-1" />}
+                                    {record.status === 'canceled' && <X className="h-3 w-3 mr-1" />}
+                                    {record.status}
+                                  </Badge>
+                                </div>
+                                
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1.5 mb-1.5">
+                                  <div className="flex items-center">
+                                    <Calendar className="h-3 w-3 mr-1" />
+                                    {record.date.toLocaleDateString()}
+                                  </div>
+                                  {record.cost && (
+                                    <div className="flex items-center">
+                                      <DollarSign className="h-3 w-3 mr-1" />
+                                      ${record.cost.toFixed(2)}
+                                    </div>
+                                  )}
+                                  {record.mileage && (
+                                    <div className="flex items-center">
+                                      <Gauge className="h-3 w-3 mr-1" />
+                                      {record.mileage.toLocaleString()} mi
+                                    </div>
+                                  )}
+                                  {record.technician && (
+                                    <div className="flex items-center">
+                                      <UserRound className="h-3 w-3 mr-1" />
+                                      {record.technician}
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{record.description}</p>
+                              </div>
+                            ))}
+                          {maintenanceRecords.filter(r => r.vehicleId === vehicleForDetails.id).length === 0 && (
+                            <div className="py-6 text-center text-muted-foreground">
+                              <Settings className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
+                              <p className="text-sm">No maintenance records found</p>
+                              <p className="text-xs mt-1">Regular maintenance records will appear here</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t">
+                          <Button variant="outline" size="sm" className="w-full">
+                            <Plus className="h-3.5 w-3.5 mr-1.5" />
+                            Schedule Service
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </div>
             </div>

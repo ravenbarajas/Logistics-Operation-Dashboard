@@ -4,7 +4,8 @@ import {
   CalendarClock, Fuel, Settings, AlertCircle, Map, TrendingUp, Activity, 
   User, Download, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, 
   Award, Shield, ThumbsUp, BarChart, Clock, X, Calendar, Wrench, AlertTriangle, 
-  CheckCircle, Navigation, Check, CircleOff, DollarSign, Gauge, UserRound
+  CheckCircle, Navigation, Check, CircleOff, DollarSign, Gauge, UserRound, 
+  Route, MapPin, History, Cpu, CircleDot
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogClose,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { FleetMap } from "@/components/fleet/FleetMap";
 import { ExtendedVehicle } from "@/types/vehicle";
@@ -43,6 +46,10 @@ import { DriversPerformanceAnalyzer } from "@/components/fleet/DriversPerformanc
 import { Pagination } from "@/components/ui/pagination";
 import { MapComponent } from "@/components/MapComponent";
 import { formatDate, getMaintenanceStatus, addMockVehicleDetails } from "@/components/VehicleDetailsHelper";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { BarChart3 } from "lucide-react";
 
 // Sample maintenance records data
 const maintenanceRecords = [
@@ -866,6 +873,34 @@ export default function Vehicles() {
     return name.split(' ').map(n => n[0]).join('');
   };
 
+  // Handler for viewing driver details
+  const handleViewDriverDetails = (driver: any) => {
+    setSelectedDriverForDetails(driver);
+    setDriverDetailsPanelOpen(true);
+  };
+
+  // Handler for editing driver
+  const handleEditDriver = (driver: any) => {
+    setDriverForEdit(driver);
+    setDriverEditModalOpen(true);
+  };
+
+  // Handler for deleting driver
+  const handleDeleteDriver = (driver: any) => {
+    setDriverToDelete(driver);
+    setDriverDeleteDialogOpen(true);
+  };
+
+  // Handler for confirming driver deletion
+  const confirmDeleteDriver = () => {
+    // In a real app, this would call an API to delete the driver
+    console.log(`Deleting driver:`, driverToDelete);
+    // Simulate successful deletion
+    setDriverDeleteDialogOpen(false);
+    setDriverToDelete(null);
+    // In a real app, you would refresh the data here
+  };
+
   if (loading) {
     return <div className="container px-4 py-8">Loading...</div>;
   }
@@ -992,7 +1027,7 @@ export default function Vehicles() {
       {/* Tab Content Section */}
       <div className="mb-6">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid grid-cols-3 w-full md:w-auto">
+          <TabsList className="grid grid-cols-2 w-full md:w-auto">
             <TabsTrigger value="vehicles">
               <Truck className="h-4 w-4 mr-2" />
               <span className="hidden md:inline">Vehicles</span>
@@ -1000,10 +1035,6 @@ export default function Vehicles() {
             <TabsTrigger value="drivers">
               <User className="h-4 w-4 mr-2" />
               <span className="hidden md:inline">Drivers</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              <span className="hidden md:inline">Analytics</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1420,77 +1451,98 @@ export default function Vehicles() {
                     </Button>
                   </div>
                   
-                  <div className="flex flex-wrap items-center gap-3 pt-2">
-                    <div className="relative w-full md:w-auto flex-1 max-w-sm">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        placeholder="Search drivers..."
-                        className="pl-8 w-full h-9"
-                        value={driversSearch}
-                        onChange={(e) => setDriversSearch(e.target.value)}
-                      />
-                    </div>
+                  {/* Move the tabs here, above the search/filter controls */}
+                  <Tabs defaultValue="drivers-table" className="w-full">
+                    <TabsList>
+                      <TabsTrigger value="drivers-table">
+                        <User className="h-4 w-4 mr-2" />
+                        Drivers Table
+                      </TabsTrigger>
+                      <TabsTrigger value="leaderboards">
+                        <Award className="h-4 w-4 mr-2" />
+                        Leaderboards
+                      </TabsTrigger>
+                      <TabsTrigger value="performance-kpis">
+                        <Activity className="h-4 w-4 mr-2" />
+                        Performance KPIs
+                      </TabsTrigger>
+                    </TabsList>
                     
-                    <Select 
-                      defaultValue={driversPerformanceFilter}
-                      onValueChange={setDriversPerformanceFilter}
-                    >
-                      <SelectTrigger className="w-[180px] h-9">
-                        <SelectValue placeholder="Filter by performance" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Drivers</SelectItem>
-                        <SelectItem value="high">High Performers</SelectItem>
-                        <SelectItem value="average">Average Performers</SelectItem>
-                        <SelectItem value="low">Needs Improvement</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select 
-                      defaultValue={driversSortMetric}
-                      onValueChange={setDriversSortMetric}
-                    >
-                      <SelectTrigger className="w-[180px] h-9">
-                        <SelectValue placeholder="Sort by metric" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="safety">Safety Score</SelectItem>
-                        <SelectItem value="fuel">Fuel Efficiency</SelectItem>
-                        <SelectItem value="time">Time Management</SelectItem>
-                        <SelectItem value="handling">Vehicle Handling</SelectItem>
-                        <SelectItem value="satisfaction">Customer Satisfaction</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Button variant="outline" className="h-9 ml-auto" onClick={fetchData}>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                {/* Drivers Table */}
-                <div>
-                  <div className="overflow-auto">
-                    <Tabs defaultValue="drivers-table" className="w-full">
-                      <TabsList className="mx-6 mt-4 mb-2">
-                        <TabsTrigger value="drivers-table">
-                          <User className="h-4 w-4 mr-2" />
-                          Drivers Table
-                        </TabsTrigger>
-                        <TabsTrigger value="leaderboards">
-                          <Award className="h-4 w-4 mr-2" />
-                          Leaderboards
-                        </TabsTrigger>
-                        <TabsTrigger value="performance-kpis">
-                          <Activity className="h-4 w-4 mr-2" />
-                          Performance KPIs
-                        </TabsTrigger>
-                      </TabsList>
+                    {/* Move the search/filter controls inside the TabsContent for drivers-table */}
+                    <TabsContent value="drivers-table" className="mt-4 p-0">
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="text"
+                            placeholder="Search drivers..."
+                            className="pl-8 w-full h-9"
+                            value={driversSearch}
+                            onChange={(e) => setDriversSearch(e.target.value)}
+                          />
+                        </div>
+                        
+                        <Select 
+                          defaultValue={driversPerformanceFilter}
+                          onValueChange={setDriversPerformanceFilter}
+                        >
+                          <SelectTrigger className="w-[180px] h-9">
+                            <SelectValue placeholder="Filter by performance" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Drivers</SelectItem>
+                            <SelectItem value="high">High Performers</SelectItem>
+                            <SelectItem value="average">Average Performers</SelectItem>
+                            <SelectItem value="low">Needs Improvement</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        <Select 
+                          defaultValue={driversSortMetric}
+                          onValueChange={setDriversSortMetric}
+                        >
+                          <SelectTrigger className="w-[180px] h-9">
+                            <SelectValue placeholder="Sort by metric" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="safety">Safety Score</SelectItem>
+                            <SelectItem value="fuel">Fuel Efficiency</SelectItem>
+                            <SelectItem value="time">Time Management</SelectItem>
+                            <SelectItem value="handling">Vehicle Handling</SelectItem>
+                            <SelectItem value="satisfaction">Customer Satisfaction</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
+                          <Select
+                            value={driversPageSize.toString()}
+                            onValueChange={(size) => {
+                              setDriversPageSize(Number(size));
+                              setDriversCurrentPage(1);
+                            }}
+                          >
+                            <SelectTrigger className="h-9 w-[70px]">
+                              <SelectValue placeholder={driversPageSize.toString()} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[5, 10, 25, 50].map((size) => (
+                                <SelectItem key={size} value={size.toString()}>
+                                  {size}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <Button variant="outline" className="h-9 ml-auto" onClick={fetchData}>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Refresh
+                        </Button>
+                      </div>
                       
-                      <TabsContent value="drivers-table" className="mt-0">
+                      {/* Continue with the drivers table content */}
+                      <div className="overflow-auto">
                         <table className="w-full">
                           <thead className="bg-muted/50 text-sm">
                             <tr>
@@ -1597,7 +1649,7 @@ export default function Vehicles() {
                                     </div>
                                   </td>
                                   <td className="py-3 px-4 text-center">
-                                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${performanceColor}-100 text-${performanceColor}-800`}>
+                                    <div className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${performanceColor}-100 text-${performanceColor}-800`}>
                                       {overallScore}%
                                     </div>
                                   </td>
@@ -1606,36 +1658,27 @@ export default function Vehicles() {
                                       <Button 
                                         variant="ghost" 
                                         size="icon" 
+                                        onClick={() => handleViewDriverDetails(driver)} 
                                         className="h-8 w-8"
                                         title="View Details"
-                                        onClick={() => {
-                                          setSelectedDriverForDetails(driver);
-                                          setDriverDetailsPanelOpen(true);
-                                        }}
                                       >
                                         <FileText className="h-4 w-4" />
                                       </Button>
                                       <Button 
                                         variant="ghost" 
                                         size="icon" 
+                                        onClick={() => handleEditDriver(driver)} 
                                         className="h-8 w-8"
                                         title="Edit Driver"
-                                        onClick={() => {
-                                          setDriverForEdit(driver);
-                                          setDriverEditModalOpen(true);
-                                        }}
                                       >
                                         <Pencil className="h-4 w-4" />
                                       </Button>
                                       <Button 
                                         variant="ghost" 
                                         size="icon" 
+                                        onClick={() => handleDeleteDriver(driver)} 
                                         className="h-8 w-8 text-destructive hover:text-destructive"
                                         title="Delete Driver"
-                                        onClick={() => {
-                                          setDriverToDelete(driver);
-                                          setDriverDeleteDialogOpen(true);
-                                        }}
                                       >
                                         <Trash2 className="h-4 w-4" />
                                       </Button>
@@ -1646,68 +1689,32 @@ export default function Vehicles() {
                             })}
                           </tbody>
                         </table>
-                      </TabsContent>
-                      
-                      <TabsContent value="leaderboards" className="mt-0 p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg flex items-center">
-                                <Award className="h-5 w-5 mr-2 text-yellow-500" />
-                                Top Performers Overall
-                              </CardTitle>
-                              <CardDescription>Drivers with the highest combined scores</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-4">
-                                {[...driversData]
-                                  .sort((a, b) => {
-                                    const aScore = (a.safetyScore + a.fuelEfficiency + a.timeManagement + a.vehicleHandling + a.customerSatisfaction) / 5;
-                                    const bScore = (b.safetyScore + b.fuelEfficiency + b.timeManagement + b.vehicleHandling + b.customerSatisfaction) / 5;
-                                    return bScore - aScore;
-                                  })
-                                  .slice(0, 5)
-                                  .map((driver, index) => {
-                                    const overallScore = Math.round((driver.safetyScore + driver.fuelEfficiency + driver.timeManagement + driver.vehicleHandling + driver.customerSatisfaction) / 5);
-                                    return (
-                                      <div key={driver.id} className="flex items-center">
-                                        <div className="w-8 text-center font-bold">
-                                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                                        </div>
-                                        <div className="flex items-center flex-1 ml-2">
-                                          <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
-                                            <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
-                                              <User className="h-4 w-4" />
-                                            </div>
-                                          </div>
-                                          <div className="font-medium">{driver.name}</div>
-                                        </div>
-                                        <div className="flex justify-end mr-2">
-                                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${overallScore >= 90 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                                            {overallScore}%
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                              </div>
-                            </CardContent>
-                          </Card>
-                          
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg flex items-center">
-                                <Shield className="h-5 w-5 mr-2 text-green-500" />
-                                Safety Champions
-                              </CardTitle>
-                              <CardDescription>Drivers with the best safety records</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-4">
-                                {[...driversData]
-                                  .sort((a, b) => b.safetyScore - a.safetyScore)
-                                  .slice(0, 5)
-                                  .map((driver, index) => (
+                      </div>
+                    </TabsContent>
+                    
+                    {/* The other tabs content remains the same */}
+                    <TabsContent value="leaderboards" className="mt-0 p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg flex items-center">
+                              <Award className="h-5 w-5 mr-2 text-yellow-500" />
+                              Top Performers Overall
+                            </CardTitle>
+                            <CardDescription>Drivers with the highest combined scores</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              {[...driversData]
+                                .sort((a, b) => {
+                                  const aScore = (a.safetyScore + a.fuelEfficiency + a.timeManagement + a.vehicleHandling + a.customerSatisfaction) / 5;
+                                  const bScore = (b.safetyScore + b.fuelEfficiency + b.timeManagement + b.vehicleHandling + b.customerSatisfaction) / 5;
+                                  return bScore - aScore;
+                                })
+                                .slice(0, 5)
+                                .map((driver, index) => {
+                                  const overallScore = Math.round((driver.safetyScore + driver.fuelEfficiency + driver.timeManagement + driver.vehicleHandling + driver.customerSatisfaction) / 5);
+                                  return (
                                     <div key={driver.id} className="flex items-center">
                                       <div className="w-8 text-center font-bold">
                                         {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
@@ -1721,601 +1728,1045 @@ export default function Vehicles() {
                                         <div className="font-medium">{driver.name}</div>
                                       </div>
                                       <div className="flex justify-end mr-2">
-                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                          {driver.safetyScore}%
+                                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${overallScore >= 90 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                                          {overallScore}%
                                         </div>
                                       </div>
                                     </div>
-                                  ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg flex items-center">
-                                <Fuel className="h-5 w-5 mr-2 text-blue-500" />
-                                Fuel Efficiency Leaders
-                              </CardTitle>
-                              <CardDescription>Drivers with the best fuel economy</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-4">
-                                {[...driversData]
-                                  .sort((a, b) => b.fuelEfficiency - a.fuelEfficiency)
-                                  .slice(0, 5)
-                                  .map((driver, index) => (
-                                    <div key={driver.id} className="flex items-center">
-                                      <div className="w-8 text-center font-bold">
-                                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                                      </div>
-                                      <div className="flex items-center flex-1 ml-2">
-                                        <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
-                                          <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
-                                            <User className="h-4 w-4" />
-                                          </div>
-                                        </div>
-                                        <div className="font-medium">{driver.name}</div>
-                                      </div>
-                                      <div className="flex justify-end mr-2">
-                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                          {driver.fuelEfficiency}%
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                          
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg flex items-center">
-                                <ThumbsUp className="h-5 w-5 mr-2 text-indigo-500" />
-                                Customer Satisfaction Leaders
-                              </CardTitle>
-                              <CardDescription>Drivers with the best customer ratings</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-4">
-                                {[...driversData]
-                                  .sort((a, b) => b.customerSatisfaction - a.customerSatisfaction)
-                                  .slice(0, 5)
-                                  .map((driver, index) => (
-                                    <div key={driver.id} className="flex items-center">
-                                      <div className="w-8 text-center font-bold">
-                                        {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                                      </div>
-                                      <div className="flex items-center flex-1 ml-2">
-                                        <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
-                                          <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
-                                            <User className="h-4 w-4" />
-                                          </div>
-                                        </div>
-                                        <div className="font-medium">{driver.name}</div>
-                                      </div>
-                                      <div className="flex justify-end mr-2">
-                                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                          {driver.customerSatisfaction}%
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="performance-kpis" className="mt-0 p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                          <Card>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-sm font-medium">Fleet Safety Score</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold text-green-500">
-                                {Math.round(driversData.reduce((acc, driver) => acc + driver.safetyScore, 0) / driversData.length)}%
-                              </div>
-                              <div className="flex items-center">
-                                <Shield className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <p className="text-xs text-muted-foreground">Average driver safety rating</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                          
-                          <Card>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-sm font-medium">Fuel Efficiency</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold text-blue-500">
-                                {Math.round(driversData.reduce((acc, driver) => acc + driver.fuelEfficiency, 0) / driversData.length)}%
-                              </div>
-                              <div className="flex items-center">
-                                <Fuel className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <p className="text-xs text-muted-foreground">Average fuel optimization</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                          
-                          <Card>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-sm font-medium">Customer Satisfaction</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold text-indigo-500">
-                                {Math.round(driversData.reduce((acc, driver) => acc + driver.customerSatisfaction, 0) / driversData.length)}%
-                              </div>
-                              <div className="flex items-center">
-                                <ThumbsUp className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <p className="text-xs text-muted-foreground">Average customer rating</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg flex items-center">
-                                <TrendingUp className="h-5 w-5 mr-2 text-primary" />
-                                Key Performance Indicators
-                              </CardTitle>
-                              <CardDescription>Critical metrics across all drivers</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <Shield className="h-5 w-5 mr-2 text-green-500" />
-                                    <span>Average Safety Score</span>
-                                  </div>
-                                  <div className="font-semibold">
-                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.safetyScore, 0) / driversData.length)}%
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <Fuel className="h-5 w-5 mr-2 text-blue-500" />
-                                    <span>Average Fuel Efficiency</span>
-                                  </div>
-                                  <div className="font-semibold">
-                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.fuelEfficiency, 0) / driversData.length)}%
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <Clock className="h-5 w-5 mr-2 text-purple-500" />
-                                    <span>Average Time Management</span>
-                                  </div>
-                                  <div className="font-semibold">
-                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.timeManagement, 0) / driversData.length)}%
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <Truck className="h-5 w-5 mr-2 text-orange-500" />
-                                    <span>Average Vehicle Handling</span>
-                                  </div>
-                                  <div className="font-semibold">
-                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.vehicleHandling, 0) / driversData.length)}%
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <ThumbsUp className="h-5 w-5 mr-2 text-indigo-500" />
-                                    <span>Average Customer Satisfaction</span>
-                                  </div>
-                                  <div className="font-semibold">
-                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.customerSatisfaction, 0) / driversData.length)}%
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <AlertCircle className="h-5 w-5 mr-2 text-red-500" />
-                                    <span>Incidents per Driver</span>
-                                  </div>
-                                  <div className="font-semibold">
-                                    {(driversData.reduce((acc, driver) => acc + driver.incidents, 0) / driversData.length).toFixed(2)}
-                                  </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <Map className="h-5 w-5 mr-2 text-cyan-500" />
-                                    <span>Average Mileage per Driver</span>
-                                  </div>
-                                  <div className="font-semibold">
-                                    {Math.round(driversData.reduce((acc, driver) => acc + driver.mileage, 0) / driversData.length).toLocaleString()} mi
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                          
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="text-lg flex items-center">
-                                <Activity className="h-5 w-5 mr-2 text-primary" />
-                                Performance Distribution
-                              </CardTitle>
-                              <CardDescription>Driver performance by category</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-5">
-                                <div>
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="text-sm font-medium">High Performers (90%+)</span>
-                                    <span className="text-sm font-medium">
-                                      {driversData.filter(d => 
-                                        (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 >= 90
-                                      ).length} drivers
-                                    </span>
-                                  </div>
-                                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                                    <div className="bg-green-500 h-2.5 rounded-full" style={{ 
-                                      width: `${(driversData.filter(d => 
-                                        (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 >= 90
-                                      ).length / driversData.length) * 100}%` 
-                                    }}></div>
-                                  </div>
-                                </div>
-                                
-                                <div>
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="text-sm font-medium">Average Performers (85-89%)</span>
-                                    <span className="text-sm font-medium">
-                                      {driversData.filter(d => {
-                                        const avg = (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5;
-                                        return avg >= 85 && avg < 90;
-                                      }).length} drivers
-                                    </span>
-                                  </div>
-                                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                                    <div className="bg-blue-500 h-2.5 rounded-full" style={{ 
-                                      width: `${(driversData.filter(d => {
-                                        const avg = (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5;
-                                        return avg >= 85 && avg < 90;
-                                      }).length / driversData.length) * 100}%` 
-                                    }}></div>
-                                  </div>
-                                </div>
-                                
-                                <div>
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="text-sm font-medium">Needs Improvement (Below 85%)</span>
-                                    <span className="text-sm font-medium">
-                                      {driversData.filter(d => 
-                                        (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 < 85
-                                      ).length} drivers
-                                    </span>
-                                  </div>
-                                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                                    <div className="bg-amber-500 h-2.5 rounded-full" style={{ 
-                                      width: `${(driversData.filter(d => 
-                                        (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 < 85
-                                      ).length / driversData.length) * 100}%` 
-                                    }}></div>
-                                  </div>
-                                </div>
-                                
-                                <div className="pt-4 border-t">
-                                  <h4 className="font-medium mb-3 text-sm">Incidents by Driver</h4>
-                                  <div className="grid grid-cols-5 gap-2">
-                                    {driversData.map(driver => (
-                                      <div key={driver.id} className="text-center">
-                                        <div className={`h-8 w-8 rounded-full mx-auto flex items-center justify-center ${
-                                          driver.incidents === 0 
-                                            ? 'bg-green-100 text-green-800' 
-                                            : driver.incidents === 1 
-                                              ? 'bg-amber-100 text-amber-800' 
-                                              : 'bg-red-100 text-red-800'
-                                        }`}>
-                                          {driver.incidents}
-                                        </div>
-                                        <div className="text-xs mt-1 overflow-hidden text-ellipsis whitespace-nowrap" title={driver.name}>
-                                          {driver.name.split(' ')[0]}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
+                                  );
+                                })}
+                            </div>
+                          </CardContent>
+                        </Card>
                         
                         <Card>
                           <CardHeader>
                             <CardTitle className="text-lg flex items-center">
-                              <BarChart className="h-5 w-5 mr-2 text-primary" />
-                              Comparative Analytics
+                              <Shield className="h-5 w-5 mr-2 text-green-500" />
+                              Safety Champions
                             </CardTitle>
-                            <CardDescription>Overall fleet performance analytics</CardDescription>
+                            <CardDescription>Drivers with the best safety records</CardDescription>
                           </CardHeader>
                           <CardContent>
-                            <div className="h-80">
-                              <div className="flex items-center justify-center h-full">
-                                <div className="text-center text-muted-foreground">
-                                  <BarChart className="h-16 w-16 mx-auto mb-2 text-muted-foreground/50" />
-                                  <p>Performance comparison chart would be displayed here</p>
-                                  <p className="text-sm mt-2">Using the fleet performance data from all drivers</p>
+                            <div className="space-y-4">
+                              {[...driversData]
+                                .sort((a, b) => b.safetyScore - a.safetyScore)
+                                .slice(0, 5)
+                                .map((driver, index) => (
+                                  <div key={driver.id} className="flex items-center">
+                                    <div className="w-8 text-center font-bold">
+                                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                    </div>
+                                    <div className="flex items-center flex-1 ml-2">
+                                      <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
+                                        <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
+                                          <User className="h-4 w-4" />
+                                        </div>
+                                      </div>
+                                      <div className="font-medium">{driver.name}</div>
+                                    </div>
+                                    <div className="flex justify-end mr-2">
+                                      <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {driver.safetyScore}%
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg flex items-center">
+                              <Fuel className="h-5 w-5 mr-2 text-blue-500" />
+                              Fuel Efficiency Leaders
+                            </CardTitle>
+                            <CardDescription>Drivers with the best fuel economy</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              {[...driversData]
+                                .sort((a, b) => b.fuelEfficiency - a.fuelEfficiency)
+                                .slice(0, 5)
+                                .map((driver, index) => (
+                                  <div key={driver.id} className="flex items-center">
+                                    <div className="w-8 text-center font-bold">
+                                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                    </div>
+                                    <div className="flex items-center flex-1 ml-2">
+                                      <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
+                                        <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
+                                          <User className="h-4 w-4" />
+                                        </div>
+                                      </div>
+                                      <div className="font-medium">{driver.name}</div>
+                                    </div>
+                                    <div className="flex justify-end mr-2">
+                                      <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {driver.fuelEfficiency}%
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg flex items-center">
+                              <ThumbsUp className="h-5 w-5 mr-2 text-indigo-500" />
+                              Customer Satisfaction Leaders
+                            </CardTitle>
+                            <CardDescription>Drivers with the best customer ratings</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              {[...driversData]
+                                .sort((a, b) => b.customerSatisfaction - a.customerSatisfaction)
+                                .slice(0, 5)
+                                .map((driver, index) => (
+                                  <div key={driver.id} className="flex items-center">
+                                    <div className="w-8 text-center font-bold">
+                                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                    </div>
+                                    <div className="flex items-center flex-1 ml-2">
+                                      <div className="h-8 w-8 rounded-full flex items-center justify-center overflow-hidden mr-3">
+                                        <div className={`${getAvatarColor(driver.name)} h-full w-full flex items-center justify-center text-white text-xs font-semibold`}>
+                                          <User className="h-4 w-4" />
+                                        </div>
+                                      </div>
+                                      <div className="font-medium">{driver.name}</div>
+                                    </div>
+                                    <div className="flex justify-end mr-2">
+                                      <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        {driver.customerSatisfaction}%
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="performance-kpis" className="mt-0 p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Fleet Safety Score</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-green-500">
+                              {Math.round(driversData.reduce((acc, driver) => acc + driver.safetyScore, 0) / driversData.length)}%
+                            </div>
+                            <div className="flex items-center">
+                              <Shield className="h-4 w-4 mr-1 text-muted-foreground" />
+                              <p className="text-xs text-muted-foreground">Average driver safety rating</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Fuel Efficiency</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-blue-500">
+                              {Math.round(driversData.reduce((acc, driver) => acc + driver.fuelEfficiency, 0) / driversData.length)}%
+                            </div>
+                            <div className="flex items-center">
+                              <Fuel className="h-4 w-4 mr-1 text-muted-foreground" />
+                              <p className="text-xs text-muted-foreground">Average fuel optimization</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Customer Satisfaction</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold text-indigo-500">
+                              {Math.round(driversData.reduce((acc, driver) => acc + driver.customerSatisfaction, 0) / driversData.length)}%
+                            </div>
+                            <div className="flex items-center">
+                              <ThumbsUp className="h-4 w-4 mr-1 text-muted-foreground" />
+                              <p className="text-xs text-muted-foreground">Average customer rating</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg flex items-center">
+                              <TrendingUp className="h-5 w-5 mr-2 text-primary" />
+                              Key Performance Indicators
+                            </CardTitle>
+                            <CardDescription>Critical metrics across all drivers</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <Shield className="h-5 w-5 mr-2 text-green-500" />
+                                  <span>Average Safety Score</span>
+                                </div>
+                                <div className="font-semibold">
+                                  {Math.round(driversData.reduce((acc, driver) => acc + driver.safetyScore, 0) / driversData.length)}%
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <Fuel className="h-5 w-5 mr-2 text-blue-500" />
+                                  <span>Average Fuel Efficiency</span>
+                                </div>
+                                <div className="font-semibold">
+                                  {Math.round(driversData.reduce((acc, driver) => acc + driver.fuelEfficiency, 0) / driversData.length)}%
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <Clock className="h-5 w-5 mr-2 text-purple-500" />
+                                  <span>Average Time Management</span>
+                                </div>
+                                <div className="font-semibold">
+                                  {Math.round(driversData.reduce((acc, driver) => acc + driver.timeManagement, 0) / driversData.length)}%
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <Truck className="h-5 w-5 mr-2 text-orange-500" />
+                                  <span>Average Vehicle Handling</span>
+                                </div>
+                                <div className="font-semibold">
+                                  {Math.round(driversData.reduce((acc, driver) => acc + driver.vehicleHandling, 0) / driversData.length)}%
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <ThumbsUp className="h-5 w-5 mr-2 text-indigo-500" />
+                                  <span>Average Customer Satisfaction</span>
+                                </div>
+                                <div className="font-semibold">
+                                  {Math.round(driversData.reduce((acc, driver) => acc + driver.customerSatisfaction, 0) / driversData.length)}%
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <AlertCircle className="h-5 w-5 mr-2 text-red-500" />
+                                  <span>Incidents per Driver</span>
+                                </div>
+                                <div className="font-semibold">
+                                  {(driversData.reduce((acc, driver) => acc + driver.incidents, 0) / driversData.length).toFixed(2)}
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <Map className="h-5 w-5 mr-2 text-cyan-500" />
+                                  <span>Average Mileage per Driver</span>
+                                </div>
+                                <div className="font-semibold">
+                                  {Math.round(driversData.reduce((acc, driver) => acc + driver.mileage, 0) / driversData.length).toLocaleString()} mi
                                 </div>
                               </div>
                             </div>
                           </CardContent>
                         </Card>
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                  
-                  {/* Pagination for Drivers */}
-                  <div className="border-t">
-                    <div className="flex items-center justify-between py-4 px-6">
-                      <div className="flex-1 text-sm text-muted-foreground">
-                        Showing {Math.min((driversCurrentPage - 1) * driversPageSize + 1, filteredDrivers.length)} to {Math.min(driversCurrentPage * driversPageSize, filteredDrivers.length)} of {filteredDrivers.length} {filteredDrivers.length === 1 ? 'driver' : 'drivers'}
+                        
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg flex items-center">
+                              <Activity className="h-5 w-5 mr-2 text-primary" />
+                              Performance Distribution
+                            </CardTitle>
+                            <CardDescription>Driver performance by category</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-5">
+                              <div>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-sm font-medium">High Performers (90%+)</span>
+                                  <span className="text-sm font-medium">
+                                    {driversData.filter(d => 
+                                      (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 >= 90
+                                    ).length} drivers
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                  <div className="bg-green-500 h-2.5 rounded-full" style={{ 
+                                    width: `${(driversData.filter(d => 
+                                      (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 >= 90
+                                    ).length / driversData.length) * 100}%` 
+                                  }}></div>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-sm font-medium">Average Performers (85-89%)</span>
+                                  <span className="text-sm font-medium">
+                                    {driversData.filter(d => {
+                                      const avg = (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5;
+                                      return avg >= 85 && avg < 90;
+                                    }).length} drivers
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                  <div className="bg-blue-500 h-2.5 rounded-full" style={{ 
+                                    width: `${(driversData.filter(d => {
+                                      const avg = (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5;
+                                      return avg >= 85 && avg < 90;
+                                    }).length / driversData.length) * 100}%` 
+                                  }}></div>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-sm font-medium">Needs Improvement (Below 85%)</span>
+                                  <span className="text-sm font-medium">
+                                    {driversData.filter(d => 
+                                      (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 < 85
+                                    ).length} drivers
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                  <div className="bg-amber-500 h-2.5 rounded-full" style={{ 
+                                    width: `${(driversData.filter(d => 
+                                      (d.safetyScore + d.fuelEfficiency + d.timeManagement + d.vehicleHandling + d.customerSatisfaction) / 5 < 85
+                                    ).length / driversData.length) * 100}%` 
+                                  }}></div>
+                                </div>
+                              </div>
+                              
+                              <div className="pt-4 border-t">
+                                <h4 className="font-medium mb-3 text-sm">Incidents by Driver</h4>
+                                <div className="grid grid-cols-5 gap-2">
+                                  {driversData.map(driver => (
+                                    <div key={driver.id} className="text-center">
+                                      <div className={`h-8 w-8 rounded-full mx-auto flex items-center justify-center ${
+                                        driver.incidents === 0 
+                                          ? 'bg-green-100 text-green-800' 
+                                          : driver.incidents === 1 
+                                            ? 'bg-amber-100 text-amber-800' 
+                                            : 'bg-red-100 text-red-800'
+                                      }`}>
+                                        {driver.incidents}
+                                      </div>
+                                      <div className="text-xs mt-1 overflow-hidden text-ellipsis whitespace-nowrap" title={driver.name}>
+                                        {driver.name.split(' ')[0]}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       </div>
                       
-                      <div className="flex-1 flex justify-center">
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setDriversCurrentPage(1)}
-                            disabled={driversCurrentPage === 1}
-                            className="h-8 w-8"
-                            aria-label="First page"
-                          >
-                            <ChevronsLeft className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setDriversCurrentPage(driversCurrentPage - 1)}
-                            disabled={driversCurrentPage === 1}
-                            className="h-8 w-8"
-                            aria-label="Previous page"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          
-                          {driversTotalPages <= 5 ? (
-                            // Show all pages if 5 or fewer
-                            [...Array(driversTotalPages)].map((_, i) => (
-                              <Button
-                                key={`page-${i+1}`}
-                                variant={driversCurrentPage === i+1 ? "default" : "outline"}
-                                size="icon"
-                                onClick={() => setDriversCurrentPage(i+1)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${i+1}`}
-                                aria-current={driversCurrentPage === i+1 ? "page" : undefined}
-                              >
-                                {i+1}
-                              </Button>
-                            ))
-                          ) : (
-                            // Show limited pages with ellipsis
-                            <>
-                              <Button
-                                variant={driversCurrentPage === 1 ? "default" : "outline"}
-                                size="icon"
-                                onClick={() => setDriversCurrentPage(1)}
-                                className="h-8 w-8"
-                                aria-label="Page 1"
-                              >
-                                1
-                              </Button>
-                              
-                              {driversCurrentPage > 3 && <span className="mx-1">...</span>}
-                              
-                              {driversCurrentPage > 2 && (
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => setDriversCurrentPage(driversCurrentPage - 1)}
-                                  className="h-8 w-8"
-                                  aria-label={`Page ${driversCurrentPage - 1}`}
-                                >
-                                  {driversCurrentPage - 1}
-                                </Button>
-                              )}
-                              
-                              {driversCurrentPage !== 1 && driversCurrentPage !== driversTotalPages && (
-                                <Button
-                                  variant="default"
-                                  size="icon"
-                                  onClick={() => setDriversCurrentPage(driversCurrentPage)}
-                                  className="h-8 w-8"
-                                  aria-label={`Page ${driversCurrentPage}`}
-                                  aria-current="page"
-                                >
-                                  {driversCurrentPage}
-                                </Button>
-                              )}
-                              
-                              {driversCurrentPage < driversTotalPages - 1 && (
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => setDriversCurrentPage(driversCurrentPage + 1)}
-                                  className="h-8 w-8"
-                                  aria-label={`Page ${driversCurrentPage + 1}`}
-                                >
-                                  {driversCurrentPage + 1}
-                                </Button>
-                              )}
-                              
-                              {driversCurrentPage < driversTotalPages - 2 && <span className="mx-1">...</span>}
-                              
-                              <Button
-                                variant={driversCurrentPage === driversTotalPages ? "default" : "outline"}
-                                size="icon"
-                                onClick={() => setDriversCurrentPage(driversTotalPages)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${driversTotalPages}`}
-                              >
-                                {driversTotalPages}
-                              </Button>
-                            </>
-                          )}
-                          
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setDriversCurrentPage(driversCurrentPage + 1)}
-                            disabled={driversCurrentPage === driversTotalPages}
-                            className="h-8 w-8"
-                            aria-label="Next page"
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setDriversCurrentPage(driversTotalPages)}
-                            disabled={driversCurrentPage === driversTotalPages}
-                            className="h-8 w-8"
-                            aria-label="Last page"
-                          >
-                            <ChevronsRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1 flex justify-end">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
-                          <Select
-                            value={driversPageSize.toString()}
-                            onValueChange={(size) => {
-                              setDriversPageSize(Number(size));
-                              setDriversCurrentPage(1);
-                            }}
-                          >
-                            <SelectTrigger className="h-8 w-[70px]">
-                              <SelectValue placeholder={driversPageSize.toString()} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[5, 10, 25, 50].map((size) => (
-                                <SelectItem key={size} value={size.toString()}>
-                                  {size}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-6">
-            <Card className="overflow-hidden">
-              <CardHeader className="bg-background border-b">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center text-xl">
-                      <TrendingUp className="h-5 w-5 mr-2 text-primary" />
-                      Fleet Analytics Dashboard
-                    </CardTitle>
-                    <CardDescription>Performance metrics and operational insights for your fleet</CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Select defaultValue="month">
-                      <SelectTrigger className="w-[150px] h-9">
-                        <SelectValue placeholder="Time Period" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="week">This Week</SelectItem>
-                        <SelectItem value="month">This Month</SelectItem>
-                        <SelectItem value="quarter">This Quarter</SelectItem>
-                        <SelectItem value="year">This Year</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </Button>
-                  </div>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg flex items-center">
+                            <BarChart className="h-5 w-5 mr-2 text-primary" />
+                            Comparative Analytics
+                          </CardTitle>
+                          <CardDescription>Overall fleet performance analytics</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="h-80">
+                            <div className="flex items-center justify-center h-full">
+                              <div className="text-center text-muted-foreground">
+                                <BarChart className="h-16 w-16 mx-auto mb-2 text-muted-foreground/50" />
+                                <p>Performance comparison chart would be displayed here</p>
+                                <p className="text-sm mt-2">Using the fleet performance data from all drivers</p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="p-6">
-                  <FleetAnalytics 
-                    vehicleTypes={analyticsData.vehicleTypes}
-                    vehicleStatus={analyticsData.vehicleStatus}
-                    fuelConsumption={analyticsData.fuelConsumption}
-                    monthlyMileage={analyticsData.monthlyMileage}
-                    metrics={analyticsData.metrics}
-                  />
+                {/* Keep the pagination section outside the tabs */}
+                
+                {/* Pagination for Drivers */}
+                <div className="border-t">
+                  <div className="flex items-center justify-between py-4 px-6">
+                    <div className="flex-1 text-sm text-muted-foreground">
+                      Showing {Math.min((driversCurrentPage - 1) * driversPageSize + 1, filteredDrivers.length)} to {Math.min(driversCurrentPage * driversPageSize, filteredDrivers.length)} of {filteredDrivers.length} {filteredDrivers.length === 1 ? 'driver' : 'drivers'}
+                    </div>
+                    
+                    <div className="flex-1 flex justify-center">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setDriversCurrentPage(1)}
+                          disabled={driversCurrentPage === 1}
+                          className="h-8 w-8"
+                          aria-label="First page"
+                        >
+                          <ChevronsLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setDriversCurrentPage(driversCurrentPage - 1)}
+                          disabled={driversCurrentPage === 1}
+                          className="h-8 w-8"
+                          aria-label="Previous page"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        
+                        {driversTotalPages <= 5 ? (
+                          // Show all pages if 5 or fewer
+                          [...Array(driversTotalPages)].map((_, i) => (
+                            <Button
+                              key={`page-${i+1}`}
+                              variant={driversCurrentPage === i+1 ? "default" : "outline"}
+                              size="icon"
+                              onClick={() => setDriversCurrentPage(i+1)}
+                              className="h-8 w-8"
+                              aria-label={`Page ${i+1}`}
+                              aria-current={driversCurrentPage === i+1 ? "page" : undefined}
+                            >
+                              {i+1}
+                            </Button>
+                          ))
+                        ) : (
+                          // Show limited pages with ellipsis
+                          <>
+                            <Button
+                              variant={driversCurrentPage === 1 ? "default" : "outline"}
+                              size="icon"
+                              onClick={() => setDriversCurrentPage(1)}
+                              className="h-8 w-8"
+                              aria-label="Page 1"
+                            >
+                              1
+                            </Button>
+                            
+                            {driversCurrentPage > 3 && <span className="mx-1">...</span>}
+                            
+                            {driversCurrentPage > 2 && (
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setDriversCurrentPage(driversCurrentPage - 1)}
+                                className="h-8 w-8"
+                                aria-label={`Page ${driversCurrentPage - 1}`}
+                              >
+                                {driversCurrentPage - 1}
+                              </Button>
+                            )}
+                            
+                            {driversCurrentPage !== 1 && driversCurrentPage !== driversTotalPages && (
+                              <Button
+                                variant="default"
+                                size="icon"
+                                onClick={() => setDriversCurrentPage(driversCurrentPage)}
+                                className="h-8 w-8"
+                                aria-label={`Page ${driversCurrentPage}`}
+                                aria-current="page"
+                              >
+                                {driversCurrentPage}
+                              </Button>
+                            )}
+                            
+                            {driversCurrentPage < driversTotalPages - 1 && (
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setDriversCurrentPage(driversCurrentPage + 1)}
+                                className="h-8 w-8"
+                                aria-label={`Page ${driversCurrentPage + 1}`}
+                              >
+                                {driversCurrentPage + 1}
+                              </Button>
+                            )}
+                            
+                            {driversCurrentPage < driversTotalPages - 2 && <span className="mx-1">...</span>}
+                            
+                            <Button
+                              variant={driversCurrentPage === driversTotalPages ? "default" : "outline"}
+                              size="icon"
+                              onClick={() => setDriversCurrentPage(driversTotalPages)}
+                              className="h-8 w-8"
+                              aria-label={`Page ${driversTotalPages}`}
+                            >
+                              {driversTotalPages}
+                            </Button>
+                          </>
+                        )}
+                        
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setDriversCurrentPage(driversCurrentPage + 1)}
+                          disabled={driversCurrentPage === driversTotalPages}
+                          className="h-8 w-8"
+                          aria-label="Next page"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setDriversCurrentPage(driversTotalPages)}
+                          disabled={driversCurrentPage === driversTotalPages}
+                          className="h-8 w-8"
+                          aria-label="Last page"
+                        >
+                          <ChevronsRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Empty div to maintain balance in the layout */}
+                    <div className="flex-1"></div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
-      
-      {/* Vehicle Health Monitor */}
-      <div className="mb-6">
-        <Card className="overflow-hidden">
-          <CardContent className="p-6">
-            <VehicleHealthMonitor 
-              vehicles={vehicles.map(v => ({
-                id: v.id.toString(),
-                name: v.name,
-                type: v.type,
-                status: v.status,
-                healthScore: Math.floor(Math.random() * 30) + 70 // Mock health score between 70-100
-              }))}
-            />
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Maintenance Tracker */}
-      <div className="mb-6">
-        <Card className="overflow-hidden">
+      {/* Fleet Management Analytics Dashboard - Moved outside the tab group */}
+      <div className="space-y-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center">
+              <TrendingUp className="h-6 w-6 mr-2 text-primary" />
+              Fleet Analytics Dashboard
+            </h2>
+            <p className="text-muted-foreground">Comprehensive analytics and technical metrics for your fleet</p>
+          </div>
+          <Button variant="outline">
+            <FileText className="h-4 w-4 mr-2" />
+            Export Report
+          </Button>
+        </div>
+        
+        {/* Enhanced Fleet Health Monitoring System */}
+        <Card className="overflow-hidden border-0 shadow-md">
           <CardHeader className="bg-background border-b">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center text-xl">
-                  <Settings className="h-5 w-5 mr-2 text-primary" />
-                  Fleet Maintenance Manager
+                  <Activity className="h-5 w-5 mr-2 text-primary" />
+                  Vehicle Health Monitoring System
                 </CardTitle>
-                <CardDescription>Track and schedule maintenance for all vehicles</CardDescription>
+                <CardDescription>Real-time diagnostic metrics and predictive maintenance analysis</CardDescription>
               </div>
-              <Button variant="outline" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Schedule Maintenance
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Cpu className="h-4 w-4 mr-2" />
+                  Run Diagnostics
+                </Button>
+                <Button variant="outline" size="sm">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh Data
+                </Button>
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="p-6">
-            <MaintenanceTracker 
-              records={maintenanceRecords}
-              vehicles={vehicles.map(v => ({ id: v.id, name: v.name }))}
-              onAddRecord={(record) => console.log("Add maintenance record", record)}
-            />
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center">
+                        <BarChart className="h-4 w-4 mr-2 text-primary" />
+                        Component Health Distribution
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-[250px] flex items-center justify-center">
+                      <div className="text-center text-muted-foreground w-full p-4">
+                        <BarChart className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
+                        <p>Health distribution visualization</p>
+                        <p className="text-xs mt-1">Showing health metrics across critical components</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center">
+                        <Activity className="h-4 w-4 mr-2 text-primary" />
+                        Fleet Health Trend Analysis
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-[250px] flex items-center justify-center">
+                      <div className="text-center text-muted-foreground w-full p-4">
+                        <Activity className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
+                        <p>Health trend visualization</p>
+                        <p className="text-xs mt-1">Showing health score trends over last 6 months</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-2 text-primary" />
+                      Predictive Maintenance Alerts
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+                        <div className="flex items-start">
+                          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <div>
+                            <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Battery Replacement Required</div>
+                            <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">Truck #103 - Battery voltage dropping below acceptable levels. Replacement recommended within 2 weeks.</div>
+                            <div className="flex items-center mt-2 gap-2">
+                              <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">High Priority</Badge>
+                              <span className="text-xs text-amber-600 dark:text-amber-500">92% Confidence</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                        <div className="flex items-start">
+                          <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <div>
+                            <div className="text-sm font-medium text-blue-800 dark:text-blue-400">Tire Rotation Due</div>
+                            <div className="text-xs text-blue-800 dark:text-blue-400 mt-1">Van #205 - Front tires showing uneven wear pattern. Rotation recommended during next service.</div>
+                            <div className="flex items-center mt-2 gap-2">
+                              <Badge variant="outline" className="text-xs bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-400">Medium Priority</Badge>
+                              <span className="text-xs text-blue-600 dark:text-blue-500">85% Confidence</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              <div>
+                <Card className="h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                      <CircleDot className="h-4 w-4 mr-2 text-primary" />
+                      Component Health Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Engine</span>
+                          <span className="text-sm font-medium text-green-600">92%</span>
+                        </div>
+                        <Progress value={92} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Transmission</span>
+                          <span className="text-sm font-medium text-green-600">88%</span>
+                        </div>
+                        <Progress value={88} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Brakes</span>
+                          <span className="text-sm font-medium text-amber-600">75%</span>
+                        </div>
+                        <Progress value={75} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Suspension</span>
+                          <span className="text-sm font-medium text-green-600">95%</span>
+                        </div>
+                        <Progress value={95} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Electrical</span>
+                          <span className="text-sm font-medium text-green-600">82%</span>
+                        </div>
+                        <Progress value={82} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Fluid Levels</span>
+                          <span className="text-sm font-medium text-green-600">90%</span>
+                        </div>
+                        <Progress value={90} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Tires</span>
+                          <span className="text-sm font-medium text-amber-600">62%</span>
+                        </div>
+                        <Progress value={62} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Battery</span>
+                          <span className="text-sm font-medium text-red-600">45%</span>
+                        </div>
+                        <Progress value={45} className="h-1.5" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Fuel Tracker */}
-      <div className="mb-6">
-        <Card className="overflow-hidden">
-          <CardContent className="p-6">
-            <FuelTracker 
-              records={fuelRecords}
-              vehicles={vehicles.map(v => ({ id: v.id, name: v.name, type: v.type }))}
-              vehiclesFuelData={vehicleFuelData}
-              onAddFuelRecord={(record) => console.log("Add fuel record", record)}
-            />
+        
+        {/* Enhanced Fleet Maintenance System */}
+        <Card className="overflow-hidden border-0 shadow-md">
+          <CardHeader className="bg-background border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center text-xl">
+                  <Wrench className="h-5 w-5 mr-2 text-primary" />
+                  Advanced Maintenance Management System
+                </CardTitle>
+                <CardDescription>Proactive maintenance scheduling and service history analytics</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Schedule Service
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  View Calendar
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-primary" />
+                      Maintenance Schedule
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Vehicle</TableHead>
+                          <TableHead>Service Type</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium">Truck #103</TableCell>
+                          <TableCell>Oil Change & Filter</TableCell>
+                          <TableCell>Apr 18, 2024</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">
+                              Due Soon
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Van #201</TableCell>
+                          <TableCell>Brake Inspection</TableCell>
+                          <TableCell>Apr 22, 2024</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-400">
+                              Scheduled
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Truck #105</TableCell>
+                          <TableCell>Tire Rotation</TableCell>
+                          <TableCell>Apr 10, 2024</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">
+                              Overdue
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Van #205</TableCell>
+                          <TableCell>Full Inspection</TableCell>
+                          <TableCell>Apr 30, 2024</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-400">
+                              Scheduled
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+              <div>
+                <Card className="h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                      <BarChart className="h-4 w-4 mr-2 text-primary" />
+                      Maintenance Metrics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Total Services</div>
+                          <div className="text-2xl font-bold">87</div>
+                        </div>
+                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
+                          <Check className="h-4 w-4 text-green-600 dark:text-green-500" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Upcoming</div>
+                          <div className="text-2xl font-bold">12</div>
+                        </div>
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                          <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-500" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Overdue</div>
+                          <div className="text-2xl font-bold">3</div>
+                        </div>
+                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
+                          <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-500" />
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t mt-2">
+                        <div className="text-sm font-medium mb-2">Maintenance Type Distribution</div>
+                        <div className="space-y-2">
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs text-muted-foreground">Routine Service</span>
+                              <span className="text-xs font-medium">62%</span>
+                            </div>
+                            <Progress value={62} className="h-1" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs text-muted-foreground">Repairs</span>
+                              <span className="text-xs font-medium">28%</span>
+                            </div>
+                            <Progress value={28} className="h-1" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs text-muted-foreground">Inspections</span>
+                              <span className="text-xs font-medium">10%</span>
+                            </div>
+                            <Progress value={10} className="h-1" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Enhanced Fuel Management System */}
+        <Card className="overflow-hidden border-0 shadow-md">
+          <CardHeader className="bg-background border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center text-xl">
+                  <Fuel className="h-5 w-5 mr-2 text-primary" />
+                  Fuel Analytics & Optimization System
+                </CardTitle>
+                <CardDescription>Fuel consumption metrics, efficiency analysis and cost optimization</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Analysis
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Record
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="p-4 flex flex-col justify-between">
+                    <div className="text-sm text-muted-foreground">Total Fuel Consumption</div>
+                    <div className="mt-2 flex items-end justify-between">
+                      <div className="text-2xl font-bold">1,248 gal</div>
+                      <Badge variant="outline" className="bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">
+                        -3.5%
+                      </Badge>
+                    </div>
+                  </Card>
+                  <Card className="p-4 flex flex-col justify-between">
+                    <div className="text-sm text-muted-foreground">Average MPG</div>
+                    <div className="mt-2 flex items-end justify-between">
+                      <div className="text-2xl font-bold">14.8 mpg</div>
+                      <Badge variant="outline" className="bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">
+                        +1.2%
+                      </Badge>
+                    </div>
+                  </Card>
+                  <Card className="p-4 flex flex-col justify-between">
+                    <div className="text-sm text-muted-foreground">Total Fuel Cost</div>
+                    <div className="mt-2 flex items-end justify-between">
+                      <div className="text-2xl font-bold">$4,867</div>
+                      <Badge variant="outline" className="bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">
+                        +2.8%
+                      </Badge>
+                    </div>
+                  </Card>
+                </div>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                      <BarChart3 className="h-4 w-4 mr-2 text-primary" />
+                      Fuel Consumption Trends
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[250px] flex items-center justify-center">
+                    <div className="text-center text-muted-foreground w-full p-4">
+                      <BarChart className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
+                      <p>Fuel consumption visualization</p>
+                      <p className="text-xs mt-1">Monthly consumption by vehicle type</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              <div>
+                <Card className="h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center">
+                      <DollarSign className="h-4 w-4 mr-2 text-primary" />
+                      Fuel Efficiency Ranking
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Van #205</span>
+                          <span className="text-sm font-medium">18.4 mpg</span>
+                        </div>
+                        <Progress value={92} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Van #201</span>
+                          <span className="text-sm font-medium">17.8 mpg</span>
+                        </div>
+                        <Progress value={89} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Truck #107</span>
+                          <span className="text-sm font-medium">15.2 mpg</span>
+                        </div>
+                        <Progress value={76} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Truck #103</span>
+                          <span className="text-sm font-medium">14.6 mpg</span>
+                        </div>
+                        <Progress value={73} className="h-1.5" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm">Truck #105</span>
+                          <span className="text-sm font-medium">12.8 mpg</span>
+                        </div>
+                        <Progress value={64} className="h-1.5" />
+                      </div>
+                      <div className="pt-4 border-t mt-2">
+                        <div className="text-sm font-medium mb-2">Fuel Cost Analysis</div>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Month</TableHead>
+                              <TableHead className="text-right">Cost</TableHead>
+                              <TableHead className="text-right">Trend</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody className="text-sm">
+                            <TableRow>
+                              <TableCell>April</TableCell>
+                              <TableCell className="text-right">$1,245</TableCell>
+                              <TableCell className="text-right">
+                                <Badge variant="outline" className="text-xs bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">+2.3%</Badge>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell>March</TableCell>
+                              <TableCell className="text-right">$1,218</TableCell>
+                              <TableCell className="text-right">
+                                <Badge variant="outline" className="text-xs bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">+1.8%</Badge>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell>February</TableCell>
+                              <TableCell className="text-right">$1,196</TableCell>
+                              <TableCell className="text-right">
+                                <Badge variant="outline" className="text-xs bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">-1.2%</Badge>
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -2748,6 +3199,253 @@ export default function Vehicles() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Add the Driver Details Modal */}
+      <Dialog open={driverDetailsPanelOpen} onOpenChange={setDriverDetailsPanelOpen} modal={true}>
+        <DialogContent className="min-w-[50vw] h-[90vh] p-0">
+          {selectedDriverForDetails && (
+            <div className="h-full flex flex-col">
+              <DialogHeader className="px-6 py-4 border-b sticky top-0 bg-background z-10">
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-xl">Driver Details</DialogTitle>
+                  <DialogDescription className="sr-only">Detailed information about the selected driver</DialogDescription>
+                  <Button variant="ghost" size="icon" onClick={() => setDriverDetailsPanelOpen(false)} className="rounded-full">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </DialogHeader>
+              
+              <div className="flex-1 overflow-y-auto">
+                {/* Driver Header Section */}
+                <div className="p-6 pb-3">
+                  <div className="flex items-center gap-4 p-4 bg-muted/20 rounded-lg">
+                    <div className={`h-16 w-16 rounded-full flex items-center justify-center overflow-hidden ${getAvatarColor(selectedDriverForDetails.name)}`}>
+                      <User className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-medium">{selectedDriverForDetails.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">Driver ID: {selectedDriverForDetails.id}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          setDriverDetailsPanelOpen(false);
+                          handleEditDriver(selectedDriverForDetails);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit Driver
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Driver Details Content */}
+                <div className="px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Performance Overview Card */}
+                  <Card className="md:col-span-3">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center">
+                        <Activity className="h-4 w-4 mr-2 text-primary" />
+                        Performance Overview
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-5 gap-6">
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Safety Score</p>
+                          <div className="flex items-end gap-1">
+                            <span className="text-2xl font-bold">{selectedDriverForDetails.safetyScore}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                            <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${selectedDriverForDetails.safetyScore}%` }} />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Fuel Efficiency</p>
+                          <div className="flex items-end gap-1">
+                            <span className="text-2xl font-bold">{selectedDriverForDetails.fuelEfficiency}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                            <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${selectedDriverForDetails.fuelEfficiency}%` }} />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Time Management</p>
+                          <div className="flex items-end gap-1">
+                            <span className="text-2xl font-bold">{selectedDriverForDetails.timeManagement}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                            <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${selectedDriverForDetails.timeManagement}%` }} />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Vehicle Handling</p>
+                          <div className="flex items-end gap-1">
+                            <span className="text-2xl font-bold">{selectedDriverForDetails.vehicleHandling}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                            <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${selectedDriverForDetails.vehicleHandling}%` }} />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Customer Satisfaction</p>
+                          <div className="flex items-end gap-1">
+                            <span className="text-2xl font-bold">{selectedDriverForDetails.customerSatisfaction}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                            <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${selectedDriverForDetails.customerSatisfaction}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Stats and Activity Cards */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center">
+                        <BarChart className="h-4 w-4 mr-2 text-primary" />
+                        Driver Stats
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <Route className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <span className="text-sm">Total Mileage</span>
+                        </div>
+                        <span className="font-medium">{selectedDriverForDetails.mileage.toLocaleString()} mi</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <span className="text-sm">Total Trips</span>
+                        </div>
+                        <span className="font-medium">{selectedDriverForDetails.trips}</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <span className="text-sm">Idle Time</span>
+                        </div>
+                        <span className="font-medium">{selectedDriverForDetails.idleTime}%</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <AlertTriangle className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <span className="text-sm">Incidents</span>
+                        </div>
+                        <span className="font-medium">{selectedDriverForDetails.incidents}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="md:col-span-2">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center">
+                        <History className="h-4 w-4 mr-2 text-primary" />
+                        Recent Activity
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {/* Placeholder for recent activity */}
+                        <div className="text-sm text-muted-foreground text-center py-6">
+                          <Clock className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+                          <p>Driver activity data will be displayed here</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add the Edit Driver Modal */}
+      <Dialog open={driverEditModalOpen} onOpenChange={setDriverEditModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{driverForEdit ? 'Edit Driver' : 'Add New Driver'}</DialogTitle>
+            <DialogDescription>
+              {driverForEdit ? 'Update driver information' : 'Add a new driver to your fleet'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="name">Driver Name</Label>
+              <Input id="name" placeholder="Full Name" defaultValue={driverForEdit?.name || ''} />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input id="phone" placeholder="Phone Number" defaultValue="(555) 123-4567" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" placeholder="Email Address" defaultValue="driver@example.com" />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="license">License Number</Label>
+              <Input id="license" placeholder="License Number" defaultValue="DL12345678" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select defaultValue="active">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="on-leave">On Leave</SelectItem>
+                  <SelectItem value="unavailable">Unavailable</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDriverEditModalOpen(false)}>Cancel</Button>
+            <Button>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add the Delete Driver Confirmation Dialog */}
+      <AlertDialog open={driverDeleteDialogOpen} onOpenChange={setDriverDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove {driverToDelete?.name} from your driver records.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteDriver} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

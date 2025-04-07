@@ -3,16 +3,20 @@ import {
   Plus, RefreshCw, Search, Filter, Pencil, Trash2, FileText, Truck, 
   CalendarClock, Fuel, Settings, AlertCircle, Map, TrendingUp, Activity, 
   User, Download, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, 
-  Award, Shield, ThumbsUp, BarChart, Clock, X, Calendar, Wrench, AlertTriangle, 
+  Award, Shield, ThumbsUp, BarChart, BarChart3, Clock, X, Calendar, Wrench, AlertTriangle, 
   CheckCircle, Navigation, Check, CircleOff, DollarSign, Gauge, UserRound, 
-  Route, MapPin, History, Cpu, CircleDot
+  Route, MapPin, History, Cpu, CircleDot, TrendingDown, ClipboardList, 
+  Package, MoreHorizontal, Battery, Cog, Droplets, PieChart, Zap, Receipt,
+  Bell, CheckSquare, Info as InfoIcon, CircleDashed, ChevronDown, DatabaseBackup,
+  Timer, AlertOctagon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { fleetService, FleetSummary } from "@/services/fleetService";
 import { Vehicle } from "@shared/schema";
 import { VehicleModal } from "@/components/vehicles/VehicleModal";
@@ -49,7 +53,10 @@ import { formatDate, getMaintenanceStatus, addMockVehicleDetails } from "@/compo
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { BarChart3 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 // Sample maintenance records data
 const maintenanceRecords = [
@@ -546,44 +553,57 @@ const expandedFleetData: ExtendedVehicle[] = [
 ];
 
 export default function Vehicles() {
+  // Keep all the necessary state variables from before
+  const [isLoading, setIsLoading] = useState(true);
+  const [vehicles, setVehicles] = useState<ExtendedVehicle[]>([]);
+  const [filteredVehicles, setFilteredVehicles] = useState<ExtendedVehicle[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+  const [showMap, setShowMap] = useState(false);
+  const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [selectedDriver, setSelectedDriver] = useState<any>(null);
+  const [driverDetailsOpen, setDriverDetailsOpen] = useState(false);
+  const [driverForEdit, setDriverForEdit] = useState<any>(null);
+  const [driverEditModalOpen, setDriverEditModalOpen] = useState(false);
+  const [driverToDelete, setDriverToDelete] = useState<any>(null);
+  const [driverDeleteDialogOpen, setDriverDeleteDialogOpen] = useState(false);
+  const [systemDetailsVisible, setSystemDetailsVisible] = useState(false);
+  const [systemSecurityDetailsVisible, setSystemSecurityDetailsVisible] = useState(false);
+  
+  // Add state variables for all the dialogs that were using getElementById
+  const [failureDetailsDialogOpen, setFailureDetailsDialogOpen] = useState(false);
+  const [componentDetailsDialogOpen, setComponentDetailsDialogOpen] = useState(false);
+  
+  // Add missing state variables needed for the component to work
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [groupByOption, setGroupByOption] = useState("");
-  const [fleetSummary, setFleetSummary] = useState<FleetSummary | null>(null);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | undefined>();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
-  const [selectedTab, setSelectedTab] = useState("vehicles");
-  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
-  const [vehicleForDetails, setVehicleForDetails] = useState<ExtendedVehicle | null>(null);
-  const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
   const [quickStatusOpen, setQuickStatusOpen] = useState(false);
-  const [showMap, setShowMap] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [fleetSummary, setFleetSummary] = useState<FleetSummary | null>(null);
+  const [selectedTab, setSelectedTab] = useState("vehicles");
+  
+  // Driver-related state variables
   const [driversSearch, setDriversSearch] = useState("");
   const [driversPerformanceFilter, setDriversPerformanceFilter] = useState("all");
   const [driversSortMetric, setDriversSortMetric] = useState("safety");
   const [selectedDrivers, setSelectedDrivers] = useState<string[]>([]);
   const [driversCurrentPage, setDriversCurrentPage] = useState(1);
   const [driversPageSize, setDriversPageSize] = useState(5);
+  const [filteredDrivers, setFilteredDrivers] = useState<any[]>([]);
   const [selectedDriverForDetails, setSelectedDriverForDetails] = useState<any>(null);
   const [driverDetailsPanelOpen, setDriverDetailsPanelOpen] = useState(false);
-  const [driverForEdit, setDriverForEdit] = useState<any>(null);
-  const [driverEditModalOpen, setDriverEditModalOpen] = useState(false);
-  const [driverToDelete, setDriverToDelete] = useState<any>(null);
-  const [driverDeleteDialogOpen, setDriverDeleteDialogOpen] = useState(false);
-
+  const [error, setError] = useState<string | null>(null);
+  
   // Update the fetchData function to use the mock data enhancements
   const fetchData = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setIsLoading(true);
       
       // Simulating API call with expanded data
       // In a real app, this would be an actual API call
@@ -606,13 +626,13 @@ export default function Vehicles() {
         outOfServicePercentage: Math.round((outOfService / enhancedVehicles.length) * 100),
       };
       
-      setFleetSummary(summary);
       setVehicles(enhancedVehicles);
-      setLoading(false);
+      setFilteredVehicles(enhancedVehicles);
+      setTotalRecords(enhancedVehicles.length);
+      setIsLoading(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch data:', err);
+      setIsLoading(false);
     }
   };
 
@@ -621,7 +641,7 @@ export default function Vehicles() {
   }, []);
 
   const handleAddVehicle = () => {
-    setSelectedVehicle(undefined);
+    setSelectedVehicle(null);
     setModalOpen(true);
   };
 
@@ -644,13 +664,13 @@ export default function Vehicles() {
       setDeleteDialogOpen(false);
       setVehicleToDelete(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete vehicle');
+      console.error('Failed to delete vehicle:', err);
     }
   };
 
   const handleViewDetails = (vehicle: ExtendedVehicle) => {
-    setVehicleForDetails(vehicle);
-    setDetailPanelOpen(true);
+    setSelectedVehicle(vehicle);
+    setDriverDetailsOpen(true);
   };
 
   const handleBatchStatusChange = (status: string) => {
@@ -680,17 +700,24 @@ export default function Vehicles() {
     }
   };
 
-  const filteredVehicles = vehicles.filter(vehicle => {
-    const matchesStatus = statusFilter === "all" || vehicle.status === statusFilter;
-    const matchesDepartment = departmentFilter === "all" || 
-      (vehicle as ExtendedVehicle).departmentId?.toString() === departmentFilter;
-    const matchesSearch = searchQuery === "" || 
-      vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vehicle.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (vehicle as ExtendedVehicle).licensePlate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (vehicle as ExtendedVehicle).assignedDriver?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch && matchesDepartment;
-  });
+  // Update filteredVehicles with useEffect instead of redeclaring it
+  useEffect(() => {
+    if (vehicles.length > 0) {
+      const filtered = vehicles.filter(vehicle => {
+        const matchesStatus = statusFilter === "all" || vehicle.status === statusFilter;
+        const matchesDepartment = departmentFilter === "all" || 
+          (vehicle as ExtendedVehicle).departmentId?.toString() === departmentFilter;
+        const matchesSearch = searchQuery === "" || 
+          vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          vehicle.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (vehicle as ExtendedVehicle).licensePlate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (vehicle as ExtendedVehicle).assignedDriver?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStatus && matchesSearch && matchesDepartment;
+      });
+      
+      setFilteredVehicles(filtered);
+    }
+  }, [vehicles, statusFilter, departmentFilter, searchQuery]);
 
   // Group vehicles if grouping is enabled
   const groupedVehicles = () => {
@@ -728,7 +755,7 @@ export default function Vehicles() {
     setCurrentPage(1);
   };
 
-  // Driver data
+  // Existing driver data
   const driversData = [
     {
       id: "1",
@@ -802,32 +829,36 @@ export default function Vehicles() {
     }
   ];
 
-  // Filter drivers based on search and performance filter
-  const filteredDrivers = driversData.filter((driver) => {
-    // Calculate overall score
-    const overallScore = Math.round(
-      (driver.safetyScore + 
-      driver.fuelEfficiency + 
-      driver.timeManagement + 
-      driver.vehicleHandling + 
-      driver.customerSatisfaction) / 5
-    );
+  // Update filteredDrivers with useEffect instead of redeclaring it
+  useEffect(() => {
+    const filtered = driversData.filter((driver) => {
+      // Calculate overall score
+      const overallScore = Math.round(
+        (driver.safetyScore + 
+        driver.fuelEfficiency + 
+        driver.timeManagement + 
+        driver.vehicleHandling + 
+        driver.customerSatisfaction) / 5
+      );
+      
+      // Filter by performance category
+      const matchesPerformance = 
+        driversPerformanceFilter === "all" || 
+        (driversPerformanceFilter === "high" && overallScore >= 90) ||
+        (driversPerformanceFilter === "average" && overallScore >= 85 && overallScore < 90) ||
+        (driversPerformanceFilter === "low" && overallScore < 85);
+      
+      // Filter by search query
+      const matchesSearch = driversSearch.trim() === "" || 
+        driver.name.toLowerCase().includes(driversSearch.toLowerCase());
+      
+      return matchesPerformance && matchesSearch;
+    });
     
-    // Filter by performance category
-    const matchesPerformance = 
-      driversPerformanceFilter === "all" || 
-      (driversPerformanceFilter === "high" && overallScore >= 90) ||
-      (driversPerformanceFilter === "average" && overallScore >= 85 && overallScore < 90) ||
-      (driversPerformanceFilter === "low" && overallScore < 85);
-    
-    // Filter by search query
-    const matchesSearch = driversSearch.trim() === "" || 
-      driver.name.toLowerCase().includes(driversSearch.toLowerCase());
-    
-    return matchesPerformance && matchesSearch;
-  });
+    setFilteredDrivers(filtered);
+  }, [driversData, driversPerformanceFilter, driversSearch]);
 
-  // Sort drivers based on selected metric
+  // Sort drivers based on selected metric - keep as is
   const sortedDrivers = [...filteredDrivers].sort((a, b) => {
     if (driversSortMetric === "safety") {
       return b.safetyScore - a.safetyScore;
@@ -901,7 +932,8 @@ export default function Vehicles() {
     // In a real app, you would refresh the data here
   };
 
-  if (loading) {
+  // Replace 'loading' with 'isLoading'
+  if (isLoading) {
     return <div className="container px-4 py-8">Loading...</div>;
   }
 
@@ -2243,25 +2275,11 @@ export default function Vehicles() {
         </Tabs>
       </div>
 
-      {/* Fleet Management Analytics Dashboard - Moved outside the tab group */}
+      {/* Fleet Management Analytics Dashboard - Independent Components */}
       <div className="space-y-6 mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold flex items-center">
-              <TrendingUp className="h-6 w-6 mr-2 text-primary" />
-              Fleet Analytics Dashboard
-            </h2>
-            <p className="text-muted-foreground">Comprehensive analytics and technical metrics for your fleet</p>
-          </div>
-          <Button variant="outline">
-            <FileText className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-        </div>
-        
         {/* Enhanced Fleet Health Monitoring System */}
-        <Card className="overflow-hidden border-0 shadow-md">
-          <CardHeader className="bg-background border-b">
+        <Card className="overflow-hidden border shadow-sm">
+          <CardHeader className="bg-background">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center text-xl">
@@ -2283,530 +2301,1559 @@ export default function Vehicles() {
             </div>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 space-y-4">
+            {/* Real-time Status Overview */}
+            <div className="border rounded-md mb-4 bg-muted/10">
+              <div className="p-2 flex items-center border-b bg-muted/20">
+                <CircleDot className="h-3 w-3 text-green-500 mr-2" />
+                <span className="text-sm font-medium">System Status: Operational</span>
+                <span className="text-xs text-muted-foreground ml-auto">Last updated: {new Date().toLocaleTimeString()}</span>
+              </div>
+              <div className="grid grid-cols-4 gap-4 p-4">
+                <div className="flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Diagnostic Systems</div>
+                  <div className="relative h-16 w-16">
+                    <CircleDot className="h-16 w-16 text-green-500/20" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-bold text-green-600">100%</span>
+                    </div>
+                  </div>
+                  <div className="text-xs font-medium mt-1">Online</div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Sensor Network</div>
+                  <div className="relative h-16 w-16">
+                    <CircleDot className="h-16 w-16 text-green-500/20" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-bold text-green-600">96%</span>
+                    </div>
+                  </div>
+                  <div className="text-xs font-medium mt-1">23/24 Online</div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Data Relays</div>
+                  <div className="relative h-16 w-16">
+                    <CircleDot className="h-16 w-16 text-amber-500/20" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-bold text-amber-600">83%</span>
+                    </div>
+                  </div>
+                  <div className="text-xs font-medium mt-1">5/6 Online</div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-xs text-muted-foreground mb-1">Cloud Sync</div>
+                  <div className="relative h-16 w-16">
+                    <CircleDot className="h-16 w-16 text-green-500/20" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-bold text-green-600">100%</span>
+                    </div>
+                  </div>
+                  <div className="text-xs font-medium mt-1">2m Ago</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Technical Tabs for Different Views */}
+            <Tabs defaultValue="diagnostic" className="w-full">
+              <TabsList className="w-full grid grid-cols-4 mb-4">
+                <TabsTrigger value="diagnostic" className="text-xs">
+                  <Activity className="h-3.5 w-3.5 mr-1" />
+                  Diagnostic
+                </TabsTrigger>
+                <TabsTrigger value="predictive" className="text-xs">
+                  <BarChart className="h-3.5 w-3.5 mr-1" />
+                  Predictive
+                </TabsTrigger>
+                <TabsTrigger value="alerts" className="text-xs">
+                  <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+                  Alerts
+                </TabsTrigger>
+                <TabsTrigger value="systems" className="text-xs">
+                  <Cpu className="h-3.5 w-3.5 mr-1" />
+                  Systems
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="diagnostic">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="relative">
+                    <Search className="h-4 w-4 absolute left-2.5 top-2.5 text-muted-foreground" />
+                    <Input 
+                      className="pl-8 h-9 w-[250px]" 
+                      placeholder="Search diagnostics..." 
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Select defaultValue="all">
+                      <SelectTrigger className="h-9 w-[150px]">
+                        <SelectValue placeholder="Filter by vehicle" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Vehicles</SelectItem>
+                        <SelectItem value="trucks">Trucks</SelectItem>
+                        <SelectItem value="vans">Vans</SelectItem>
+                        <SelectItem value="refrigerated">Refrigerated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select defaultValue="recent">
+                      <SelectTrigger className="h-9 w-[120px]">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="recent">Most Recent</SelectItem>
+                        <SelectItem value="critical">Critical First</SelectItem>
+                        <SelectItem value="vehicle">By Vehicle</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm" onClick={() => alert("Filter applied!")}>
+                      <Filter className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={() => {
+                        const dialog = document.getElementById("run-diagnostic-dialog") as HTMLDialogElement;
+                        if (dialog) dialog.showModal();
+                      }}
+                    >
+                      Run New
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base flex items-center">
+                            <BarChart className="h-4 w-4 mr-2 text-primary" />
+                            Component Health Distribution
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-[250px]">
+                          <div className="h-full flex flex-col justify-center">
+                            <div className="space-y-3">
+                              <div>
+                                <div className="flex justify-between items-center text-sm mb-1">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                                    <span>Excellent (90-100%)</span>
+                                  </div>
+                                  <span className="font-medium">23 components</span>
+                                </div>
+                                <Progress value={46} className="h-2 bg-muted" />
+                              </div>
+                              <div>
+                                <div className="flex justify-between items-center text-sm mb-1">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                                    <span>Good (75-89%)</span>
+                                  </div>
+                                  <span className="font-medium">18 components</span>
+                                </div>
+                                <Progress value={36} className="h-2 bg-muted" />
+                              </div>
+                              <div>
+                                <div className="flex justify-between items-center text-sm mb-1">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
+                                    <span>Fair (50-74%)</span>
+                                  </div>
+                                  <span className="font-medium">7 components</span>
+                                </div>
+                                <Progress value={14} className="h-2 bg-muted" />
+                              </div>
+                              <div>
+                                <div className="flex justify-between items-center text-sm mb-1">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                                    <span>Poor (0-49%)</span>
+                                  </div>
+                                  <span className="font-medium">2 components</span>
+                                </div>
+                                <Progress value={4} className="h-2 bg-muted" />
+                              </div>
+                            </div>
+                            <div className="text-xs text-center text-muted-foreground mt-4">
+                              Based on diagnostic data from 50 critical vehicle components
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base flex items-center">
+                            <Activity className="h-4 w-4 mr-2 text-primary" />
+                            Fleet Health Trend Analysis
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-[250px]">
+                          <div className="h-full flex flex-col">
+                            <div className="flex-1 grid grid-cols-6 grid-rows-3 gap-1 pb-4">
+                              {Array.from({ length: 6 }).map((_, monthIdx) => (
+                                <div key={`month-${monthIdx}`} className="flex flex-col">
+                                  {Array.from({ length: 3 }).map((_, metricIdx) => {
+                                    // Generate trend data with some randomness but overall upward trend
+                                    const baseHeight = 30 + metricIdx * 15 + monthIdx * 3;
+                                    const randomAdjustment = Math.sin(monthIdx) * 5;
+                                    const height = baseHeight + randomAdjustment;
+                                    
+                                    // Get color based on metric type
+                                    const colors = [
+                                      'bg-blue-500 dark:bg-blue-600', 
+                                      'bg-green-500 dark:bg-green-600', 
+                                      'bg-purple-500 dark:bg-purple-600'
+                                    ];
+                                    
+                                    return (
+                                      <div 
+                                        key={`metric-${metricIdx}-${monthIdx}`} 
+                                        className={`${colors[metricIdx]} rounded-sm mt-auto`}
+                                        style={{ height: `${height}%` }}
+                                      ></div>
+                                    );
+                                  })}
+                                </div>
+                              ))}
+                            </div>
+                            <div className="grid grid-cols-6 text-xs text-center text-muted-foreground">
+                              <div>Jan</div>
+                              <div>Feb</div>
+                              <div>Mar</div>
+                              <div>Apr</div>
+                              <div>May</div>
+                              <div>Jun</div>
+                            </div>
+                            <div className="mt-3 flex justify-center items-center gap-4 text-xs">
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 rounded-full bg-blue-500 mr-1"></div>
+                                <span>Engine</span>
+                              </div>
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                                <span>Electrical</span>
+                              </div>
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 rounded-full bg-purple-500 mr-1"></div>
+                                <span>Drivetrain</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    <Card>
+                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                        <CardTitle className="text-base flex items-center">
+                          <CircleDot className="h-4 w-4 mr-2 text-primary" />
+                          Real-Time Diagnostic Data
+                        </CardTitle>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => alert("Diagnostic logs exported to CSV")}
+                        >
+                          <FileText className="h-3.5 w-3.5 mr-1" />
+                          Export Logs
+                        </Button>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <CircleDot className="h-3 w-3 text-green-500 mr-2" />
+                                <span className="text-sm">ECU Status</span>
+                              </div>
+                              <Badge variant="outline" className="text-xs bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">
+                                Normal
+                              </Badge>
+                            </div>
+                            <Progress value={98} className="h-1" />
+                            <span className="text-xs text-muted-foreground">Response time: 124ms</span>
+                          </div>
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <CircleDot className="h-3 w-3 text-green-500 mr-2" />
+                                <span className="text-sm">Sensor Network</span>
+                              </div>
+                              <Badge variant="outline" className="text-xs bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">
+                                Normal
+                              </Badge>
+                            </div>
+                            <Progress value={96} className="h-1" />
+                            <span className="text-xs text-muted-foreground">Data throughput: 1.3 MB/s</span>
+                          </div>
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <CircleDot className="h-3 w-3 text-amber-500 mr-2" />
+                                <span className="text-sm">OBD Interface</span>
+                              </div>
+                              <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">
+                                Degraded
+                              </Badge>
+                            </div>
+                            <Progress value={83} className="h-1" />
+                            <span className="text-xs text-muted-foreground">2 failed connections in 24h</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div>
+                    <Card className="h-full">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center">
+                          <CircleDot className="h-4 w-4 mr-2 text-primary" />
+                          Component Health Status
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Engine</span>
+                              <span className="text-sm font-medium text-green-600">92%</span>
+                            </div>
+                            <Progress value={92} className="h-1.5" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Transmission</span>
+                              <span className="text-sm font-medium text-green-600">88%</span>
+                            </div>
+                            <Progress value={88} className="h-1.5" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Brakes</span>
+                              <span className="text-sm font-medium text-amber-600">75%</span>
+                            </div>
+                            <Progress value={75} className="h-1.5" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Suspension</span>
+                              <span className="text-sm font-medium text-green-600">95%</span>
+                            </div>
+                            <Progress value={95} className="h-1.5" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Electrical</span>
+                              <span className="text-sm font-medium text-green-600">82%</span>
+                            </div>
+                            <Progress value={82} className="h-1.5" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Fluid Levels</span>
+                              <span className="text-sm font-medium text-green-600">90%</span>
+                            </div>
+                            <Progress value={90} className="h-1.5" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Tires</span>
+                              <span className="text-sm font-medium text-amber-600">62%</span>
+                            </div>
+                            <Progress value={62} className="h-1.5" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Battery</span>
+                              <span className="text-sm font-medium text-red-600">45%</span>
+                            </div>
+                            <Progress value={45} className="h-1.5" />
+                          </div>
+                          <Button 
+                            className="w-full mt-2" 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setComponentDetailsDialogOpen(true)}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="predictive">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card>
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-2 flex flex-row items-center justify-between">
                       <CardTitle className="text-base flex items-center">
-                        <BarChart className="h-4 w-4 mr-2 text-primary" />
-                        Component Health Distribution
+                        <TrendingUp className="h-4 w-4 mr-2 text-primary" />
+                        Failure Prediction Model
                       </CardTitle>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => alert("Model settings opened")}
+                      >
+                        <Settings className="h-3.5 w-3.5" />
+                      </Button>
                     </CardHeader>
-                    <CardContent className="h-[250px] flex items-center justify-center">
-                      <div className="text-center text-muted-foreground w-full p-4">
-                        <BarChart className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
-                        <p>Health distribution visualization</p>
-                        <p className="text-xs mt-1">Showing health metrics across critical components</p>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex flex-col">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm">Model Confidence</span>
+                            <span className="text-sm font-medium">92.4%</span>
+                          </div>
+                          <Progress value={92.4} className="h-1.5" />
+                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                            <span>Last updated: Today, 08:45 AM</span>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-5 px-2 text-xs"
+                              onClick={() => alert("Model retrained with latest data")}
+                            >
+                              <RefreshCw className="h-3 w-3 mr-1" />
+                              Retrain
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="pt-2">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-sm font-medium">Predictions by Vehicle Type</h4>
+                            <Select defaultValue="6months">
+                              <SelectTrigger className="h-7 text-xs w-[110px]">
+                                <SelectValue placeholder="Time Range" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="30days">30 Days</SelectItem>
+                                <SelectItem value="3months">3 Months</SelectItem>
+                                <SelectItem value="6months">6 Months</SelectItem>
+                                <SelectItem value="1year">1 Year</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+                                <span>Delivery Trucks</span>
+                              </div>
+                              <span>87% accuracy</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 rounded-full bg-purple-500 mr-2"></div>
+                                <span>Cargo Vans</span>
+                              </div>
+                              <span>93% accuracy</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center">
+                                <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                                <span>Refrigerated Units</span>
+                              </div>
+                              <span>89% accuracy</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <Button 
+                                className="w-full mt-2" 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => alert("Detailed model accuracy report with precision and recall metrics for each component type")}
+                              >
+                                View Full Accuracy Report
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center">
+                        <Clock className="h-4 w-4 mr-2 text-primary" />
+                        Time-to-Failure Estimates
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between items-center mb-3">
+                        <Select defaultValue="high">
+                          <SelectTrigger className="h-8 text-xs w-[120px]">
+                            <SelectValue placeholder="Priority" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="high">High Priority</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="low">Low</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-7 px-2 text-xs"
+                          onClick={() => alert("Maintenance schedule updated")}
+                        >
+                          <Calendar className="h-3 w-3 mr-1" />
+                          Schedule All
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div 
+                          className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+                          onClick={() => setFailureDetailsDialogOpen(true)}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Truck #103 - Battery</div>
+                            <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">14 days</Badge>
+                          </div>
+                          <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">Replace within 2 weeks - Confidence: 92%</div>
+                          <div className="mt-2 flex items-center justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 px-2 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                alert("Added to maintenance schedule");
+                              }}
+                            >
+                              <Calendar className="h-3 w-3 mr-1" />
+                              Schedule
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 px-2 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                alert("Dismissed from alerts");
+                              }}
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Dismiss
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Van #205 - Front Tires</div>
+                            <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">14 days</Badge>
+                          </div>
+                          <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">Replace within 2 weeks - Confidence: 92%</div>
+                          <div className="mt-2 flex items-center justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 px-2 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                alert("Added to maintenance schedule");
+                              }}
+                            >
+                              <Calendar className="h-3 w-3 mr-1" />
+                              Schedule
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 px-2 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                alert("Dismissed from alerts");
+                              }}
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Dismiss
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="alerts">
+                <Card>
+                  <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                    <CardTitle className="text-base flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-2 text-primary" />
+                      Maintenance Alerts & Notifications
+                    </CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => alert("Notification settings opened")}
+                    >
+                      <Bell className="h-3.5 w-3.5 mr-1" />
+                      Configure
+                    </Button>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center mb-4">
+                      <Tabs defaultValue="all" className="w-[400px]">
+                        <TabsList>
+                          <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                          <TabsTrigger value="critical" className="text-xs">Critical</TabsTrigger>
+                          <TabsTrigger value="warning" className="text-xs">Warning</TabsTrigger>
+                          <TabsTrigger value="info" className="text-xs">Info</TabsTrigger>
+                        </TabsList>
+                      </Tabs>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => alert("All alerts resolved")}
+                      >
+                        <CheckSquare className="h-3.5 w-3.5 mr-1" />
+                        Resolve All
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+                        <div className="flex items-start">
+                          <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-medium text-red-800 dark:text-red-400">Critical: Battery Replacement Required</div>
+                              <Badge variant="outline" className="text-xs bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">
+                                Critical
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-red-800 dark:text-red-400 mt-1">Truck #103 - Battery voltage dropping below acceptable levels. Replacement recommended immediately.</div>
+                            <div className="flex items-center mt-2 gap-2">
+                              <span className="text-xs text-red-600 dark:text-red-500">92% Confidence</span>
+                              <span className="text-xs text-red-600 dark:text-red-500">Detected: 2 days ago</span>
+                              <div className="flex items-center ml-auto gap-1">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => alert("Scheduled for maintenance")}
+                                >
+                                  Schedule
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => alert("Alert resolved")}
+                                >
+                                  <Check className="h-3 w-3 mr-1" />
+                                  Resolve
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+                        <div className="flex items-start">
+                          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Warning: Tire Wear Detection</div>
+                              <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">
+                                Warning
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">Van #205 - Front tires showing uneven wear pattern. Rotation recommended during next service.</div>
+                            <div className="flex items-center mt-2 gap-2">
+                              <span className="text-xs text-amber-600 dark:text-amber-500">85% Confidence</span>
+                              <span className="text-xs text-amber-600 dark:text-amber-500">Detected: 5 days ago</span>
+                              <div className="flex items-center ml-auto gap-1">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => alert("Scheduled for maintenance")}
+                                >
+                                  Schedule
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => alert("Alert resolved")}
+                                >
+                                  <Check className="h-3 w-3 mr-1" />
+                                  Resolve
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+                        <div className="flex items-start">
+                          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Warning: Oil Change Due</div>
+                              <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">
+                                Warning
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">Truck #101 - Oil change due in 3 days. Current mileage: 32,450 miles.</div>
+                            <div className="flex items-center mt-2 gap-2">
+                              <span className="text-xs text-amber-600 dark:text-amber-500">Maintenance Interval</span>
+                              <span className="text-xs text-amber-600 dark:text-amber-500">Due: June 29, 2023</span>
+                              <div className="flex items-center ml-auto gap-1">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => alert("Scheduled for maintenance")}
+                                >
+                                  Schedule
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => alert("Alert resolved")}
+                                >
+                                  <Check className="h-3 w-3 mr-1" />
+                                  Resolve
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                        <div className="flex items-start">
+                          <InfoIcon className="h-4 w-4 text-blue-600 dark:text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-medium text-blue-800 dark:text-blue-400">Info: Maintenance Completed</div>
+                              <Badge variant="outline" className="text-xs bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-400">
+                                Info
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-blue-800 dark:text-blue-400 mt-1">Truck #102 - Regular maintenance completed. Next service due in 5,000 miles.</div>
+                            <div className="flex items-center mt-2 gap-2">
+                              <span className="text-xs text-blue-600 dark:text-blue-500">Completed: Today</span>
+                              <div className="flex items-center ml-auto gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => alert("Alert dismissed")}
+                                >
+                                  <X className="h-3 w-3 mr-1" />
+                                  Dismiss
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              {/* Continue with systems tab */}
+              <TabsContent value="systems">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                      <CardTitle className="text-base flex items-center">
+                        <Cpu className="h-4 w-4 mr-2 text-primary" />
+                        Diagnostic System Status
+                      </CardTitle>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => alert("System logs for the last 7 days displayed in a new window")}
+                      >
+                        <FileText className="h-3.5 w-3.5 mr-1" />
+                        Logs
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div 
+                          className="flex justify-between items-center p-2 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => alert("OBD Connection Service: 99.95% uptime, 24.3ms average response time, 1.2M requests/day")}
+                        >
+                          <div className="flex items-center">
+                            <CircleDot className="h-3 w-3 text-green-500 mr-2" />
+                            <span className="text-sm font-medium">OBD Connection Service</span>
+                          </div>
+                          <Badge variant="outline" className="bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">
+                            Online
+                          </Badge>
+                        </div>
+                        <div 
+                          className="flex justify-between items-center p-2 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => alert("Fleet Tracking Service: 100% uptime, 18.7ms average response time, 5.6M location data points/day")}
+                        >
+                          <div className="flex items-center">
+                            <CircleDot className="h-3 w-3 text-green-500 mr-2" />
+                            <span className="text-sm font-medium">Fleet Tracking Service</span>
+                          </div>
+                          <Badge variant="outline" className="bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">
+                            Online
+                          </Badge>
+                        </div>
+                        <div 
+                          className="flex justify-between items-center p-2 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => alert("Predictive Analytics API: 96.8% uptime, 220ms average response time, excessive load detected. Scaling up additional instances.")}
+                        >
+                          <div className="flex items-center">
+                            <CircleDot className="h-3 w-3 text-amber-500 mr-2" />
+                            <span className="text-sm font-medium">Predictive Analytics API</span>
+                          </div>
+                          <Badge variant="outline" className="bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">
+                            Degraded
+                          </Badge>
+                        </div>
+                        <div 
+                          className="flex justify-between items-center p-2 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => alert("Maintenance Database: 100% uptime, 32ms average query time, 180GB storage used (68%)")}
+                        >
+                          <div className="flex items-center">
+                            <CircleDot className="h-3 w-3 text-green-500 mr-2" />
+                            <span className="text-sm font-medium">Maintenance Database</span>
+                          </div>
+                          <Badge variant="outline" className="bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">
+                            Online
+                          </Badge>
+                        </div>
+                        
+                        <div className="mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => {
+                              alert("Comprehensive system diagnostic started. This will take approximately 2 minutes to complete. A notification will appear when finished.");
+                              setTimeout(() => {
+                                alert("System diagnostic completed. All services operational. Report available in System Health dashboard.");
+                              }, 2000);
+                            }}
+                          >
+                            <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                            Run System Diagnostic
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base flex items-center">
                         <Activity className="h-4 w-4 mr-2 text-primary" />
-                        Fleet Health Trend Analysis
+                        System Performance
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="h-[250px] flex items-center justify-center">
-                      <div className="text-center text-muted-foreground w-full p-4">
-                        <Activity className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
-                        <p>Health trend visualization</p>
-                        <p className="text-xs mt-1">Showing health score trends over last 6 months</p>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm">API Response Time</span>
+                            <span className="text-sm font-medium">124ms</span>
+                          </div>
+                          <Progress value={92} className="h-1.5" />
+                          <div className="flex items-center mt-1">
+                            <TrendingDown className="h-3 w-3 text-green-500 mr-1" />
+                            <span className="text-xs text-green-600">-12ms from last week</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm">Server Load</span>
+                            <span className="text-sm font-medium">42%</span>
+                          </div>
+                          <Progress value={42} className="h-1.5" />
+                          <div className="flex items-center mt-1">
+                            <TrendingUp className="h-3 w-3 text-amber-500 mr-1" />
+                            <span className="text-xs text-amber-600">+8% from last week</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm">Data Processing</span>
+                            <span className="text-sm font-medium">1.3 GB/hr</span>
+                          </div>
+                          <Progress value={65} className="h-1.5" />
+                          <div className="flex items-center mt-1">
+                            <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                            <span className="text-xs text-green-600">+0.2 GB from last week</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm">Cloud Storage</span>
+                            <span className="text-sm font-medium">68%</span>
+                          </div>
+                          <Progress value={68} className="h-1.5" />
+                          <div className="flex items-center mt-1">
+                            <TrendingUp className="h-3 w-3 text-amber-500 mr-1" />
+                            <span className="text-xs text-amber-600">+5% from last week</span>
+                          </div>
+                        </div>
+                        
+                        {/* System Details Section */}
+                        <div className="mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full flex items-center justify-center"
+                            onClick={() => setSystemDetailsVisible(!systemDetailsVisible)}
+                          >
+                            <ChevronDown className="h-3.5 w-3.5 mr-1" />
+                            System Details
+                          </Button>
+                          
+                          {systemDetailsVisible && (
+                            <div className="mt-2 space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span>Database Connections:</span>
+                                <span>24/50</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Cache Hit Rate:</span>
+                                <span>92.5%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Average Query Time:</span>
+                                <span>42ms</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>API Rate Limit Used:</span>
+                                <span>36%</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center">
-                      <AlertTriangle className="h-4 w-4 mr-2 text-primary" />
-                      Predictive Maintenance Alerts
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3">
-                        <div className="flex items-start">
-                          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
-                          <div>
-                            <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Battery Replacement Required</div>
-                            <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">Truck #103 - Battery voltage dropping below acceptable levels. Replacement recommended within 2 weeks.</div>
-                            <div className="flex items-center mt-2 gap-2">
-                              <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">High Priority</Badge>
-                              <span className="text-xs text-amber-600 dark:text-amber-500">92% Confidence</span>
+                
+                <div className="mt-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center">
+                        <Shield className="h-4 w-4 mr-2 text-primary" />
+                        System Security & Updates
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-md p-3">
+                          <div className="flex items-start">
+                            <Shield className="h-4 w-4 text-green-600 dark:text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                            <div>
+                              <div className="text-sm font-medium text-green-800 dark:text-green-400">Security Status</div>
+                              <div className="text-xs text-green-800 dark:text-green-400 mt-1">All systems secured. Last scan: 2 hours ago.</div>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="mt-2 h-7 px-2 text-xs"
+                                onClick={() => alert("Security scan initiated")}
+                              >
+                                Run Scan
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                          <div className="flex items-start">
+                            <Download className="h-4 w-4 text-blue-600 dark:text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                            <div>
+                              <div className="text-sm font-medium text-blue-800 dark:text-blue-400">Software Updates</div>
+                              <div className="text-xs text-blue-800 dark:text-blue-400 mt-1">System is up to date. Next check: 12 hours.</div>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="mt-2 h-7 px-2 text-xs"
+                                onClick={() => alert("Update check initiated")}
+                              >
+                                Check Now
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+                          <div className="flex items-start">
+                            <DatabaseBackup className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
+                            <div>
+                              <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Data Backup</div>
+                              <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">Last backup: 6 hours ago. Next backup: 18 hours.</div>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="mt-2 h-7 px-2 text-xs"
+                                onClick={() => alert("Manual backup initiated")}
+                              >
+                                Backup Now
+                              </Button>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
-                        <div className="flex items-start">
-                          <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
-                          <div>
-                            <div className="text-sm font-medium text-blue-800 dark:text-blue-400">Tire Rotation Due</div>
-                            <div className="text-xs text-blue-800 dark:text-blue-400 mt-1">Van #205 - Front tires showing uneven wear pattern. Rotation recommended during next service.</div>
-                            <div className="flex items-center mt-2 gap-2">
-                              <Badge variant="outline" className="text-xs bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-400">Medium Priority</Badge>
-                              <span className="text-xs text-blue-600 dark:text-blue-500">85% Confidence</span>
+                      
+                      <div className="mt-4 border-t pt-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-medium">System Event Log</h4>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-7 px-2 text-xs"
+                            onClick={() => alert("Full log opened")}
+                          >
+                            View All
+                          </Button>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="border-b pb-2">
+                            <div className="flex items-center gap-2">
+                              <CircleDot className="h-2 w-2 text-green-500" />
+                              <span className="font-medium">System Startup</span>
+                              <span className="text-xs text-muted-foreground ml-auto">Today, 08:00 AM</span>
                             </div>
+                            <div className="text-xs text-muted-foreground mt-1">All services started successfully</div>
+                          </div>
+                          
+                          <div className="border-b pb-2">
+                            <div className="flex items-center gap-2">
+                              <CircleDot className="h-2 w-2 text-blue-500" />
+                              <span className="font-medium">Database Backup</span>
+                              <span className="text-xs text-muted-foreground ml-auto">Today, 06:00 AM</span>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">Automated backup completed successfully</div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <CircleDot className="h-2 w-2 text-amber-500" />
+                              <span className="font-medium">API Rate Limit Warning</span>
+                              <span className="text-xs text-muted-foreground ml-auto">Yesterday, 04:32 PM</span>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">Rate limit reached 80% threshold on /api/vehicles endpoint</div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              <div>
-                <Card className="h-full">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center">
-                      <CircleDot className="h-4 w-4 mr-2 text-primary" />
-                      Component Health Status
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Engine</span>
-                          <span className="text-sm font-medium text-green-600">92%</span>
-                        </div>
-                        <Progress value={92} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Transmission</span>
-                          <span className="text-sm font-medium text-green-600">88%</span>
-                        </div>
-                        <Progress value={88} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Brakes</span>
-                          <span className="text-sm font-medium text-amber-600">75%</span>
-                        </div>
-                        <Progress value={75} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Suspension</span>
-                          <span className="text-sm font-medium text-green-600">95%</span>
-                        </div>
-                        <Progress value={95} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Electrical</span>
-                          <span className="text-sm font-medium text-green-600">82%</span>
-                        </div>
-                        <Progress value={82} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Fluid Levels</span>
-                          <span className="text-sm font-medium text-green-600">90%</span>
-                        </div>
-                        <Progress value={90} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Tires</span>
-                          <span className="text-sm font-medium text-amber-600">62%</span>
-                        </div>
-                        <Progress value={62} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Battery</span>
-                          <span className="text-sm font-medium text-red-600">45%</span>
-                        </div>
-                        <Progress value={45} className="h-1.5" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Enhanced Fleet Maintenance System */}
-        <Card className="overflow-hidden border-0 shadow-md">
-          <CardHeader className="bg-background border-b">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center text-xl">
-                  <Wrench className="h-5 w-5 mr-2 text-primary" />
-                  Advanced Maintenance Management System
-                </CardTitle>
-                <CardDescription>Proactive maintenance scheduling and service history analytics</CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Schedule Service
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  View Calendar
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-primary" />
-                      Maintenance Schedule
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Vehicle</TableHead>
-                          <TableHead>Service Type</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">Truck #103</TableCell>
-                          <TableCell>Oil Change & Filter</TableCell>
-                          <TableCell>Apr 18, 2024</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-400">
-                              Due Soon
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <FileText className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Van #201</TableCell>
-                          <TableCell>Brake Inspection</TableCell>
-                          <TableCell>Apr 22, 2024</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-400">
-                              Scheduled
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <FileText className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Truck #105</TableCell>
-                          <TableCell>Tire Rotation</TableCell>
-                          <TableCell>Apr 10, 2024</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">
-                              Overdue
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <FileText className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Van #205</TableCell>
-                          <TableCell>Full Inspection</TableCell>
-                          <TableCell>Apr 30, 2024</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-400">
-                              Scheduled
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <FileText className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </div>
-              <div>
-                <Card className="h-full">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center">
-                      <BarChart className="h-4 w-4 mr-2 text-primary" />
-                      Maintenance Metrics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm text-muted-foreground">Total Services</div>
-                          <div className="text-2xl font-bold">87</div>
-                        </div>
-                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-                          <Check className="h-4 w-4 text-green-600 dark:text-green-500" />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm text-muted-foreground">Upcoming</div>
-                          <div className="text-2xl font-bold">12</div>
-                        </div>
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                          <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-500" />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm text-muted-foreground">Overdue</div>
-                          <div className="text-2xl font-bold">3</div>
-                        </div>
-                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
-                          <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-500" />
-                        </div>
-                      </div>
-                      <div className="pt-2 border-t mt-2">
-                        <div className="text-sm font-medium mb-2">Maintenance Type Distribution</div>
-                        <div className="space-y-2">
-                          <div>
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-xs text-muted-foreground">Routine Service</span>
-                              <span className="text-xs font-medium">62%</span>
-                            </div>
-                            <Progress value={62} className="h-1" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-xs text-muted-foreground">Repairs</span>
-                              <span className="text-xs font-medium">28%</span>
-                            </div>
-                            <Progress value={28} className="h-1" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-xs text-muted-foreground">Inspections</span>
-                              <span className="text-xs font-medium">10%</span>
-                            </div>
-                            <Progress value={10} className="h-1" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Enhanced Fuel Management System */}
-        <Card className="overflow-hidden border-0 shadow-md">
-          <CardHeader className="bg-background border-b">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center text-xl">
-                  <Fuel className="h-5 w-5 mr-2 text-primary" />
-                  Fuel Analytics & Optimization System
-                </CardTitle>
-                <CardDescription>Fuel consumption metrics, efficiency analysis and cost optimization</CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Analysis
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Record
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="p-4 flex flex-col justify-between">
-                    <div className="text-sm text-muted-foreground">Total Fuel Consumption</div>
-                    <div className="mt-2 flex items-end justify-between">
-                      <div className="text-2xl font-bold">1,248 gal</div>
-                      <Badge variant="outline" className="bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">
-                        -3.5%
-                      </Badge>
-                    </div>
-                  </Card>
-                  <Card className="p-4 flex flex-col justify-between">
-                    <div className="text-sm text-muted-foreground">Average MPG</div>
-                    <div className="mt-2 flex items-end justify-between">
-                      <div className="text-2xl font-bold">14.8 mpg</div>
-                      <Badge variant="outline" className="bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">
-                        +1.2%
-                      </Badge>
-                    </div>
-                  </Card>
-                  <Card className="p-4 flex flex-col justify-between">
-                    <div className="text-sm text-muted-foreground">Total Fuel Cost</div>
-                    <div className="mt-2 flex items-end justify-between">
-                      <div className="text-2xl font-bold">$4,867</div>
-                      <Badge variant="outline" className="bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">
-                        +2.8%
-                      </Badge>
-                    </div>
+                    </CardContent>
                   </Card>
                 </div>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center">
-                      <BarChart3 className="h-4 w-4 mr-2 text-primary" />
-                      Fuel Consumption Trends
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-[250px] flex items-center justify-center">
-                    <div className="text-center text-muted-foreground w-full p-4">
-                      <BarChart className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
-                      <p>Fuel consumption visualization</p>
-                      <p className="text-xs mt-1">Monthly consumption by vehicle type</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              <div>
-                <Card className="h-full">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center">
-                      <DollarSign className="h-4 w-4 mr-2 text-primary" />
-                      Fuel Efficiency Ranking
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Van #205</span>
-                          <span className="text-sm font-medium">18.4 mpg</span>
-                        </div>
-                        <Progress value={92} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Van #201</span>
-                          <span className="text-sm font-medium">17.8 mpg</span>
-                        </div>
-                        <Progress value={89} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Truck #107</span>
-                          <span className="text-sm font-medium">15.2 mpg</span>
-                        </div>
-                        <Progress value={76} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Truck #103</span>
-                          <span className="text-sm font-medium">14.6 mpg</span>
-                        </div>
-                        <Progress value={73} className="h-1.5" />
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm">Truck #105</span>
-                          <span className="text-sm font-medium">12.8 mpg</span>
-                        </div>
-                        <Progress value={64} className="h-1.5" />
-                      </div>
-                      <div className="pt-4 border-t mt-2">
-                        <div className="text-sm font-medium mb-2">Fuel Cost Analysis</div>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Month</TableHead>
-                              <TableHead className="text-right">Cost</TableHead>
-                              <TableHead className="text-right">Trend</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody className="text-sm">
-                            <TableRow>
-                              <TableCell>April</TableCell>
-                              <TableCell className="text-right">$1,245</TableCell>
-                              <TableCell className="text-right">
-                                <Badge variant="outline" className="text-xs bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">+2.3%</Badge>
-                              </TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell>March</TableCell>
-                              <TableCell className="text-right">$1,218</TableCell>
-                              <TableCell className="text-right">
-                                <Badge variant="outline" className="text-xs bg-red-100 dark:bg-red-900 border-red-200 dark:border-red-800 text-red-800 dark:text-red-400">+1.8%</Badge>
-                              </TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell>February</TableCell>
-                              <TableCell className="text-right">$1,196</TableCell>
-                              <TableCell className="text-right">
-                                <Badge variant="outline" className="text-xs bg-green-100 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-400">-1.2%</Badge>
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
+        
+        {/* Fleet Management Analytics Dashboard */}
+        <div className="mt-6 space-y-6">
+          {/* Fuel Analytics & Optimization System */}
+          <Card className="overflow-hidden border shadow-sm">
+            <CardHeader className="bg-background">
+              <CardTitle className="text-xl flex items-center">
+                <Fuel className="h-5 w-5 mr-2 text-primary" />
+                Fuel Analytics & Optimization System
+              </CardTitle>
+              <CardDescription>
+                Track fuel consumption, costs, and optimize efficiency across your fleet
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="consumption" className="w-full">
+                <TabsList className="grid grid-cols-3 mb-4">
+                  <TabsTrigger value="consumption">
+                    <Droplets className="h-4 w-4 mr-2" />
+                    Consumption Analytics
+                  </TabsTrigger>
+                  <TabsTrigger value="cost">
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Cost Tracking
+                  </TabsTrigger>
+                  <TabsTrigger value="efficiency">
+                    <Gauge className="h-4 w-4 mr-2" />
+                    Efficiency Monitoring
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="consumption">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="md:col-span-2">
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base flex items-center">
+                            <Droplets className="h-4 w-4 mr-2 text-primary" />
+                            Monthly Fuel Consumption
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-72">
+                          {/* This would normally be a chart component */}
+                          <div className="h-full flex items-center justify-center bg-muted/30 rounded-md border border-dashed">
+                            <div className="text-center px-4">
+                              <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                              <p className="text-sm text-muted-foreground">Monthly consumption trend visualization</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    
+                    <div>
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base flex items-center">
+                            <PieChart className="h-4 w-4 mr-2 text-primary" />
+                            Fuel Usage by Vehicle Type
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div>
+                              <div className="flex justify-between items-center text-sm mb-1">
+                                <div className="flex items-center">
+                                  <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                                  <span>Heavy Trucks</span>
+                                </div>
+                                <span className="font-medium">42%</span>
+                              </div>
+                              <Progress value={42} className="h-1.5" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between items-center text-sm mb-1">
+                                <div className="flex items-center">
+                                  <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                                  <span>Medium Trucks</span>
+                                </div>
+                                <span className="font-medium">32%</span>
+                              </div>
+                              <Progress value={32} className="h-1.5" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between items-center text-sm mb-1">
+                                <div className="flex items-center">
+                                  <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
+                                  <span>Light Vans</span>
+                                </div>
+                                <span className="font-medium">22%</span>
+                              </div>
+                              <Progress value={22} className="h-1.5" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between items-center text-sm mb-1">
+                                <div className="flex items-center">
+                                  <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
+                                  <span>Specialty</span>
+                                </div>
+                                <span className="font-medium">4%</span>
+                              </div>
+                              <Progress value={4} className="h-1.5" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* Other tabs */}
+                <TabsContent value="cost">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base flex items-center">
+                            <DollarSign className="h-4 w-4 mr-2 text-primary" />
+                            Fuel Cost Analysis
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-72">
+                          {/* This would normally be a chart component */}
+                          <div className="h-full flex items-center justify-center bg-muted/30 rounded-md border border-dashed">
+                            <div className="text-center px-4">
+                              <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                              <p className="text-sm text-muted-foreground">Cost analysis visualization</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base flex items-center">
+                            <Receipt className="h-4 w-4 mr-2 text-primary" />
+                            Fuel Expenses Summary
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center pb-2 border-b">
+                              <span className="text-sm">Current Month</span>
+                              <span className="font-medium">$3,425</span>
+                            </div>
+                            <div className="flex justify-between items-center pb-2 border-b">
+                              <span className="text-sm">Previous Month</span>
+                              <span className="font-medium">$3,180</span>
+                            </div>
+                            <div className="flex justify-between items-center pb-2 border-b">
+                              <span className="text-sm">YTD Total</span>
+                              <span className="font-medium">$18,720</span>
+                            </div>
+                            <div className="flex justify-between items-center text-primary">
+                              <span className="text-sm font-medium">Avg. Cost Per Mile</span>
+                              <span className="font-medium">$0.42</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="efficiency">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center">
+                          <Gauge className="h-4 w-4 mr-2 text-primary" />
+                          Fleet Efficiency Metrics
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Heavy Trucks - MPG</span>
+                              <span className="text-sm font-medium">12.5 MPG</span>
+                            </div>
+                            <Progress value={42} className="h-1.5" />
+                            <div className="flex items-center justify-end mt-1">
+                              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                              <span className="text-xs text-green-600">+0.8 MPG from last quarter</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Medium Trucks - MPG</span>
+                              <span className="text-sm font-medium">16.8 MPG</span>
+                            </div>
+                            <Progress value={56} className="h-1.5" />
+                            <div className="flex items-center justify-end mt-1">
+                              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                              <span className="text-xs text-green-600">+1.2 MPG from last quarter</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Light Vans - MPG</span>
+                              <span className="text-sm font-medium">23.5 MPG</span>
+                            </div>
+                            <Progress value={78} className="h-1.5" />
+                            <div className="flex items-center justify-end mt-1">
+                              <TrendingDown className="h-3 w-3 text-amber-500 mr-1" />
+                              <span className="text-xs text-amber-600">-0.5 MPG from last quarter</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center">
+                          <TrendingUp className="h-4 w-4 mr-2 text-primary" />
+                          Efficiency Recommendations
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                            <div className="flex items-center">
+                              <Battery className="h-4 w-4 text-blue-600 dark:text-blue-500 mr-2" />
+                              <div className="text-sm font-medium text-blue-800 dark:text-blue-400">Idle Time Reduction</div>
+                            </div>
+                            <p className="text-xs text-blue-800 dark:text-blue-400 mt-1">
+                              Reducing engine idle time by 10% could save approximately 120 gallons of fuel per month across the fleet.
+                            </p>
+                          </div>
+                          
+                          <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-md p-3">
+                            <div className="flex items-center">
+                              <Route className="h-4 w-4 text-green-600 dark:text-green-500 mr-2" />
+                              <div className="text-sm font-medium text-green-800 dark:text-green-400">Route Optimization</div>
+                            </div>
+                            <p className="text-xs text-green-800 dark:text-green-400 mt-1">
+                              Optimizing delivery routes could improve fuel efficiency by up to 15% for the distribution department.
+                            </p>
+                          </div>
+                          
+                          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+                            <div className="flex items-center">
+                              <Gauge className="h-4 w-4 text-amber-600 dark:text-amber-500 mr-2" />
+                              <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Tire Pressure Monitoring</div>
+                            </div>
+                            <p className="text-xs text-amber-800 dark:text-amber-400 mt-1">
+                              Regular tire pressure checks could improve MPG by 3.3% across the fleet.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      <VehicleModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        vehicle={selectedVehicle}
-        onSuccess={fetchData}
-      />
+      {/* Add the Edit Driver Modal */}
+      <Dialog open={driverEditModalOpen} onOpenChange={setDriverEditModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{driverForEdit ? 'Edit Driver' : 'Add New Driver'}</DialogTitle>
+            <DialogDescription>
+              {driverForEdit ? 'Update driver information' : 'Add a new driver to your fleet'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="name">Driver Name</Label>
+              <Input id="name" placeholder="Full Name" defaultValue={driverForEdit?.name || ''} />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input id="phone" placeholder="Phone Number" defaultValue="(555) 123-4567" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" placeholder="Email Address" defaultValue="driver@example.com" />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="license">License Number</Label>
+              <Input id="license" placeholder="License Number" defaultValue="DL12345678" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select defaultValue="active">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="on-leave">On Leave</SelectItem>
+                  <SelectItem value="unavailable">Unavailable</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDriverEditModalOpen(false)}>Cancel</Button>
+            <Button>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      {/* Add the Delete Driver Confirmation Dialog */}
+      <AlertDialog open={driverDeleteDialogOpen} onOpenChange={setDriverDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the vehicle{" "}
-              <span className="font-medium">{vehicleToDelete?.name}</span> and all its associated records.
+              This will permanently remove {driverToDelete?.name} from your driver records.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+            <AlertDialogAction onClick={confirmDeleteDriver} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Vehicle Detail Panel */}
-      <Dialog open={detailPanelOpen} onOpenChange={setDetailPanelOpen}>
+      {/* Component Details Dialog */}
+      <Dialog open={componentDetailsDialogOpen} onOpenChange={setComponentDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Component Details</DialogTitle>
+            <DialogDescription>
+              Detailed view of vehicle component health and status
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="border rounded-md p-4">
+              <h3 className="text-base font-medium mb-2">Battery System</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Voltage:</span>
+                  <span className="font-medium">12.4V</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Load Test:</span>
+                  <span className="font-medium text-amber-600">Weak</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Age:</span>
+                  <span className="font-medium">24 months</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Recommended Action:</span>
+                  <span className="font-medium text-red-600">Replace</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border rounded-md p-3">
+                <h3 className="text-sm font-medium mb-2">Maintenance History</h3>
+                <div className="text-xs space-y-1">
+                  <p>Last Checked: 15 days ago</p>
+                  <p>Last Replaced: 24 months ago</p>
+                  <p>Warranty: Expired</p>
+                </div>
+              </div>
+              
+              <div className="border rounded-md p-3">
+                <h3 className="text-sm font-medium mb-2">Performance Impact</h3>
+                <div className="text-xs space-y-1">
+                  <p>Starting Reliability: <span className="text-amber-600">Medium</span></p>
+                  <p>Electrical Systems: <span className="text-amber-600">Affected</span></p>
+                  <p>Fuel Efficiency: <span className="text-green-600">Normal</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setComponentDetailsDialogOpen(false)}
+            >
+              Close
+            </Button>
+            <Button 
+              onClick={() => {
+                alert("Maintenance scheduled");
+                setComponentDetailsDialogOpen(false);
+              }}
+            >
+              Schedule Maintenance
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Failure Details Dialog */}
+      <Dialog open={failureDetailsDialogOpen} onOpenChange={setFailureDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Failure Prediction Details</DialogTitle>
+            <DialogDescription>
+              Detailed analysis of predicted component failure
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="flex items-center space-x-4 pb-4 border-b">
+              <AlertTriangle className="h-8 w-8 text-amber-500" />
+              <div>
+                <h3 className="text-base font-medium">Truck #103 - Battery Failure Predicted</h3>
+                <p className="text-sm text-muted-foreground">Estimated time to failure: 14 days</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Prediction Confidence</h4>
+                <div className="flex items-center">
+                  <Progress value={92} className="h-2 flex-1" />
+                  <span className="ml-2 text-sm font-medium">92%</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Based on 245 similar failure patterns</p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-1">Key Indicators</h4>
+                <ul className="text-sm space-y-1">
+                  <li>• Voltage drop during engine start (10.8V, normal: {'>'}11.5V)</li>
+                  <li>• Increased charging time (24min, normal: {'<'}15min)</li>
+                  <li>• Decreased electrolyte specific gravity (1.210, normal: {'>'}1.250)</li>
+                  <li>• Battery age exceeds recommended service life (24 months, recommended: 18-20 months)</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium mb-1">Risk Assessment</h4>
+                <div className="bg-amber-50 dark:bg-amber-950/20 p-3 rounded-md border border-amber-200 dark:border-amber-800">
+                  <p className="text-sm text-amber-800 dark:text-amber-400">
+                    Continued operation without battery replacement may result in unexpected vehicle breakdown within 2 weeks. Risk of electrical system damage increases after 7 days.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setFailureDetailsDialogOpen(false)}
+            >
+              Close
+            </Button>
+            <Button 
+              onClick={() => {
+                alert("Maintenance scheduled");
+                setFailureDetailsDialogOpen(false);
+              }}
+            >
+              Schedule Maintenance
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Vehicle Details Dialog */}
+      <Dialog open={driverDetailsOpen} onOpenChange={setDriverDetailsOpen}>
         <DialogContent className="min-w-[50vw] h-[90vh] p-0">
-          {vehicleForDetails && (
+          {selectedVehicle && (
             <div className="h-full flex flex-col">
               <DialogHeader className="px-6 py-4 border-b sticky top-0 bg-background z-10">
                 <div className="flex items-center justify-between">
                   <DialogTitle className="text-xl">Vehicle Details</DialogTitle>
                   <DialogDescription className="sr-only">Detailed information about the selected vehicle</DialogDescription>
-                  <Button variant="ghost" size="icon" onClick={() => setDetailPanelOpen(false)} className="rounded-full">
+                  <Button variant="ghost" size="icon" onClick={() => setDriverDetailsOpen(false)} className="rounded-full">
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
@@ -2818,17 +3865,17 @@ export default function Vehicles() {
                   <div className="flex items-center gap-4 p-4 bg-muted/20 rounded-lg">
                     <Truck className="h-12 w-12 text-primary p-2 bg-primary/10 rounded-full" />
                     <div className="flex-1">
-                      <h3 className="text-xl font-medium">{vehicleForDetails.name}</h3>
+                      <h3 className="text-xl font-medium">{selectedVehicle.name}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge className={
-                          vehicleForDetails.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                          vehicleForDetails.status === 'maintenance' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                          selectedVehicle.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                          selectedVehicle.status === 'maintenance' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
                           'bg-red-500/10 text-red-500 border-red-500/20'
                         }>
-                          {vehicleForDetails.status.charAt(0).toUpperCase() + vehicleForDetails.status.slice(1)}
+                          {selectedVehicle.status.charAt(0).toUpperCase() + selectedVehicle.status.slice(1)}
                         </Badge>
                         <span className="text-sm text-muted-foreground">
-                          {vehicleForDetails.make || 'N/A'} {vehicleForDetails.model || 'N/A'} • {vehicleForDetails.year || 'N/A'}
+                          {(selectedVehicle as ExtendedVehicle).make || 'N/A'} {(selectedVehicle as ExtendedVehicle).model || 'N/A'} • {(selectedVehicle as ExtendedVehicle).year || 'N/A'}
                         </span>
                       </div>
                     </div>
@@ -2837,8 +3884,8 @@ export default function Vehicles() {
                         variant="outline" 
                         size="sm" 
                         onClick={() => {
-                          setDetailPanelOpen(false);
-                          handleEditVehicle(vehicleForDetails);
+                          setDriverDetailsOpen(false);
+                          handleEditVehicle(selectedVehicle);
                         }}
                       >
                         <Pencil className="h-4 w-4 mr-2" />
@@ -2860,10 +3907,10 @@ export default function Vehicles() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-0 h-[250px] overflow-hidden rounded-b-lg">
-                        {vehicleForDetails.location ? (
+                        {(selectedVehicle as ExtendedVehicle).location ? (
                           <MapComponent 
-                            location={vehicleForDetails.location}
-                            locationName={vehicleForDetails.location.address}
+                            location={(selectedVehicle as ExtendedVehicle).location!}
+                            locationName={(selectedVehicle as ExtendedVehicle).location!.address}
                           />
                         ) : (
                           <div className="h-full bg-muted/20 flex items-center justify-center">
@@ -2890,49 +3937,49 @@ export default function Vehicles() {
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm border-b pb-2">
                               <span className="text-muted-foreground">License Plate:</span>
-                              <span className="font-mono font-medium">{vehicleForDetails.licensePlate || 'N/A'}</span>
+                              <span className="font-mono font-medium">{(selectedVehicle as ExtendedVehicle).licensePlate || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between text-sm border-b pb-2">
                               <span className="text-muted-foreground">VIN:</span>
-                              <span className="font-mono font-medium">{vehicleForDetails.vinNumber || 'N/A'}</span>
+                              <span className="font-mono font-medium">{(selectedVehicle as ExtendedVehicle).vinNumber || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between text-sm border-b pb-2">
                               <span className="text-muted-foreground">Mileage:</span>
-                              <span className="font-medium">{vehicleForDetails.mileage?.toLocaleString() || '0'} mi</span>
+                              <span className="font-medium">{(selectedVehicle as ExtendedVehicle).mileage?.toLocaleString() || '0'} mi</span>
                             </div>
                             <div className="flex justify-between text-sm">
                               <span className="text-muted-foreground">Department:</span>
-                              <span className="font-medium">{vehicleForDetails.departmentName || 'Unassigned'}</span>
+                              <span className="font-medium">{(selectedVehicle as ExtendedVehicle).departmentName || 'Unassigned'}</span>
                             </div>
                           </div>
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm border-b pb-2">
                               <span className="text-muted-foreground">Last Maintenance:</span>
                               <span className="font-medium">
-                                {vehicleForDetails.lastMaintenance 
-                                  ? (typeof vehicleForDetails.lastMaintenance === 'string' 
-                                    ? vehicleForDetails.lastMaintenance 
-                                    : vehicleForDetails.lastMaintenance instanceof Date
-                                      ? vehicleForDetails.lastMaintenance.toLocaleDateString()
-                                      : String(vehicleForDetails.lastMaintenance)) 
+                                {(selectedVehicle as ExtendedVehicle).lastMaintenance 
+                                  ? (typeof (selectedVehicle as ExtendedVehicle).lastMaintenance === 'string' 
+                                    ? (selectedVehicle as ExtendedVehicle).lastMaintenance 
+                                    : (selectedVehicle as ExtendedVehicle).lastMaintenance instanceof Date
+                                      ? (selectedVehicle as ExtendedVehicle).lastMaintenance.toLocaleDateString()
+                                      : String((selectedVehicle as ExtendedVehicle).lastMaintenance)) 
                                   : "N/A"}
                               </span>
                             </div>
                             <div className="flex justify-between text-sm border-b pb-2">
                               <span className="text-muted-foreground">Registration Expires:</span>
                               <span className="font-medium">
-                                {vehicleForDetails.registrationExpiry ? new Date(vehicleForDetails.registrationExpiry).toLocaleDateString() : 'N/A'}
+                                {(selectedVehicle as ExtendedVehicle).registrationExpiry ? new Date((selectedVehicle as ExtendedVehicle).registrationExpiry).toLocaleDateString() : 'N/A'}
                               </span>
                             </div>
                             <div className="flex justify-between text-sm border-b pb-2">
                               <span className="text-muted-foreground">Insurance Expires:</span>
                               <span className="font-medium">
-                                {vehicleForDetails.insuranceExpiry ? new Date(vehicleForDetails.insuranceExpiry).toLocaleDateString() : 'N/A'}
+                                {(selectedVehicle as ExtendedVehicle).insuranceExpiry ? new Date((selectedVehicle as ExtendedVehicle).insuranceExpiry).toLocaleDateString() : 'N/A'}
                               </span>
                             </div>
                             <div className="flex justify-between text-sm">
                               <span className="text-muted-foreground">Assigned Driver:</span>
-                              <span className="font-medium">{vehicleForDetails.assignedDriver || 'Unassigned'}</span>
+                              <span className="font-medium">{(selectedVehicle as ExtendedVehicle).assignedDriver || 'Unassigned'}</span>
                             </div>
                           </div>
                         </div>
@@ -2941,11 +3988,11 @@ export default function Vehicles() {
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex-1 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
                               <div 
-                                className={`h-2 rounded-full ${vehicleForDetails.fuelLevel! > 60 ? 'bg-green-500' : vehicleForDetails.fuelLevel! > 25 ? 'bg-amber-500' : 'bg-red-500'}`}
-                                style={{ width: `${vehicleForDetails.fuelLevel || 0}%` }}
+                                className={`h-2 rounded-full ${(selectedVehicle as ExtendedVehicle).fuelLevel! > 60 ? 'bg-green-500' : (selectedVehicle as ExtendedVehicle).fuelLevel! > 25 ? 'bg-amber-500' : 'bg-red-500'}`}
+                                style={{ width: `${(selectedVehicle as ExtendedVehicle).fuelLevel || 0}%` }}
                               />
                             </div>
-                            <span className="font-medium">{vehicleForDetails.fuelLevel || '0'}%</span>
+                            <span className="font-medium">{(selectedVehicle as ExtendedVehicle).fuelLevel || '0'}%</span>
                           </div>
                         </div>
                       </CardContent>
@@ -2967,13 +4014,13 @@ export default function Vehicles() {
                               <div className="flex justify-between text-sm mb-1">
                                 <span className="text-muted-foreground">Efficiency Rating</span>
                                 <span className="font-medium">
-                                  {vehicleForDetails.fuelEfficiency ? `${vehicleForDetails.fuelEfficiency}%` : 'N/A'}
+                                  {(selectedVehicle as any).fuelEfficiency ? `${(selectedVehicle as any).fuelEfficiency}%` : 'N/A'}
                                 </span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
                                 <div 
                                   className="bg-blue-500 h-1.5 rounded-full"
-                                  style={{ width: `${vehicleForDetails.fuelEfficiency || 0}%` }}
+                                  style={{ width: `${(selectedVehicle as any).fuelEfficiency || 0}%` }}
                                 />
                               </div>
                             </div>
@@ -2982,13 +4029,13 @@ export default function Vehicles() {
                               <div className="flex justify-between text-sm mb-1">
                                 <span className="text-muted-foreground">Utilization Rate</span>
                                 <span className="font-medium">
-                                  {vehicleForDetails.utilizationRate ? `${vehicleForDetails.utilizationRate}%` : 'N/A'}
+                                  {(selectedVehicle as any).utilizationRate ? `${(selectedVehicle as any).utilizationRate}%` : 'N/A'}
                                 </span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
                                 <div 
                                   className="bg-purple-500 h-1.5 rounded-full"
-                                  style={{ width: `${vehicleForDetails.utilizationRate || 0}%` }}
+                                  style={{ width: `${(selectedVehicle as any).utilizationRate || 0}%` }}
                                 />
                               </div>
                             </div>
@@ -2997,13 +4044,13 @@ export default function Vehicles() {
                               <div className="flex justify-between text-sm mb-1">
                                 <span className="text-muted-foreground">Maintenance Score</span>
                                 <span className="font-medium">
-                                  {vehicleForDetails.maintenanceScore ? `${vehicleForDetails.maintenanceScore}%` : 'N/A'}
+                                  {(selectedVehicle as any).maintenanceScore ? `${(selectedVehicle as any).maintenanceScore}%` : 'N/A'}
                                 </span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
                                 <div 
                                   className="bg-green-500 h-1.5 rounded-full"
-                                  style={{ width: `${vehicleForDetails.maintenanceScore || 0}%` }}
+                                  style={{ width: `${(selectedVehicle as any).maintenanceScore || 0}%` }}
                                 />
                               </div>
                             </div>
@@ -3012,7 +4059,7 @@ export default function Vehicles() {
                               <div className="flex justify-between mb-2">
                                 <span className="text-sm font-medium">Monthly Cost Average</span>
                                 <span className="text-sm font-medium text-primary">
-                                  ${vehicleForDetails.monthlyCost?.toFixed(2) || '0.00'}
+                                  ${(selectedVehicle as any).monthlyCost?.toFixed(2) || '0.00'}
                                 </span>
                               </div>
                               <div className="text-xs text-muted-foreground">
@@ -3035,7 +4082,7 @@ export default function Vehicles() {
                         <CardContent className="px-4 pb-4 pt-0 max-h-[250px] overflow-y-auto">
                           <div className="space-y-3 text-sm">
                             {fuelRecords
-                              .filter(r => r.vehicleId === vehicleForDetails.id)
+                              .filter(r => r.vehicleId === selectedVehicle.id)
                               .sort((a, b) => b.date.getTime() - a.date.getTime())
                               .slice(0, 3)
                               .map(record => (
@@ -3057,7 +4104,7 @@ export default function Vehicles() {
                                   )}
                                 </div>
                               ))}
-                            {fuelRecords.filter(r => r.vehicleId === vehicleForDetails.id).length === 0 && (
+                            {fuelRecords.filter(r => r.vehicleId === selectedVehicle.id).length === 0 && (
                               <div className="py-3 text-center text-muted-foreground">
                                 <p>No fuel records found</p>
                               </div>
@@ -3085,13 +4132,13 @@ export default function Vehicles() {
                         <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">View All</Button>
                       </CardHeader>
                       <CardContent className="px-4 pb-4 pt-0 flex-1 overflow-y-auto">
-                        {vehicleForDetails.notes && (
+                        {(selectedVehicle as any).notes && (
                           <div className="mb-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-3">
                             <div className="flex items-start">
                               <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
                               <div>
                                 <div className="text-sm font-medium text-amber-800 dark:text-amber-400">Maintenance Note</div>
-                                <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">{vehicleForDetails.notes}</div>
+                                <div className="text-xs text-amber-800 dark:text-amber-400 mt-1">{(selectedVehicle as any).notes}</div>
                               </div>
                             </div>
                           </div>
@@ -3103,24 +4150,24 @@ export default function Vehicles() {
                             <div className="flex flex-col">
                               <span className="text-xs text-muted-foreground">Next Service</span>
                               <span className="text-sm font-medium">
-                                {formatDate(vehicleForDetails.nextServiceDue)}
+                                {formatDate((selectedVehicle as any).nextServiceDue)}
                               </span>
                             </div>
                           </div>
                           <Badge variant={
-                            getMaintenanceStatus(vehicleForDetails.nextServiceDue) === 'overdue' ? 'destructive' :
-                            getMaintenanceStatus(vehicleForDetails.nextServiceDue) === 'due-soon' ? 'outline' :
+                            getMaintenanceStatus((selectedVehicle as any).nextServiceDue) === 'overdue' ? 'destructive' :
+                            getMaintenanceStatus((selectedVehicle as any).nextServiceDue) === 'due-soon' ? 'outline' :
                             'success'
                           }>
-                            {getMaintenanceStatus(vehicleForDetails.nextServiceDue) === 'overdue' ? 'Overdue' :
-                             getMaintenanceStatus(vehicleForDetails.nextServiceDue) === 'due-soon' ? 'Due Soon' :
+                            {getMaintenanceStatus((selectedVehicle as any).nextServiceDue) === 'overdue' ? 'Overdue' :
+                             getMaintenanceStatus((selectedVehicle as any).nextServiceDue) === 'due-soon' ? 'Due Soon' :
                              'On Schedule'}
                           </Badge>
                         </div>
 
                         <div className="space-y-3 text-sm">
                           {maintenanceRecords
-                            .filter(r => r.vehicleId === vehicleForDetails.id)
+                            .filter(r => r.vehicleId === selectedVehicle.id)
                             .sort((a, b) => b.date.getTime() - a.date.getTime())
                             .map(record => (
                               <div key={record.id} className="p-3 border rounded-md hover:bg-muted/30 transition-colors">
@@ -3175,7 +4222,7 @@ export default function Vehicles() {
                                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{record.description}</p>
                               </div>
                             ))}
-                          {maintenanceRecords.filter(r => r.vehicleId === vehicleForDetails.id).length === 0 && (
+                          {maintenanceRecords.filter(r => r.vehicleId === selectedVehicle.id).length === 0 && (
                             <div className="py-6 text-center text-muted-foreground">
                               <Settings className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
                               <p className="text-sm">No maintenance records found</p>
@@ -3200,7 +4247,7 @@ export default function Vehicles() {
         </DialogContent>
       </Dialog>
 
-      {/* Add the Driver Details Modal */}
+      {/* Driver Details Modal */}
       <Dialog open={driverDetailsPanelOpen} onOpenChange={setDriverDetailsPanelOpen} modal={true}>
         <DialogContent className="min-w-[50vw] h-[90vh] p-0">
           {selectedDriverForDetails && (
@@ -3373,79 +4420,6 @@ export default function Vehicles() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Add the Edit Driver Modal */}
-      <Dialog open={driverEditModalOpen} onOpenChange={setDriverEditModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>{driverForEdit ? 'Edit Driver' : 'Add New Driver'}</DialogTitle>
-            <DialogDescription>
-              {driverForEdit ? 'Update driver information' : 'Add a new driver to your fleet'}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label htmlFor="name">Driver Name</Label>
-              <Input id="name" placeholder="Full Name" defaultValue={driverForEdit?.name || ''} />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" placeholder="Phone Number" defaultValue="(555) 123-4567" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" placeholder="Email Address" defaultValue="driver@example.com" />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="license">License Number</Label>
-              <Input id="license" placeholder="License Number" defaultValue="DL12345678" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select defaultValue="active">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="on-leave">On Leave</SelectItem>
-                  <SelectItem value="unavailable">Unavailable</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDriverEditModalOpen(false)}>Cancel</Button>
-            <Button>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add the Delete Driver Confirmation Dialog */}
-      <AlertDialog open={driverDeleteDialogOpen} onOpenChange={setDriverDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently remove {driverToDelete?.name} from your driver records.
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteDriver} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

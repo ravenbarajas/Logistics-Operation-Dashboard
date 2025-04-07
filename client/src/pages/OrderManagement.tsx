@@ -48,7 +48,9 @@ import {
   Clock, 
   Package,
   DollarSign,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Plus,
+  RefreshCw
 } from "lucide-react";
 import {
   BarChart,
@@ -519,6 +521,14 @@ export default function OrderManagement() {
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
   
+  // Calculate order statistics 
+  const totalOrders = orderList.length;
+  const processingOrders = orderList.filter(order => order.status === "processing").length;
+  const shippedOrders = orderList.filter(order => order.status === "shipped").length;
+  const deliveredOrders = orderList.filter(order => order.status === "delivered").length;
+  const cancelledOrders = orderList.filter(order => order.status === "cancelled").length;
+  const pendingPayment = orderList.filter(order => order.payment === "pending").length;
+  
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -678,25 +688,74 @@ export default function OrderManagement() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Order Management</h1>
-          <p className="text-muted-foreground">Track and manage customer orders</p>
+    <div className="container px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Order Management</h1>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsNewOrderModalOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Order
+          </Button>
+          <Button variant="outline" onClick={() => setOrderList(orders)}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
-        <div className="mt-4 md:mt-0 flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search orders..."
-              className="pl-8 w-[200px] md:w-[260px]"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          </div>
-          <Button onClick={() => setIsNewOrderModalOpen(true)}>New Order</Button>
-        </div>
+      </div>
+      
+      {/* Order Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalOrders}</div>
+            <div className="flex items-center">
+              <ShoppingCart className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">All orders</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Processing</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-500">{processingOrders}</div>
+            <div className="flex items-center">
+              <Package className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">{Math.round((processingOrders / totalOrders) * 100)}% of total orders</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Delivered</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-500">{deliveredOrders}</div>
+            <div className="flex items-center">
+              <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">{Math.round((deliveredOrders / totalOrders) * 100)}% delivery rate</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-500">{pendingPayment}</div>
+            <div className="flex items-center">
+              <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">{Math.round((pendingPayment / totalOrders) * 100)}% of total orders</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">

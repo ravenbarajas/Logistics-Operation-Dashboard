@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,9 +7,10 @@ import { RouteTable, RouteData } from "@/components/routes/RouteTable";
 import { RouteDetails } from "@/components/routes/RouteDetails";
 import { RoutePlanModal } from "@/components/routes/RoutePlanModal";
 import { activeRoutes, scheduledRoutes, completedRoutes, routeTemplates } from "@/components/routes/routeData";
-import { AlertCircle, BarChart3, Clock, Fuel, LineChart, PlusCircle, Route, TrendingDown, Wind, Truck, Calendar, CheckCircle, Copy } from "lucide-react";
+import { AlertCircle, BarChart3, Clock, Fuel, LineChart, PlusCircle, Route, TrendingDown, Wind, Truck, Calendar, CheckCircle, Copy, RefreshCw } from "lucide-react";
 import { BarChart } from "@/components/ui/bar-chart";
 import { LineChart as LineChartComponent } from "@/components/ui/line-chart";
+import { routeService, RouteSummary } from "@/services/routeService";
 
 // Mock data for charts
 const optimizationSummaryData = [
@@ -48,6 +49,26 @@ export default function RouteOptimization() {
   const [selectedRoute, setSelectedRoute] = useState<RouteData | undefined>(undefined);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("active");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<RouteSummary | null>(null);
+  
+  const fetchSummaryData = async () => {
+    try {
+      setLoading(true);
+      const data = await routeService.getRouteSummary();
+      setSummary(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch route summary');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    fetchSummaryData();
+  }, []);
   
   // Handle viewing route details
   const handleViewDetails = (route: RouteData) => {
@@ -140,15 +161,75 @@ export default function RouteOptimization() {
   return (
     <div className="container px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Route Optimization</h1>
-        <Button 
-          onClick={() => setIsRouteModalOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <PlusCircle className="h-4 w-4" />
-            New Route Plan
+        <h1 className="text-3xl font-bold">Route Optimization</h1>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsRouteModalOpen(true)}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Plan New Route
           </Button>
+          <Button variant="outline" onClick={fetchSummaryData}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
+      
+      {/* Route Summary Cards */}
+      {summary && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Routes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary.totalRoutes}</div>
+              <div className="flex items-center">
+                <Route className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">All planned routes</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Active Routes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-500">{summary.activeRoutes}</div>
+              <div className="flex items-center">
+                <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{Math.round((summary.activeRoutes / summary.totalRoutes) * 100)}% currently active</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Completed Routes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-500">{summary.completedRoutes}</div>
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{Math.round((summary.completedRoutes / summary.totalRoutes) * 100)}% completion rate</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Avg. Distance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-500">{summary.averageRouteDistance} mi</div>
+              <div className="flex items-center">
+                <AlertCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">Total: {summary.totalDistance.toLocaleString()} miles</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <Card>
@@ -264,7 +345,7 @@ export default function RouteOptimization() {
             </CardDescription>
         </CardHeader>
           <CardContent className="p-0">
-            <Tabs defaultValue="active" className="w-full">
+            <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="px-6 pt-6">
                 <TabsList className="w-full grid grid-cols-4 mb-6">
                   <TabsTrigger value="active" className="flex items-center gap-1">

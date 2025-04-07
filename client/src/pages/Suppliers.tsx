@@ -41,7 +41,10 @@ import {
   TrendingUp, 
   Clock,
   ExternalLink,
-  CalendarIcon
+  CalendarIcon,
+  Plus,
+  RefreshCw,
+  CheckCircle
 } from "lucide-react";
 import {
   BarChart,
@@ -495,7 +498,7 @@ const evaluationData = [
 ];
 
 export default function Suppliers() {
-  const [supplierList, setSupplierList] = useState<PageSupplier[]>(supplierData);
+  const [suppliers, setSuppliers] = useState<PageSupplier[]>(supplierData);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>(undefined);
@@ -506,17 +509,21 @@ export default function Suppliers() {
   const [ratingFilter, setRatingFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   
-  // Count suppliers by status
-  const supplierCounts = {
-    all: supplierList.length,
-    active: supplierList.filter(s => s.status === "active").length,
-    review: supplierList.filter(s => s.status === "review").length,
-    inactive: supplierList.filter(s => s.status === "inactive").length,
-  };
+  // Calculate supplier statistics
+  const totalSuppliers = suppliers.length;
+  const activeSuppliers = suppliers.filter(s => s.status === 'active').length;
+  const reviewSuppliers = suppliers.filter(s => s.status === 'review').length;
+  const inactiveSuppliers = suppliers.filter(s => s.status === 'inactive').length;
   
   // Calculate average metrics
-  const averageRating = supplierList.reduce((sum, supplier) => sum + supplier.rating, 0) / supplierList.length;
-  const averageOnTimeRate = supplierList.reduce((sum, supplier) => sum + supplier.onTimeRate, 0) / supplierList.length;
+  const avgOnTimeRate = suppliers.reduce((sum, s) => sum + s.onTimeRate, 0) / totalSuppliers;
+  const avgRating = suppliers.reduce((sum, s) => sum + s.rating, 0) / totalSuppliers;
+  
+  // Calculate category distribution
+  const categories = {} as {[key: string]: number};
+  suppliers.forEach(s => {
+    categories[s.category] = (categories[s.category] || 0) + 1;
+  });
   
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -547,13 +554,13 @@ export default function Suppliers() {
         lastDelivery: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         onTimeRate: 90
       };
-      setSupplierList([newSupplier, ...supplierList]);
+      setSuppliers([newSupplier, ...suppliers]);
     }
   };
   
   // Filter suppliers based on search term, status, and additional filters
   const getFilteredSuppliers = (status?: PageSupplier['status']) => {
-    let filtered = supplierList;
+    let filtered = suppliers;
     
     // Apply search filter
     if (searchTerm) {
@@ -740,25 +747,74 @@ export default function Suppliers() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Supplier Management</h1>
-          <p className="text-muted-foreground">Manage suppliers and track performance metrics</p>
+    <div className="container px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Supplier Management</h1>
+        <div className="flex gap-2">
+          <Button onClick={handleAddSupplier}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Supplier
+          </Button>
+          <Button variant="outline" onClick={() => setSuppliers(supplierData)}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
-        <div className="mt-4 md:mt-0 flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search suppliers..."
-              className="pl-8 w-[200px] md:w-[260px]"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          </div>
-          <Button onClick={handleAddSupplier}>Add Supplier</Button>
-        </div>
+      </div>
+      
+      {/* Supplier Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Suppliers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalSuppliers}</div>
+            <div className="flex items-center">
+              <Factory className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Registered suppliers</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Active Suppliers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-500">{activeSuppliers}</div>
+            <div className="flex items-center">
+              <CheckCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">{Math.round((activeSuppliers / totalSuppliers) * 100)}% of total suppliers</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Avg. On-Time Delivery</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-500">{avgOnTimeRate.toFixed(1)}%</div>
+            <div className="flex items-center">
+              <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Average delivery performance</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Supplier Rating</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-500">{avgRating.toFixed(1)}/5</div>
+            <div className="flex items-center">
+              <Star className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Average quality rating</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -771,7 +827,7 @@ export default function Suppliers() {
               <span className="text-muted-foreground text-sm">Total</span>
             </div>
             <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{supplierCounts.active}</h3>
+              <h3 className="text-2xl font-bold">{activeSuppliers}</h3>
               <p className="text-muted-foreground text-sm">Active Suppliers</p>
             </div>
           </CardContent>
@@ -801,7 +857,7 @@ export default function Suppliers() {
               <span className="text-muted-foreground text-sm">Average</span>
             </div>
             <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{averageOnTimeRate.toFixed(1)}%</h3>
+              <h3 className="text-2xl font-bold">{avgOnTimeRate.toFixed(1)}%</h3>
               <p className="text-muted-foreground text-sm">On-Time Delivery</p>
             </div>
           </CardContent>
@@ -816,7 +872,7 @@ export default function Suppliers() {
               <span className="text-muted-foreground text-sm">Average</span>
             </div>
             <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{averageRating.toFixed(1)}</h3>
+              <h3 className="text-2xl font-bold">{avgRating.toFixed(1)}</h3>
               <p className="text-muted-foreground text-sm">Supplier Rating</p>
             </div>
           </CardContent>
@@ -958,10 +1014,10 @@ export default function Suppliers() {
 
       <Tabs defaultValue="all" className="mb-6">
         <TabsList className="mb-4">
-          <TabsTrigger value="all">All Suppliers ({supplierCounts.all})</TabsTrigger>
-          <TabsTrigger value="active">Active ({supplierCounts.active})</TabsTrigger>
-          <TabsTrigger value="review">Under Review ({supplierCounts.review})</TabsTrigger>
-          <TabsTrigger value="inactive">Inactive ({supplierCounts.inactive})</TabsTrigger>
+          <TabsTrigger value="all">All Suppliers ({totalSuppliers})</TabsTrigger>
+          <TabsTrigger value="active">Active ({activeSuppliers})</TabsTrigger>
+          <TabsTrigger value="review">Under Review ({reviewSuppliers})</TabsTrigger>
+          <TabsTrigger value="inactive">Inactive ({inactiveSuppliers})</TabsTrigger>
         </TabsList>
         
         <TabsContent value="all">
@@ -980,7 +1036,7 @@ export default function Suppliers() {
             </CardContent>
             <CardFooter className="border-t py-4 px-6">
               <div className="text-sm text-muted-foreground">
-                Showing {getFilteredSuppliers().length} of {supplierList.length} suppliers
+                Showing {getFilteredSuppliers().length} of {totalSuppliers} suppliers
               </div>
             </CardFooter>
           </Card>
@@ -1002,7 +1058,7 @@ export default function Suppliers() {
             </CardContent>
             <CardFooter className="border-t py-4 px-6">
               <div className="text-sm text-muted-foreground">
-                Showing {getFilteredSuppliers('active').length} of {supplierCounts.active} active suppliers
+                Showing {getFilteredSuppliers('active').length} of {activeSuppliers} active suppliers
               </div>
             </CardFooter>
           </Card>
@@ -1024,7 +1080,7 @@ export default function Suppliers() {
             </CardContent>
             <CardFooter className="border-t py-4 px-6">
               <div className="text-sm text-muted-foreground">
-                Showing {getFilteredSuppliers('review').length} of {supplierCounts.review} suppliers under review
+                Showing {getFilteredSuppliers('review').length} of {reviewSuppliers} suppliers under review
               </div>
             </CardFooter>
           </Card>
@@ -1046,7 +1102,7 @@ export default function Suppliers() {
             </CardContent>
             <CardFooter className="border-t py-4 px-6">
               <div className="text-sm text-muted-foreground">
-                Showing {getFilteredSuppliers('inactive').length} of {supplierCounts.inactive} inactive suppliers
+                Showing {getFilteredSuppliers('inactive').length} of {inactiveSuppliers} inactive suppliers
               </div>
             </CardFooter>
           </Card>

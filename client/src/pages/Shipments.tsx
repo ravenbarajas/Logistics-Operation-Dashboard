@@ -537,7 +537,7 @@ export default function Shipments() {
         <div className="flex gap-2">
           <Button onClick={handleAddShipment}>
             <Plus className="h-4 w-4 mr-2" />
-            Create Shipment
+            Add Shipment
           </Button>
           <Button variant="outline" onClick={fetchData}>
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -545,6 +545,63 @@ export default function Shipments() {
           </Button>
         </div>
       </div>
+      
+      {/* Shipment Summary Cards Section */}
+      {summary && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{summary.totalShipments}</div>
+              <div className="flex items-center">
+                <Package className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">All time shipment count</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">In Transit</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-500">{summary.inTransit}</div>
+              <div className="flex items-center">
+                <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">Currently in transit</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">On-Time Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-500">{summary.onTimeDeliveryRate}%</div>
+              <div className="flex items-center">
+                <Activity className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">Deliveries on time</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Delayed Shipments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-500">{summary.delayedShipments}</div>
+              <div className="flex items-center">
+                <AlertCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{(summary.delayedShipments / summary.totalShipments * 100).toFixed(1)}% of total shipments</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       
       {/* Analytics Overview */}
       <div className="mb-6">
@@ -559,95 +616,6 @@ export default function Shipments() {
           </Card>
         ) : (
           <>
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <div className="mr-2 p-2 bg-primary/10 rounded-full text-primary">
-                      <Package className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold">{summary.totalShipments}</div>
-                      <div className="text-xs text-muted-foreground flex items-center mt-1 gap-2">
-                        <Badge variant="outline" className="font-normal rounded-sm">
-                          {summary.inTransit} In Transit
-                        </Badge>
-                        <Badge variant="outline" className="font-normal rounded-sm">
-                          {summary.pending} Pending
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">On Time Delivery Rate</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <div className="mr-2 p-2 bg-green-500/10 rounded-full text-green-500">
-                      <Calendar className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold">{summary.onTimeDeliveryRate}%</div>
-                      <div className="text-xs text-muted-foreground flex items-center mt-1 gap-2">
-                        <Badge variant="destructive" className="font-normal rounded-sm">
-                          {summary.delayedShipments} Delayed
-                        </Badge>
-                        <Badge variant="default" className="bg-green-500 font-normal rounded-sm">
-                          {summary.delivered} Delivered
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Avg. Delivery Time</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <div className="mr-2 p-2 bg-blue-500/10 rounded-full text-blue-500">
-                      <Clock className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold">{summary.averageDeliveryTime} hrs</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Based on {summary.delivered} completed shipments
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Distance</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <div className="mr-2 p-2 bg-amber-500/10 rounded-full text-amber-500">
-                      <MapPin className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold">{summary.totalDistance.toLocaleString()} mi</div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Avg. {Math.round(summary.totalDistance / summary.totalShipments)} miles per shipment
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             {/* Charts Row 1 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>

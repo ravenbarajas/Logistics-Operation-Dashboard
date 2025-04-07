@@ -48,13 +48,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon } from "lucide-react";
+import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon, User, UserCheck, DollarSign } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import { ShoppingBag } from 'lucide-react';
 import { LineChart } from '@/components/ui/line-chart';
 import { CustomerModal } from "@/components/customers/CustomerModal";
 import { Customer } from "@/services/customerService";
+import { customerService } from "@/services/customerService";
+import { Plus, RefreshCw } from "lucide-react";
 
 // Enhanced customer data with more statuses and variety
 const customersData = [
@@ -264,8 +266,11 @@ const orderVolumeData = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 export default function Customers() {
-  const [customers, setCustomers] = useState(customersData);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<CustomerSummary | null>(null);
   const [selectedTab, setSelectedTab] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
@@ -287,12 +292,12 @@ export default function Customers() {
     let filtered = customers;
     
     // Apply search filter
-    if (searchTerm) {
+    if (searchQuery) {
       filtered = filtered.filter(customer => 
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.location.toLowerCase().includes(searchTerm.toLowerCase())
+        customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.contactPerson.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.location.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     
@@ -595,286 +600,288 @@ export default function Customers() {
     </div>
   );
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [customersData, summaryData] = await Promise.all([
+        customerService.getCustomers(),
+        customerService.getCustomerSummary()
+      ]);
+      setCustomers(customersData);
+      setSummary(summaryData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Customer Management</h1>
-          <p className="text-muted-foreground">Manage customer relationships and monitor order activities</p>
-        </div>
-        <div className="mt-4 md:mt-0 flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search customers..."
-              className="pl-8 w-[200px] md:w-[260px]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+    <div className="container px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Customer Management</h1>
+        <div className="flex gap-2">
           <Button onClick={handleAddCustomer}>
-            <UserPlus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Add Customer
+          </Button>
+          <Button variant="outline" onClick={fetchData}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
           </Button>
         </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <UserRound className="h-6 w-6 text-primary" />
-              </div>
-              <span className="text-muted-foreground text-sm">Total</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{totalCustomers}</h3>
-              <p className="text-muted-foreground text-sm">Total Customers</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-green-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">All-time</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{totalOrders}</h3>
-              <p className="text-muted-foreground text-sm">Total Orders</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-amber-500/10 rounded-full flex items-center justify-center">
-                <Ship className="h-6 w-6 text-amber-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Month</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">720</h3>
-              <p className="text-muted-foreground text-sm">New Orders</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center">
-                <Activity className="h-6 w-6 text-blue-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Average</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">$4,285</h3>
-              <p className="text-muted-foreground text-sm">Order Value</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Customer Distribution</CardTitle>
-            <CardDescription>Breakdown of customer status</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={customerDistribution}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {customerDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Volume Trend</CardTitle>
-            <CardDescription>Monthly order volume history</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={orderTrend}
-                  index="name"
-                  categories={["value"]}
-                  colors={["#2563eb"]}
-                  valueFormatter={valueFormatter}
-                />
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="all" className="mb-6" onValueChange={setSelectedTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="all">All Customers</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="inactive">Inactive</TabsTrigger>
-          <TabsTrigger value="on-hold">On Hold</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="all" className="space-y-6">
+      
+      {/* Customer Summary Cards Section */}
+      {summary && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-              <CardTitle>Customer List</CardTitle>
-              <CardDescription>Manage and track all customer information</CardDescription>
-                </div>
-                <RenderFilters />
-              </div>
+              <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Orders</TableHead>
-                    <TableHead>Last Order</TableHead>
-                    <TableHead>Total Spent</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredCustomers().length > 0 ? (
-                    getFilteredCustomers().map((customer) => (
-                    <TableRow key={customer.id}>
-                      <TableCell className="font-medium">
-                        <div>
-                          <div className="font-medium">{customer.name}</div>
-                          <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
-                        </div>
-                      </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col text-sm">
-                            <div className="flex items-center">
-                              <Mail className="h-3 w-3 mr-1" /> {customer.email}
-                            </div>
-                            <div className="flex items-center mt-1">
-                              <Phone className="h-3 w-3 mr-1" /> {customer.phone}
-                            </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{customer.location}</TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          customer.status === 'active' ? 'success' : 
-                          customer.status === 'inactive' ? 'secondary' : 
-                          'warning'
-                        }>
-                          {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{customer.orders}</TableCell>
-                      <TableCell>{customer.lastOrder}</TableCell>
-                      <TableCell>{customer.totalSpent}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
-                                Edit customer
-                              </DropdownMenuItem>
-                            <DropdownMenuItem>View orders</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">
-                              Deactivate
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-6">
-                        No customers found matching your criteria
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+              <div className="text-2xl font-bold">{summary.totalCustomers}</div>
+              <div className="flex items-center">
+                <User className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">All time customer count</p>
+              </div>
             </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredCustomers().length} of {totalCustomers} customers
-              </div>
-            </CardFooter>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="active">
+          
           <Card>
             <CardHeader className="pb-2">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                  <CardTitle>Active Customers</CardTitle>
-                  <CardDescription>Customers with active accounts and regular orders</CardDescription>
-                </div>
-                <RenderFilters />
-              </div>
+              <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Orders</TableHead>
-                    <TableHead>Last Order</TableHead>
-                    <TableHead>Total Spent</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredCustomers('active').length > 0 ? (
-                    getFilteredCustomers('active').map((customer) => (
+              <div className="text-2xl font-bold text-green-500">{summary.activeCustomers}</div>
+              <div className="flex items-center">
+                <UserCheck className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{Math.round((summary.activeCustomers / summary.totalCustomers) * 100)}% of total customers</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Average Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-500">${summary.averageSpentPerCustomer.toFixed(2)}</div>
+              <div className="flex items-center">
+                <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">Per customer spending</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Customer Segments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between">
+                <div>
+                  <div className="text-lg font-bold">{summary.businessCustomers}</div>
+                  <p className="text-xs text-muted-foreground">Business</p>
+                </div>
+                <div>
+                  <div className="text-lg font-bold">{summary.individualCustomers}</div>
+                  <p className="text-xs text-muted-foreground">Individual</p>
+                </div>
+              </div>
+              <div className="mt-2 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary" 
+                  style={{ width: `${(summary.businessCustomers / summary.totalCustomers) * 100}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      <div className="container mx-auto p-4 md:p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Customer Management</h1>
+            <p className="text-muted-foreground">Manage customer relationships and monitor order activities</p>
+          </div>
+          <div className="mt-4 md:mt-0 flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search customers..."
+                className="pl-8 w-[200px] md:w-[260px]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Button onClick={handleAddCustomer}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Customer
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <UserRound className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-muted-foreground text-sm">Total</span>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-2xl font-bold">{totalCustomers}</h3>
+                <p className="text-muted-foreground text-sm">Total Customers</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
+                  <Building2 className="h-6 w-6 text-green-500" />
+                </div>
+                <span className="text-muted-foreground text-sm">All-time</span>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-2xl font-bold">{totalOrders}</h3>
+                <p className="text-muted-foreground text-sm">Total Orders</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="h-12 w-12 bg-amber-500/10 rounded-full flex items-center justify-center">
+                  <Ship className="h-6 w-6 text-amber-500" />
+                </div>
+                <span className="text-muted-foreground text-sm">Month</span>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-2xl font-bold">720</h3>
+                <p className="text-muted-foreground text-sm">New Orders</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center">
+                  <Activity className="h-6 w-6 text-blue-500" />
+                </div>
+                <span className="text-muted-foreground text-sm">Average</span>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-2xl font-bold">$4,285</h3>
+                <p className="text-muted-foreground text-sm">Order Value</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Distribution</CardTitle>
+              <CardDescription>Breakdown of customer status</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={customerDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {customerDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Volume Trend</CardTitle>
+              <CardDescription>Monthly order volume history</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={orderTrend}
+                    index="name"
+                    categories={["value"]}
+                    colors={["#2563eb"]}
+                    valueFormatter={valueFormatter}
+                  />
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="all" className="mb-6" onValueChange={setSelectedTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="all">All Customers</TabsTrigger>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="inactive">Inactive</TabsTrigger>
+            <TabsTrigger value="on-hold">On Hold</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="all" className="space-y-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                  <div>
+                <CardTitle>Customer List</CardTitle>
+                <CardDescription>Manage and track all customer information</CardDescription>
+                  </div>
+                  <RenderFilters />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Orders</TableHead>
+                      <TableHead>Last Order</TableHead>
+                      <TableHead>Total Spent</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getFilteredCustomers().length > 0 ? (
+                      getFilteredCustomers().map((customer) => (
                       <TableRow key={customer.id}>
                         <TableCell className="font-medium">
                           <div>
@@ -882,17 +889,26 @@ export default function Customers() {
                             <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col text-sm">
-                            <div className="flex items-center">
-                              <Mail className="h-3 w-3 mr-1" /> {customer.email}
-                            </div>
-                            <div className="flex items-center mt-1">
-                              <Phone className="h-3 w-3 mr-1" /> {customer.phone}
-                            </div>
+                          <TableCell>
+                            <div className="flex flex-col text-sm">
+                              <div className="flex items-center">
+                                <Mail className="h-3 w-3 mr-1" /> {customer.email}
+                              </div>
+                              <div className="flex items-center mt-1">
+                                <Phone className="h-3 w-3 mr-1" /> {customer.phone}
+                              </div>
                           </div>
                         </TableCell>
                         <TableCell>{customer.location}</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            customer.status === 'active' ? 'success' : 
+                            customer.status === 'inactive' ? 'secondary' : 
+                            'warning'
+                          }>
+                            {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
+                          </Badge>
+                        </TableCell>
                         <TableCell>{customer.orders}</TableCell>
                         <TableCell>{customer.lastOrder}</TableCell>
                         <TableCell>{customer.totalSpent}</TableCell>
@@ -906,9 +922,9 @@ export default function Customers() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
-                                Edit customer
-                              </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
+                                  Edit customer
+                                </DropdownMenuItem>
                               <DropdownMenuItem>View orders</DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem className="text-destructive">
@@ -918,216 +934,306 @@ export default function Customers() {
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6">
-                        No active customers found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredCustomers('active').length} of {activeCustomers} active customers
-              </div>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="inactive">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                  <CardTitle>Inactive Customers</CardTitle>
-                  <CardDescription>Customers with inactive accounts or no recent orders</CardDescription>
-                </div>
-                <RenderFilters />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Last Active</TableHead>
-                    <TableHead>Total Orders</TableHead>
-                    <TableHead>Total Spent</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredCustomers('inactive').length > 0 ? (
-                    getFilteredCustomers('inactive').map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell className="font-medium">
-                          <div>
-                            <div className="font-medium">{customer.name}</div>
-                            <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col text-sm">
-                            <div className="flex items-center">
-                              <Mail className="h-3 w-3 mr-1" /> {customer.email}
-                            </div>
-                            <div className="flex items-center mt-1">
-                              <Phone className="h-3 w-3 mr-1" /> {customer.phone}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{customer.location}</TableCell>
-                        <TableCell>{customer.lastOrder}</TableCell>
-                        <TableCell>{customer.orders}</TableCell>
-                        <TableCell>{customer.totalSpent}</TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
-                                Edit customer
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>View history</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-primary">
-                                Reactivate
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-6">
+                          No customers found matching your criteria
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6">
-                        No inactive customers found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredCustomers('inactive').length} of {inactiveCustomers} inactive customers
-              </div>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="on-hold">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                  <CardTitle>On Hold Customers</CardTitle>
-                  <CardDescription>Customers with accounts temporarily on hold</CardDescription>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <CardFooter className="border-t py-4 px-6">
+                <div className="text-sm text-muted-foreground">
+                  Showing {getFilteredCustomers().length} of {totalCustomers} customers
                 </div>
-                <RenderFilters />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>On Hold Since</TableHead>
-                    <TableHead>Previous Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredCustomers('on-hold').length > 0 ? (
-                    getFilteredCustomers('on-hold').map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell className="font-medium">
-                          <div>
-                            <div className="font-medium">{customer.name}</div>
-                            <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col text-sm">
-                            <div className="flex items-center">
-                              <Mail className="h-3 w-3 mr-1" /> {customer.email}
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="active">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                  <div>
+                    <CardTitle>Active Customers</CardTitle>
+                    <CardDescription>Customers with active accounts and regular orders</CardDescription>
+                  </div>
+                  <RenderFilters />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Orders</TableHead>
+                      <TableHead>Last Order</TableHead>
+                      <TableHead>Total Spent</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getFilteredCustomers('active').length > 0 ? (
+                      getFilteredCustomers('active').map((customer) => (
+                        <TableRow key={customer.id}>
+                          <TableCell className="font-medium">
+                            <div>
+                              <div className="font-medium">{customer.name}</div>
+                              <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
                             </div>
-                            <div className="flex items-center mt-1">
-                              <Phone className="h-3 w-3 mr-1" /> {customer.phone}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col text-sm">
+                              <div className="flex items-center">
+                                <Mail className="h-3 w-3 mr-1" /> {customer.email}
+                              </div>
+                              <div className="flex items-center mt-1">
+                                <Phone className="h-3 w-3 mr-1" /> {customer.phone}
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{customer.location}</TableCell>
-                        <TableCell>Payment verification</TableCell>
-                        <TableCell>{customer.lastOrder}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">Active</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
-                                Edit customer
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>View details</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-success">
-                                Reactivate
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
-                                Deactivate
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          </TableCell>
+                          <TableCell>{customer.location}</TableCell>
+                          <TableCell>{customer.orders}</TableCell>
+                          <TableCell>{customer.lastOrder}</TableCell>
+                          <TableCell>{customer.totalSpent}</TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
+                                  Edit customer
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>View orders</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive">
+                                  Deactivate
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-6">
+                          No active customers found
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <CardFooter className="border-t py-4 px-6">
+                <div className="text-sm text-muted-foreground">
+                  Showing {getFilteredCustomers('active').length} of {activeCustomers} active customers
+                </div>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="inactive">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                  <div>
+                    <CardTitle>Inactive Customers</CardTitle>
+                    <CardDescription>Customers with inactive accounts or no recent orders</CardDescription>
+                  </div>
+                  <RenderFilters />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6">
-                        No on-hold customers found
-                      </TableCell>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Last Active</TableHead>
+                      <TableHead>Total Orders</TableHead>
+                      <TableHead>Total Spent</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredCustomers('on-hold').length} of {onHoldCustomers} on-hold customers
-              </div>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      
-      {/* Add CustomerModal at the end */}
-      <CustomerModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        customer={editingCustomer}
-        onSave={handleCustomerSuccess}
-      />
+                  </TableHeader>
+                  <TableBody>
+                    {getFilteredCustomers('inactive').length > 0 ? (
+                      getFilteredCustomers('inactive').map((customer) => (
+                        <TableRow key={customer.id}>
+                          <TableCell className="font-medium">
+                            <div>
+                              <div className="font-medium">{customer.name}</div>
+                              <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col text-sm">
+                              <div className="flex items-center">
+                                <Mail className="h-3 w-3 mr-1" /> {customer.email}
+                              </div>
+                              <div className="flex items-center mt-1">
+                                <Phone className="h-3 w-3 mr-1" /> {customer.phone}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{customer.location}</TableCell>
+                          <TableCell>{customer.lastOrder}</TableCell>
+                          <TableCell>{customer.orders}</TableCell>
+                          <TableCell>{customer.totalSpent}</TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
+                                  Edit customer
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>View history</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-primary">
+                                  Reactivate
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-6">
+                          No inactive customers found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <CardFooter className="border-t py-4 px-6">
+                <div className="text-sm text-muted-foreground">
+                  Showing {getFilteredCustomers('inactive').length} of {inactiveCustomers} inactive customers
+                </div>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="on-hold">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                  <div>
+                    <CardTitle>On Hold Customers</CardTitle>
+                    <CardDescription>Customers with accounts temporarily on hold</CardDescription>
+                  </div>
+                  <RenderFilters />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Reason</TableHead>
+                      <TableHead>On Hold Since</TableHead>
+                      <TableHead>Previous Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getFilteredCustomers('on-hold').length > 0 ? (
+                      getFilteredCustomers('on-hold').map((customer) => (
+                        <TableRow key={customer.id}>
+                          <TableCell className="font-medium">
+                            <div>
+                              <div className="font-medium">{customer.name}</div>
+                              <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col text-sm">
+                              <div className="flex items-center">
+                                <Mail className="h-3 w-3 mr-1" /> {customer.email}
+                              </div>
+                              <div className="flex items-center mt-1">
+                                <Phone className="h-3 w-3 mr-1" /> {customer.phone}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{customer.location}</TableCell>
+                          <TableCell>Payment verification</TableCell>
+                          <TableCell>{customer.lastOrder}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">Active</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
+                                  Edit customer
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>View details</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-success">
+                                  Reactivate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive">
+                                  Deactivate
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-6">
+                          No on-hold customers found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <CardFooter className="border-t py-4 px-6">
+                <div className="text-sm text-muted-foreground">
+                  Showing {getFilteredCustomers('on-hold').length} of {onHoldCustomers} on-hold customers
+                </div>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+        </Tabs>
+        
+        {/* Add CustomerModal at the end */}
+        <CustomerModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          customer={editingCustomer}
+          onSave={handleCustomerSuccess}
+        />
+      </div>
     </div>
   );
 }

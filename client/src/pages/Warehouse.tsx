@@ -381,94 +381,88 @@ export default function Warehouse() {
     inactive: { color: "red", label: "Inactive" }
   };
 
+  // Calculate warehouse statistics
+  const totalWarehouses = warehousesData.length;
+  const totalInventoryItems = inventoryItems.length;
+  const totalInventoryUnits = inventoryItems.reduce((total, item) => total + item.quantity, 0);
+  
+  // Calculate average warehouse utilization
+  const totalCapacity = warehousesData.reduce((total, wh) => total + (wh.capacity || 0), 0);
+  const totalUtilization = warehousesData.reduce((total, wh) => total + (wh.utilization || 0), 0);
+  const avgUtilization = totalWarehouses > 0 ? Math.round((totalUtilization / totalWarehouses) * 100) / 100 : 0;
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Warehouse Management</h1>
-          <p className="text-muted-foreground">Inventory tracking and warehouse operations</p>
-        </div>
-        <div className="mt-4 md:mt-0 flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="pl-8 w-[200px] md:w-[260px]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+    <div className="container px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Warehouse Management</h1>
+        <div className="flex gap-2">
           <Button onClick={handleAddWarehouse}>
             <Plus className="h-4 w-4 mr-2" />
             Add Warehouse
           </Button>
+          <Button variant="outline" onClick={fetchData}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      
+      {/* Warehouse Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <WarehouseIcon className="h-6 w-6 text-primary" />
-              </div>
-              <span className="text-muted-foreground text-sm">Total</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{warehousesData.length}</h3>
-              <p className="text-muted-foreground text-sm">Warehouses</p>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Warehouses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalWarehouses}</div>
+            <div className="flex items-center">
+              <WarehouseIcon className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Facilities in operation</p>
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
-                <Package className="h-6 w-6 text-green-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Total</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{inventoryItems.length}</h3>
-              <p className="text-muted-foreground text-sm">Inventory Items</p>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Inventory</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-500">{totalInventoryItems}</div>
+            <div className="flex items-center">
+              <Package2 className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">{totalInventoryUnits.toLocaleString()} units across all items</p>
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-amber-500/10 rounded-full flex items-center justify-center">
-                <AlertTriangle className="h-6 w-6 text-amber-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Alerts</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">3</h3>
-              <p className="text-muted-foreground text-sm">Low Stock Items</p>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Utilization Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-500">{avgUtilization}%</div>
+            <div className="flex items-center">
+              <Boxes className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Average warehouse utilization</p>
             </div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center">
-                <ArrowRightLeft className="h-6 w-6 text-blue-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Today</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">28</h3>
-              <p className="text-muted-foreground text-sm">Stock Movements</p>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Capacity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-500">{totalCapacity.toLocaleString()}</div>
+            <div className="flex items-center">
+              <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Square footage available</p>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      <Tabs defaultValue="warehouses" className="mt-6">
+      
+      <Tabs defaultValue="warehouses" className="space-y-6">
         <TabsList className="mb-4">
           <TabsTrigger value="warehouses">Warehouses</TabsTrigger>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>

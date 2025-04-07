@@ -8,10 +8,10 @@ import { Vehicle } from "@shared/schema";
 import { fleetService } from "@/services/fleetService";
 
 interface VehicleModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   vehicle?: Vehicle;
-  onSuccess: () => void;
+  onSubmit: (vehicle: any) => void;
 }
 
 interface VehicleFormData {
@@ -23,7 +23,7 @@ interface VehicleFormData {
   currentLocation: { lat: number; lng: number };
 }
 
-export function VehicleModal({ isOpen, onClose, vehicle, onSuccess }: VehicleModalProps) {
+export function VehicleModal({ open, onOpenChange, vehicle, onSubmit }: VehicleModalProps) {
   const [formData, setFormData] = useState<VehicleFormData>({
     name: "",
     type: "",
@@ -69,13 +69,7 @@ export function VehicleModal({ isOpen, onClose, vehicle, onSuccess }: VehicleMod
         nextMaintenance: formData.nextMaintenance ? new Date(formData.nextMaintenance) : null,
       };
 
-      if (vehicle) {
-        await fleetService.updateVehicle(vehicle.id, vehicleData);
-      } else {
-        await fleetService.createVehicle(vehicleData);
-      }
-      onSuccess();
-      onClose();
+      onSubmit(vehicleData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save vehicle");
     } finally {
@@ -84,7 +78,7 @@ export function VehicleModal({ isOpen, onClose, vehicle, onSuccess }: VehicleMod
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} forceMount>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="z-[10000]">
         <DialogHeader>
           <DialogTitle>{vehicle ? "Edit Vehicle" : "Add New Vehicle"}</DialogTitle>
@@ -158,7 +152,7 @@ export function VehicleModal({ isOpen, onClose, vehicle, onSuccess }: VehicleMod
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>

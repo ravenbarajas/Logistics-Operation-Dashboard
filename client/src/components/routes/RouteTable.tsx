@@ -46,6 +46,7 @@ export interface RouteData {
   departureTime?: string;
   departureDate?: string;
   status: string;
+  routeType?: string; // delivery, pickup, transfer, return
   fuelConsumption?: number;
   co2Emissions?: number;
   startTime?: string;
@@ -59,6 +60,8 @@ export interface RouteData {
 interface RouteTableProps {
   routes: RouteData[];
   status: "active" | "scheduled" | "completed" | "template";
+  pageSize?: number;
+  onPageSizeChange?: (newSize: number) => void;
   onViewDetails?: (route: RouteData) => void;
   onEdit?: (route: RouteData) => void;
   onDuplicate?: (route: RouteData) => void;
@@ -71,6 +74,8 @@ interface RouteTableProps {
 export function RouteTable({
   routes,
   status,
+  pageSize = 5,
+  onPageSizeChange,
   onViewDetails,
   onEdit,
   onDuplicate,
@@ -80,27 +85,18 @@ export function RouteTable({
   onComplete
 }: RouteTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 5;
+  const itemsPerPage = pageSize;
 
-  // Reset to page 1 when routes change
+  // Reset to page 1 when routes change or page size changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [routes.length]);
-
-  // Filter routes based on search term
-  const filteredRoutes = routes.filter(route =>
-    route.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    route.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    route.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    route.driver.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  }, [routes.length, pageSize]);
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredRoutes.length / itemsPerPage);
+  const totalPages = Math.ceil(routes.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredRoutes.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = routes.slice(indexOfFirstItem, indexOfLastItem);
 
   // Handle page changes
   const handleNextPage = () => {
@@ -153,58 +149,19 @@ export function RouteTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4 px-4">
-        <div className="relative max-w-sm">
-          <Input
-            placeholder="Search routes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8 w-full"
-          />
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        </div>
-        <div className="flex items-center gap-4 ml-auto">
-          <div className="text-sm text-muted-foreground">
-            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredRoutes.length)} of {filteredRoutes.length} routes
-          </div>
-          {totalPages > 1 && (
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Previous Page</span>
-              </Button>
-              <div className="text-sm font-medium">
-                Page {currentPage} of {totalPages}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
-                <span className="sr-only">Next Page</span>
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="border rounded-md overflow-hidden">
+      <div className="overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50">
+            <TableRow className="bg-muted/30">
               <TableHead className="w-[100px] px-4 py-3">Route ID</TableHead>
               <TableHead className="px-4 py-3">Route Name</TableHead>
               <TableHead className="px-4 py-3">Vehicle/Driver</TableHead>
               <TableHead className="text-center px-4 py-3">Stops</TableHead>
               <TableHead className="text-center px-4 py-3">Distance</TableHead>
               <TableHead className="text-center px-4 py-3">Duration</TableHead>
+              <TableHead className="px-4 py-3">Type</TableHead>
+              <TableHead className="text-center px-4 py-3">Fuel</TableHead>
+              <TableHead className="text-center px-4 py-3">CO₂</TableHead>
               {status === "completed" && (
                 <TableHead className="text-center px-4 py-3">Completion</TableHead>
               )}
@@ -259,6 +216,35 @@ export function RouteTable({
                     ) : (
                       formatDuration(route.duration)
                     )}
+                  </TableCell>
+                  <TableCell className="px-4 py-3">
+                    <Badge variant="outline" className={
+                      route.routeType === "delivery" ? "border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400" :
+                      route.routeType === "pickup" ? "border-green-500 text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400" :
+                      route.routeType === "transfer" ? "border-purple-500 text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400" :
+                      route.routeType === "return" ? "border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400" :
+                      ""
+                    }>
+                      {route.routeType ? 
+                        route.routeType.charAt(0).toUpperCase() + route.routeType.slice(1) : 
+                        "N/A"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center px-4 py-3">
+                    {route.fuelConsumption !== undefined ? (
+                      <div>
+                        <span>{route.fuelConsumption.toFixed(1)}</span>
+                        <span className="text-xs text-muted-foreground ml-1">gal</span>
+                      </div>
+                    ) : "—"}
+                  </TableCell>
+                  <TableCell className="text-center px-4 py-3">
+                    {route.co2Emissions !== undefined ? (
+                      <div>
+                        <span>{route.co2Emissions.toFixed(1)}</span>
+                        <span className="text-xs text-muted-foreground ml-1">kg</span>
+                      </div>
+                    ) : "—"}
                   </TableCell>
                   {status === "completed" && (
                     <TableCell className="text-center px-4 py-3">
@@ -350,7 +336,7 @@ export function RouteTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={status === "completed" ? 9 : 8} className="h-24 text-center">
+                <TableCell colSpan={status === "completed" ? 12 : 11} className="h-24 text-center">
                   No routes found.
                 </TableCell>
               </TableRow>
@@ -358,7 +344,7 @@ export function RouteTable({
             {currentItems.length > 0 && currentItems.length < itemsPerPage && (
               Array.from({ length: itemsPerPage - currentItems.length }).map((_, index) => (
                 <TableRow key={`empty-${index}`} className="h-[55px]">
-                  <TableCell colSpan={status === "completed" ? 9 : 8}></TableCell>
+                  <TableCell colSpan={status === "completed" ? 12 : 11}></TableCell>
                 </TableRow>
               ))
             )}

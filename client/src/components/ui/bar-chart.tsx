@@ -13,7 +13,7 @@ import {
 interface BarChartProps {
   data: Record<string, any>[];
   index: string;
-  categories: string[];
+  categories?: string[];
   colors?: string[];
   yAxisWidth?: number;
   valueFormatter?: (value: number) => string;
@@ -22,11 +22,14 @@ interface BarChartProps {
 export function BarChart({
   data,
   index,
-  categories,
+  categories = [],
   colors = ["#2563eb", "#4f46e5", "#8b5cf6", "#d946ef"],
   yAxisWidth = 40,
   valueFormatter = (value: number) => value.toString(),
 }: BarChartProps) {
+  // Ensure categories is an array, fallback to empty array if undefined
+  const safeCategories = categories || [];
+  
   return (
     <ResponsiveContainer width="100%" height={350}>
       <RechartsBarChart
@@ -108,7 +111,7 @@ export function BarChart({
             </div>
           )}
         />
-        {categories.map((category, index) => (
+        {safeCategories.map((category, index) => (
           <Bar
             key={category}
             dataKey={category}

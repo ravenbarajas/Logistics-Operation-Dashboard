@@ -564,7 +564,7 @@ export default function Vehicles() {
   const [showMap, setShowMap] = useState(false);
   const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
   const [selectedDriver, setSelectedDriver] = useState<any>(null);
   const [driverDetailsOpen, setDriverDetailsOpen] = useState(false);
@@ -600,21 +600,7 @@ export default function Vehicles() {
   const [driverDetailsPanelOpen, setDriverDetailsPanelOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Add Driver add handler
-  const handleAddDriver = () => {
-    setDriverForEdit(null);
-    setDriverEditModalOpen(true);
-  };
-
-  // Add Driver form submission handler
-  const handleDriverAddSubmit = (driver: any) => {
-    // This would be an API call in a real application
-    console.log("Adding driver:", driver);
-    setDriverEditModalOpen(false);
-    // In a real app, you would refresh the data here
-  };
-
-  // Update the fetchData function to set the fleetSummary
+  // Update the fetchData function to use the mock data enhancements
   const fetchData = async () => {
     try {
       setIsLoading(true);
@@ -640,7 +626,6 @@ export default function Vehicles() {
         outOfServicePercentage: Math.round((outOfService / enhancedVehicles.length) * 100),
       };
       
-      setFleetSummary(summary);
       setVehicles(enhancedVehicles);
       setFilteredVehicles(enhancedVehicles);
       setTotalRecords(enhancedVehicles.length);
@@ -1488,11 +1473,11 @@ export default function Vehicles() {
                     <div>
                       <CardTitle className="flex items-center text-xl">
                         <User className="h-5 w-5 mr-2 text-primary" />
-                        Driver Management
+                        Driver Performance Analysis
                       </CardTitle>
-                      <CardDescription>Manage your drivers and their performance metrics</CardDescription>
+                      <CardDescription>Comprehensive metrics and analytics for your fleet drivers</CardDescription>
                     </div>
-                    <Button onClick={handleAddDriver}>
+                    <Button variant="outline" size="sm">
                       <Plus className="h-4 w-4 mr-2" />
                       Add Driver
                     </Button>
@@ -3693,7 +3678,7 @@ export default function Vehicles() {
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setDriverEditModalOpen(false)}>Cancel</Button>
-            <Button onClick={() => driverForEdit ? handleDriverAddSubmit(driverForEdit) : handleDriverAddSubmit({})}>Save Changes</Button>
+            <Button>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -4435,24 +4420,6 @@ export default function Vehicles() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Vehicle Modal */}
-      <VehicleModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        vehicle={selectedVehicle}
-        onSubmit={(vehicle) => {
-          if (selectedVehicle) {
-            // This would be an API call in a real application
-            console.log("Updating vehicle:", vehicle);
-          } else {
-            // This would be an API call in a real application
-            console.log("Adding vehicle:", vehicle);
-          }
-          fetchData(); // Refresh data after adding/updating
-          setModalOpen(false);
-        }}
-      />
     </div>
   );
 }

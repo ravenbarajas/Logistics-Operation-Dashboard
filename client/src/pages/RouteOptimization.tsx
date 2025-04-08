@@ -10,7 +10,7 @@ import { activeRoutes, scheduledRoutes, completedRoutes, routeTemplates } from "
 import { 
   AlertCircle, BarChart3, Clock, Fuel as FuelIcon, LineChart, PlusCircle, Route, 
   TrendingDown, Wind, Truck, Calendar, CheckCircle, Copy, RefreshCw, Settings,
-  Zap, DollarSign, Compass, MapIcon, Calculator, Separator as SeparatorIcon, ChevronLeft, ChevronRight, Search, ChevronsLeft, ChevronsRight, Save, Play
+  Zap, DollarSign, Compass, MapPin, Calculator, ChevronLeft, ChevronRight, Search, ChevronsLeft, ChevronsRight, Save, Play, Map as MapIcon
 } from "lucide-react";
 import { BarChart } from "@/components/ui/bar-chart";
 import { LineChart as LineChartComponent } from "@/components/ui/line-chart";
@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { GeoDistribution } from "@/components/maps/GeoDistribution";
 
 // Mock data for charts
 const optimizationSummaryData = [
@@ -1799,7 +1800,7 @@ export default function RouteOptimization() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart className="h-5 w-5 text-primary" />
+                <BarChart3 className="h-5 w-5 text-primary" />
                 Route Efficiency Improvements
               </CardTitle>
               <CardDescription>Savings per route after optimization</CardDescription>
@@ -1842,15 +1843,8 @@ export default function RouteOptimization() {
               </CardTitle>
               <CardDescription>Route density and geographic distribution</CardDescription>
             </CardHeader>
-            <CardContent className="min-h-[300px] flex items-center justify-center p-6 bg-muted/50 rounded-md">
-              <div className="text-center space-y-3">
-                <MapIcon className="h-16 w-16 text-muted-foreground/50 mx-auto" />
-                <h3 className="text-lg font-medium">Interactive Map Visualization</h3>
-                <p className="text-sm text-muted-foreground max-w-md">
-                  This component would include an interactive map showing route density, 
-                  congestion patterns, and optimized paths across different regions.
-                </p>
-              </div>
+            <CardContent className="min-h-[300px]">
+              <GeoDistribution height="370px" />
             </CardContent>
           </Card>
         </div>
@@ -1916,7 +1910,7 @@ export default function RouteOptimization() {
                     <span className="text-sm font-medium">Morning (6AM-10AM)</span>
                     <span className="text-sm font-medium text-amber-500">Medium</span>
                   </div>
-                  <Progress value={65} className="h-2 bg-muted" indicatorColor="bg-amber-500" />
+                  <Progress value={65} className="h-2 bg-muted" />
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>65% Utilized</span>
                     <span>42 Deliveries</span>
@@ -1928,7 +1922,7 @@ export default function RouteOptimization() {
                     <span className="text-sm font-medium">Midday (10AM-2PM)</span>
                     <span className="text-sm font-medium text-green-500">Optimal</span>
                   </div>
-                  <Progress value={85} className="h-2 bg-muted" indicatorColor="bg-green-500" />
+                  <Progress value={85} className="h-2 bg-muted" />
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>85% Utilized</span>
                     <span>68 Deliveries</span>
@@ -1940,7 +1934,7 @@ export default function RouteOptimization() {
                     <span className="text-sm font-medium">Afternoon (2PM-6PM)</span>
                     <span className="text-sm font-medium text-red-500">Congested</span>
                   </div>
-                  <Progress value={92} className="h-2 bg-muted" indicatorColor="bg-red-500" />
+                  <Progress value={92} className="h-2 bg-muted" />
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>92% Utilized</span>
                     <span>74 Deliveries</span>

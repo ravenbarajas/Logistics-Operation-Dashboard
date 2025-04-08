@@ -8,7 +8,7 @@ import {
   Route, MapPin, History, Cpu, CircleDot, TrendingDown, ClipboardList, 
   Package, MoreHorizontal, Battery, Cog, Droplets, PieChart, Zap, Receipt,
   Bell, CheckSquare, Info as InfoIcon, CircleDashed, ChevronDown, DatabaseBackup,
-  Timer, AlertOctagon
+  Timer, AlertOctagon, Car, Calculator
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -552,6 +552,24 @@ const expandedFleetData: ExtendedVehicle[] = [
   }
 ];
 
+// Add this sample data near the top where other sample data is defined
+const monthlyFuelData = [
+  { month: 'Jan', consumption: 2850, cost: 9245, avgPrice: 3.25, vehicles: 8 },
+  { month: 'Feb', consumption: 2650, cost: 8745, avgPrice: 3.30, vehicles: 8 },
+  { month: 'Mar', consumption: 2950, cost: 9835, avgPrice: 3.33, vehicles: 9 },
+  { month: 'Apr', consumption: 2750, cost: 9350, avgPrice: 3.40, vehicles: 9 },
+  { month: 'May', consumption: 2800, cost: 9520, avgPrice: 3.40, vehicles: 9 },
+  { month: 'Jun', consumption: 3100, cost: 10695, avgPrice: 3.45, vehicles: 10 }
+];
+
+const vehicleFuelConsumption = [
+  { id: 'TR-101', name: 'Heavy Truck #101', type: 'Heavy Duty', lastMonth: 485, thisMonth: 512, efficiency: 92 },
+  { id: 'TR-102', name: 'Heavy Truck #102', type: 'Heavy Duty', lastMonth: 465, thisMonth: 478, efficiency: 88 },
+  { id: 'VN-201', name: 'Delivery Van #201', type: 'Light Duty', lastMonth: 225, thisMonth: 238, efficiency: 95 },
+  { id: 'VN-202', name: 'Delivery Van #202', type: 'Light Duty', lastMonth: 215, thisMonth: 225, efficiency: 94 },
+  { id: 'TR-103', name: 'Medium Truck #103', type: 'Medium Duty', lastMonth: 345, thisMonth: 368, efficiency: 90 }
+];
+
 export default function Vehicles() {
   // Keep all the necessary state variables from before
   const [isLoading, setIsLoading] = useState(true);
@@ -564,7 +582,7 @@ export default function Vehicles() {
   const [showMap, setShowMap] = useState(false);
   const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [totalRecords, setTotalRecords] = useState(0);
   const [selectedDriver, setSelectedDriver] = useState<any>(null);
   const [driverDetailsOpen, setDriverDetailsOpen] = useState(false);
@@ -600,6 +618,17 @@ export default function Vehicles() {
   const [driverDetailsPanelOpen, setDriverDetailsPanelOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Add these state variables near the top where other states are defined
+  const [consumptionCurrentPage, setConsumptionCurrentPage] = useState(1);
+  const [consumptionPageSize, setConsumptionPageSize] = useState(5);
+  const [consumptionSearchQuery, setConsumptionSearchQuery] = useState("");
+  const [consumptionTypeFilter, setConsumptionTypeFilter] = useState("all");
+
+  const [costCurrentPage, setCostCurrentPage] = useState(1);
+  const [costPageSize, setCostPageSize] = useState(5);
+  const [costSearchQuery, setCostSearchQuery] = useState("");
+  const [costMonthFilter, setCostMonthFilter] = useState("all");
+  
   // Update the fetchData function to use the mock data enhancements
   const fetchData = async () => {
     try {
@@ -628,6 +657,7 @@ export default function Vehicles() {
       
       setVehicles(enhancedVehicles);
       setFilteredVehicles(enhancedVehicles);
+      setFleetSummary(summary);
       setTotalRecords(enhancedVehicles.length);
       setIsLoading(false);
     } catch (err) {
@@ -659,12 +689,42 @@ export default function Vehicles() {
     if (!vehicleToDelete) return;
     
     try {
+      // Remove the vehicle from the local state first for immediate UI update
+      setVehicles(prev => prev.filter(v => v.id !== vehicleToDelete.id));
+      setFilteredVehicles(prev => prev.filter(v => v.id !== vehicleToDelete.id));
+      
+      // Call the API to delete the vehicle
       await fleetService.deleteVehicle(vehicleToDelete.id);
-      await fetchData();
-      setDeleteDialogOpen(false);
+      
+      // Update the fleet summary
+      if (fleetSummary) {
+        const newSummary = { ...fleetSummary };
+        newSummary.totalVehicles--;
+        if (vehicleToDelete.status === 'active') newSummary.activeVehicles--;
+        else if (vehicleToDelete.status === 'maintenance') newSummary.inMaintenance--;
+        else if (vehicleToDelete.status === 'inactive') newSummary.outOfService--;
+        
+        // Recalculate percentages
+        newSummary.activePercentage = Math.round((newSummary.activeVehicles / newSummary.totalVehicles) * 100);
+        newSummary.maintenancePercentage = Math.round((newSummary.inMaintenance / newSummary.totalVehicles) * 100);
+        newSummary.outOfServicePercentage = Math.round((newSummary.outOfService / newSummary.totalVehicles) * 100);
+        
+        setFleetSummary(newSummary);
+      }
+      
+      // Clear the selected vehicle and close the dialog
       setVehicleToDelete(null);
+      setDeleteDialogOpen(false);
+      
+      // Show success message (if you have a toast notification system)
+      // toast.success('Vehicle deleted successfully');
     } catch (err) {
       console.error('Failed to delete vehicle:', err);
+      // Show error message (if you have a toast notification system)
+      // toast.error('Failed to delete vehicle');
+      
+      // Refresh the data to ensure consistency
+      await fetchData();
     }
   };
 
@@ -930,6 +990,49 @@ export default function Vehicles() {
     setDriverDeleteDialogOpen(false);
     setDriverToDelete(null);
     // In a real app, you would refresh the data here
+  };
+
+  const handleSubmitVehicle = async (vehicleData: any) => {
+    try {
+      const newVehicle = await fleetService.createVehicle(vehicleData);
+      await fetchData();
+      setModalOpen(false);
+    } catch (err) {
+      console.error('Failed to create vehicle:', err);
+    }
+  };
+
+  const handleAddDriver = () => {
+    setDriverForEdit(null);
+    setDriverEditModalOpen(true);
+  };
+
+  const handleSubmitDriver = async (driverData: any) => {
+    try {
+      // In a real app, this would be an API call
+      const newDriver = {
+        id: String(driversData.length + 1),
+        name: driverData.name,
+        avatar: null,
+        safetyScore: 90,
+        fuelEfficiency: 85,
+        timeManagement: 88,
+        vehicleHandling: 87,
+        customerSatisfaction: 92,
+        idleTime: 10,
+        mileage: 0,
+        trips: 0,
+        incidents: 0
+      };
+      
+      // Add to drivers data
+      driversData.push(newDriver);
+      setDriverEditModalOpen(false);
+      // Refresh the filtered drivers
+      setFilteredDrivers([...driversData]);
+    } catch (err) {
+      console.error('Failed to create driver:', err);
+    }
   };
 
   // Replace 'loading' with 'isLoading'
@@ -1477,7 +1580,7 @@ export default function Vehicles() {
                       </CardTitle>
                       <CardDescription>Comprehensive metrics and analytics for your fleet drivers</CardDescription>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={handleAddDriver}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add Driver
                     </Button>
@@ -3396,8 +3499,199 @@ export default function Vehicles() {
                 </TabsList>
                 
                 <TabsContent value="consumption">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="md:col-span-2">
+                  {/* Vehicle-wise Consumption Details */}
+                  <Card className="mb-4">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base flex items-center">
+                          <ClipboardList className="h-4 w-4 mr-2 text-primary" />
+                          Vehicle-wise Consumption Details
+                        </CardTitle>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            Export
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Refresh
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="rounded-md border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Vehicle ID</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Type</TableHead>
+                              <TableHead className="text-right">Last Month</TableHead>
+                              <TableHead className="text-right">This Month</TableHead>
+                              <TableHead className="text-right">Change</TableHead>
+                              <TableHead className="text-right">Efficiency</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {vehicleFuelConsumption
+                              .filter(vehicle => {
+                                const matchesSearch = consumptionSearchQuery === "" ||
+                                  vehicle.name.toLowerCase().includes(consumptionSearchQuery.toLowerCase()) ||
+                                  vehicle.id.toLowerCase().includes(consumptionSearchQuery.toLowerCase());
+                                const matchesType = consumptionTypeFilter === "all" || vehicle.type === consumptionTypeFilter;
+                                return matchesSearch && matchesType;
+                              })
+                              .slice(
+                                (consumptionCurrentPage - 1) * consumptionPageSize,
+                                consumptionCurrentPage * consumptionPageSize
+                              )
+                              .map((vehicle) => {
+                                const consumptionChange = vehicle.thisMonth - vehicle.lastMonth;
+                                const changePercentage = ((consumptionChange) / vehicle.lastMonth * 100).toFixed(1);
+                                
+                                return (
+                                  <TableRow key={vehicle.id} className="group hover:bg-muted/50 transition-colors">
+                                    <TableCell className="font-medium">
+                                      <div className="flex items-center">
+                                        <Package className="h-4 w-4 text-muted-foreground mr-2" />
+                                        {vehicle.id}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex flex-col">
+                                        <div className="font-medium">{vehicle.name}</div>
+                                        <div className="text-xs text-muted-foreground">Last updated: Today, 2:30 PM</div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline" className="font-normal">
+                                        {vehicle.type === 'Heavy Duty' && <Truck className="h-3 w-3 mr-1" />}
+                                        {vehicle.type === 'Medium Duty' && <Truck className="h-3 w-3 mr-1" />}
+                                        {vehicle.type === 'Light Duty' && <Car className="h-3 w-3 mr-1" />}
+                                        {vehicle.type}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex flex-col items-end">
+                                        <div>{vehicle.lastMonth} gal</div>
+                                        <div className="text-xs text-muted-foreground">Previous month</div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex flex-col items-end">
+                                        <div>{vehicle.thisMonth} gal</div>
+                                        <div className="text-xs text-muted-foreground">Current month</div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex items-center justify-end">
+                                        <div className={`flex items-center ${consumptionChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                                          {consumptionChange > 0 ? (
+                                            <TrendingUp className="h-4 w-4 mr-1" />
+                                          ) : (
+                                            <TrendingDown className="h-4 w-4 mr-1" />
+                                          )}
+                                          <span>{Math.abs(consumptionChange)} gal</span>
+                                          <span className="text-xs ml-1">({changePercentage}%)</span>
+                                        </div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex items-center justify-end gap-2">
+                                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                          vehicle.efficiency >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 
+                                          vehicle.efficiency >= 80 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : 
+                                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                                        }`}>
+                                          <Gauge className="h-3 w-3 mr-1" />
+                                          {vehicle.efficiency}%
+                                        </div>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                      
+                      <div className="border-t">
+                        <div className="flex items-center justify-between py-4 px-6">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            Showing {Math.min((consumptionCurrentPage - 1) * consumptionPageSize + 1, vehicleFuelConsumption.length)} to {Math.min(consumptionCurrentPage * consumptionPageSize, vehicleFuelConsumption.length)} of {vehicleFuelConsumption.length} entries
+                          </div>
+                          
+                          <div className="flex-1 flex justify-center">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setConsumptionCurrentPage(1)}
+                                disabled={consumptionCurrentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="First page"
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setConsumptionCurrentPage(consumptionCurrentPage - 1)}
+                                disabled={consumptionCurrentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="Previous page"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              
+                              {Array.from({ length: Math.min(5, Math.ceil(vehicleFuelConsumption.length / consumptionPageSize)) }).map((_, i) => (
+                                <Button
+                                  key={i}
+                                  variant={consumptionCurrentPage === i + 1 ? "default" : "outline"}
+                                  size="icon"
+                                  onClick={() => setConsumptionCurrentPage(i + 1)}
+                                  className="h-8 w-8"
+                                >
+                                  {i + 1}
+                                </Button>
+                              ))}
+                              
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setConsumptionCurrentPage(consumptionCurrentPage + 1)}
+                                disabled={consumptionCurrentPage === Math.ceil(vehicleFuelConsumption.length / consumptionPageSize)}
+                                className="h-8 w-8"
+                                aria-label="Next page"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setConsumptionCurrentPage(Math.ceil(vehicleFuelConsumption.length / consumptionPageSize))}
+                                disabled={consumptionCurrentPage === Math.ceil(vehicleFuelConsumption.length / consumptionPageSize)}
+                                className="h-8 w-8"
+                                aria-label="Last page"
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">    
+                    {/* Monthly Fuel Consumption */}
                       <Card>
                         <CardHeader className="pb-2">
                           <CardTitle className="text-base flex items-center">
@@ -3405,68 +3699,162 @@ export default function Vehicles() {
                             Monthly Fuel Consumption
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-72">
-                          {/* This would normally be a chart component */}
-                          <div className="h-full flex items-center justify-center bg-muted/30 rounded-md border border-dashed">
-                            <div className="text-center px-4">
-                              <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                              <p className="text-sm text-muted-foreground">Monthly consumption trend visualization</p>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {monthlyFuelData.map((month, index) => {
+                              const prevMonth = index > 0 ? monthlyFuelData[index - 1] : null;
+                              const consumptionChange = prevMonth ? ((month.consumption - prevMonth.consumption) / prevMonth.consumption * 100).toFixed(1) : '0';
+                              const avgPerVehicle = (month.consumption / month.vehicles).toFixed(1);
+                              
+                              return (
+                                <div key={month.month} className="space-y-2">
+                                  <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                                      <span className="font-medium">{month.month}</span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {month.vehicles} vehicles
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                      <div className="flex flex-col items-end">
+                                        <span className="font-medium">{month.consumption.toLocaleString()} gal</span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {avgPerVehicle} gal/vehicle
+                                        </span>
+                                      </div>
+                                      {prevMonth && (
+                                        <div className={`flex items-center text-xs ${Number(consumptionChange) > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                                          {Number(consumptionChange) > 0 ? (
+                                            <TrendingUp className="h-3 w-3 mr-1" />
+                                          ) : (
+                                            <TrendingDown className="h-3 w-3 mr-1" />
+                                          )}
+                                          {Math.abs(Number(consumptionChange))}%
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="relative">
+                                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                                      <div 
+                                        className="bg-blue-500 h-2 rounded-full" 
+                                        style={{ width: `${(month.consumption / 3100) * 100}%` }}
+                                      />
+                                    </div>
+                                    <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                                      <div className="flex items-center">
+                                        <DollarSign className="h-3 w-3 mr-1" />
+                                        ${month.avgPrice}/gal
+                                      </div>
+                                      <div className="flex items-center">
+                                        <Clock className="h-3 w-3 mr-1" />
+                                        Daily avg: {(month.consumption / 30).toFixed(1)} gal
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            <div className="pt-4 border-t">
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-1">
+                                  <div className="text-sm text-muted-foreground">Total Consumption</div>
+                                  <div className="text-lg font-bold">
+                                    {monthlyFuelData.reduce((acc, curr) => acc + curr.consumption, 0).toLocaleString()} gal
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Over {monthlyFuelData.length} months</div>
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="text-sm text-muted-foreground">Monthly Average</div>
+                                  <div className="text-lg font-bold">
+                                    {Math.round(monthlyFuelData.reduce((acc, curr) => acc + curr.consumption, 0) / monthlyFuelData.length).toLocaleString()} gal
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Per month</div>
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="text-sm text-muted-foreground">Efficiency Trend</div>
+                                  <div className="text-lg font-bold text-green-500">↑ 2.3%</div>
+                                  <div className="text-xs text-muted-foreground">Month over month</div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                     </div>
-                    
                     <div>
-                      <Card>
-                        <CardHeader className="pb-2">
+                      {/* Consumption by Type */}
+                      <Card className="h-full">
+                        <CardHeader className="pb-4">
                           <CardTitle className="text-base flex items-center">
                             <PieChart className="h-4 w-4 mr-2 text-primary" />
-                            Fuel Usage by Vehicle Type
+                            Consumption by Type
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex justify-between items-center text-sm mb-1">
-                                <div className="flex items-center">
-                                  <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-                                  <span>Heavy Trucks</span>
+                          <div className="space-y-8">
+                            {['Heavy Duty', 'Medium Duty', 'Light Duty'].map((type) => {
+                              const vehicles = vehicleFuelConsumption.filter(v => v.type === type);
+                              const totalConsumption = vehicles.reduce((acc, curr) => acc + curr.thisMonth, 0);
+                              const lastMonthConsumption = vehicles.reduce((acc, curr) => acc + curr.lastMonth, 0);
+                              const percentage = Math.round((totalConsumption / vehicleFuelConsumption.reduce((acc, curr) => acc + curr.thisMonth, 0)) * 100);
+                              const change = ((totalConsumption - lastMonthConsumption) / lastMonthConsumption * 100).toFixed(1);
+                              const avgEfficiency = Math.round(vehicles.reduce((acc, curr) => acc + curr.efficiency, 0) / vehicles.length);
+                              
+                              return (
+                                <div key={type} className="space-y-4">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <div className="flex items-center gap-3">
+                                        {type === 'Heavy Duty' && <Truck className="h-4 w-4 text-blue-500" />}
+                                        {type === 'Medium Duty' && <Truck className="h-4 w-4 text-green-500" />}
+                                        {type === 'Light Duty' && <Car className="h-4 w-4 text-purple-500" />}
+                                        <span className="font-medium">{type}</span>
+                                        <Badge variant="outline" className="text-xs">
+                                          {vehicles.length} vehicles
+                                        </Badge>
+                                      </div>
+                                      <div className="text-xs text-muted-foreground mt-2">
+                                        Avg efficiency: {avgEfficiency}%
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="font-medium">{totalConsumption} gal</div>
+                                      <div className={`text-xs flex items-center justify-end mt-1 ${Number(change) > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                                        {Number(change) > 0 ? (
+                                          <TrendingUp className="h-3 w-3 mr-1" />
+                                        ) : (
+                                          <TrendingDown className="h-3 w-3 mr-1" />
+                                        )}
+                                        {Math.abs(Number(change))}% from last month
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Progress value={percentage} className="h-2.5" />
+                                    <div className="flex justify-between text-xs text-muted-foreground">
+                                      <span>{percentage}% of total fleet</span>
+                                      <span>{(totalConsumption / vehicles.length).toFixed(1)} gal/vehicle</span>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-3 gap-3">
+                                    <div className="text-center p-3 bg-muted/20 rounded-md">
+                                      <div className="text-xs text-muted-foreground mb-1">Min</div>
+                                      <div className="font-medium">{Math.min(...vehicles.map(v => v.thisMonth))} gal</div>
+                                    </div>
+                                    <div className="text-center p-3 bg-muted/20 rounded-md">
+                                      <div className="text-xs text-muted-foreground mb-1">Avg</div>
+                                      <div className="font-medium">{Math.round(totalConsumption / vehicles.length)} gal</div>
+                                    </div>
+                                    <div className="text-center p-3 bg-muted/20 rounded-md">
+                                      <div className="text-xs text-muted-foreground mb-1">Max</div>
+                                      <div className="font-medium">{Math.max(...vehicles.map(v => v.thisMonth))} gal</div>
+                                    </div>
+                                  </div>
                                 </div>
-                                <span className="font-medium">42%</span>
-                              </div>
-                              <Progress value={42} className="h-1.5" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between items-center text-sm mb-1">
-                                <div className="flex items-center">
-                                  <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                                  <span>Medium Trucks</span>
-                                </div>
-                                <span className="font-medium">32%</span>
-                              </div>
-                              <Progress value={32} className="h-1.5" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between items-center text-sm mb-1">
-                                <div className="flex items-center">
-                                  <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
-                                  <span>Light Vans</span>
-                                </div>
-                                <span className="font-medium">22%</span>
-                              </div>
-                              <Progress value={22} className="h-1.5" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between items-center text-sm mb-1">
-                                <div className="flex items-center">
-                                  <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
-                                  <span>Specialty</span>
-                                </div>
-                                <span className="font-medium">4%</span>
-                              </div>
-                              <Progress value={4} className="h-1.5" />
-                            </div>
+                              );
+                            })}
                           </div>
                         </CardContent>
                       </Card>
@@ -3474,54 +3862,459 @@ export default function Vehicles() {
                   </div>
                 </TabsContent>
                 
-                {/* Other tabs */}
+                {/* Find the cost tab content and replace with: */}
                 <TabsContent value="cost">
+                  <Card className="mt-4 mb-4">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base flex items-center">
+                          <Receipt className="h-4 w-4 mr-2 text-primary" />
+                          Monthly Cost Breakdown
+                        </CardTitle>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            Export
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Refresh
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="rounded-md border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Month</TableHead>
+                              <TableHead>Vehicles</TableHead>
+                              <TableHead className="text-right">Consumption</TableHead>
+                              <TableHead className="text-right">Avg. Price</TableHead>
+                              <TableHead className="text-right">Total Cost</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {monthlyFuelData
+                              .filter(month => {
+                                const matchesSearch = costSearchQuery === "" ||
+                                  month.month.toLowerCase().includes(costSearchQuery.toLowerCase());
+                                const matchesMonth = costMonthFilter === "all" || month.month === costMonthFilter;
+                                return matchesSearch && matchesMonth;
+                              })
+                              .slice(
+                                (costCurrentPage - 1) * costPageSize,
+                                costCurrentPage * costPageSize
+                              )
+                              .map((month) => {
+                                const prevMonth = monthlyFuelData[monthlyFuelData.indexOf(month) - 1];
+                                const costChange = prevMonth ? month.cost - prevMonth.cost : 0;
+                                const costChangePercentage = prevMonth ? ((costChange / prevMonth.cost) * 100).toFixed(1) : '0';
+                                
+                                return (
+                                  <TableRow key={month.month} className="group hover:bg-muted/50 transition-colors">
+                                    <TableCell className="font-medium">
+                                      <div className="flex items-center">
+                                        <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
+                                        {month.month}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-2">
+                                        <div className="flex items-center">
+                                          <UserRound className="h-4 w-4 text-muted-foreground mr-1" />
+                                          {month.vehicles}
+                                        </div>
+                                        {month.vehicles > (prevMonth?.vehicles || 0) && (
+                                          <Badge variant="outline" className="text-xs bg-green-100 text-green-800">
+                                            +{month.vehicles - (prevMonth?.vehicles || 0)}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex flex-col items-end">
+                                        <div className="flex items-center">
+                                          <Fuel className="h-4 w-4 text-muted-foreground mr-1" />
+                                          {month.consumption.toLocaleString()} gal
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          Avg: {(month.consumption / month.vehicles).toFixed(1)} gal/vehicle
+                                        </div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex flex-col items-end">
+                                        <div className="flex items-center">
+                                          <DollarSign className="h-4 w-4 text-muted-foreground mr-1" />
+                                          ${month.avgPrice}/gal
+                                        </div>
+                                        {prevMonth && (
+                                          <div className={`text-xs ${month.avgPrice > prevMonth.avgPrice ? 'text-red-500' : 'text-green-500'}`}>
+                                            {month.avgPrice > prevMonth.avgPrice ? '↑' : '↓'} 
+                                            ${Math.abs(month.avgPrice - prevMonth.avgPrice).toFixed(2)} from prev
+                                          </div>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex items-center justify-end gap-2">
+                                        <div className="flex flex-col items-end">
+                                          <div className="font-medium">${month.cost.toLocaleString()}</div>
+                                          {prevMonth && (
+                                            <div className={`text-xs flex items-center ${costChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                                              {costChange > 0 ? (
+                                                <TrendingUp className="h-3 w-3 mr-1" />
+                                              ) : (
+                                                <TrendingDown className="h-3 w-3 mr-1" />
+                                              )}
+                                              {costChangePercentage}%
+                                            </div>
+                                          )}
+                                        </div>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            <TableRow className="font-medium bg-muted/50">
+                              <TableCell colSpan={2} className="font-medium">
+                                <div className="flex items-center">
+                                  <Calculator className="h-4 w-4 mr-2 text-primary" />
+                                  Total / Average
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                <div className="flex items-center justify-end">
+                                  <Fuel className="h-4 w-4 mr-2 text-primary" />
+                                  {monthlyFuelData.reduce((acc, curr) => acc + curr.consumption, 0).toLocaleString()} gal
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                <div className="flex items-center justify-end">
+                                  <DollarSign className="h-4 w-4 mr-2 text-primary" />
+                                  ${(monthlyFuelData.reduce((acc, curr) => acc + curr.avgPrice, 0) / monthlyFuelData.length).toFixed(2)}/gal
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                <div className="flex items-center justify-end">
+                                  <Receipt className="h-4 w-4 mr-2 text-primary" />
+                                  ${monthlyFuelData.reduce((acc, curr) => acc + curr.cost, 0).toLocaleString()}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </div>
+                      
+                      <div className="border-t">
+                        <div className="flex items-center justify-between py-4 px-6">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            Showing {Math.min((costCurrentPage - 1) * costPageSize + 1, monthlyFuelData.length)} to {Math.min(costCurrentPage * costPageSize, monthlyFuelData.length)} of {monthlyFuelData.length} entries
+                          </div>
+                          
+                          <div className="flex-1 flex justify-center">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setCostCurrentPage(1)}
+                                disabled={costCurrentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="First page"
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setCostCurrentPage(costCurrentPage - 1)}
+                                disabled={costCurrentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="Previous page"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              
+                              {Array.from({ length: Math.min(5, Math.ceil(monthlyFuelData.length / costPageSize)) }).map((_, i) => (
+                                <Button
+                                  key={i}
+                                  variant={costCurrentPage === i + 1 ? "default" : "outline"}
+                                  size="icon"
+                                  onClick={() => setCostCurrentPage(i + 1)}
+                                  className="h-8 w-8"
+                                >
+                                  {i + 1}
+                                </Button>
+                              ))}
+                              
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setCostCurrentPage(costCurrentPage + 1)}
+                                disabled={costCurrentPage === Math.ceil(monthlyFuelData.length / costPageSize)}
+                                className="h-8 w-8"
+                                aria-label="Next page"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setCostCurrentPage(Math.ceil(monthlyFuelData.length / costPageSize))}
+                                disabled={costCurrentPage === Math.ceil(monthlyFuelData.length / costPageSize)}
+                                className="h-8 w-8"
+                                aria-label="Last page"
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="md:col-span-2">
                       <Card>
                         <CardHeader className="pb-2">
                           <CardTitle className="text-base flex items-center">
                             <DollarSign className="h-4 w-4 mr-2 text-primary" />
-                            Fuel Cost Analysis
+                            Monthly Cost Analysis
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="h-72">
-                          {/* This would normally be a chart component */}
-                          <div className="h-full flex items-center justify-center bg-muted/30 rounded-md border border-dashed">
-                            <div className="text-center px-4">
-                              <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                              <p className="text-sm text-muted-foreground">Cost analysis visualization</p>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {monthlyFuelData.map((month, index) => {
+                              const prevMonth = index > 0 ? monthlyFuelData[index - 1] : null;
+                              const costChange = prevMonth ? ((month.cost - prevMonth.cost) / prevMonth.cost * 100).toFixed(1) : '0';
+                              const avgCostPerVehicle = (month.cost / month.vehicles).toFixed(2);
+                              
+                              return (
+                                <div key={month.month} className="space-y-2">
+                                  <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center gap-3">
+                                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                                      <span className="font-medium">{month.month}</span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {month.vehicles} vehicles
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                      <div className="flex flex-col items-end">
+                                        <span className="font-medium">${month.cost.toLocaleString()}</span>
+                                        <span className="text-xs text-muted-foreground mt-1">
+                                          ${avgCostPerVehicle}/vehicle
+                                        </span>
+                                      </div>
+                                      {prevMonth && (
+                                        <div className={`flex items-center text-xs ${Number(costChange) > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                                          {Number(costChange) > 0 ? (
+                                            <TrendingUp className="h-3 w-3 mr-1" />
+                                          ) : (
+                                            <TrendingDown className="h-3 w-3 mr-1" />
+                                          )}
+                                          {Math.abs(Number(costChange))}%
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="relative">
+                                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                                      <div 
+                                        className="bg-green-500 h-2 rounded-full" 
+                                        style={{ width: `${(month.cost / 10695) * 100}%` }}
+                                      />
+                                    </div>
+                                    <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                                      <div className="flex items-center">
+                                        <Fuel className="h-3 w-3 mr-1" />
+                                        {month.consumption.toLocaleString()} gallons
+                                      </div>
+                                      <div className="flex items-center">
+                                        <DollarSign className="h-3 w-3 mr-1" />
+                                        {month.avgPrice}/gal avg. price
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            <div className="pt-4 mt-2 border-t">
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-1">
+                                  <div className="text-sm text-muted-foreground">Total Cost</div>
+                                  <div className="text-lg font-bold">
+                                    ${monthlyFuelData.reduce((acc, curr) => acc + curr.cost, 0).toLocaleString()}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Over {monthlyFuelData.length} months</div>
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="text-sm text-muted-foreground">Monthly Average</div>
+                                  <div className="text-lg font-bold">
+                                    ${Math.round(monthlyFuelData.reduce((acc, curr) => acc + curr.cost, 0) / monthlyFuelData.length).toLocaleString()}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Per month</div>
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="text-sm text-muted-foreground">Cost Trend</div>
+                                  <div className="text-lg font-bold text-green-500">↓ 3.2%</div>
+                                  <div className="text-xs text-muted-foreground">Month over month</div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                     </div>
                     
-                    <div className="space-y-4">
-                      <Card>
+                    <div>
+                      {/* Cost Summary */}
+                      <Card className="h-full">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-base flex items-center">
                             <Receipt className="h-4 w-4 mr-2 text-primary" />
-                            Fuel Expenses Summary
+                            Cost Summary
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center pb-2 border-b">
-                              <span className="text-sm">Current Month</span>
-                              <span className="font-medium">$3,425</span>
-                            </div>
-                            <div className="flex justify-between items-center pb-2 border-b">
-                              <span className="text-sm">Previous Month</span>
-                              <span className="font-medium">$3,180</span>
-                            </div>
-                            <div className="flex justify-between items-center pb-2 border-b">
-                              <span className="text-sm">YTD Total</span>
-                              <span className="font-medium">$18,720</span>
-                            </div>
-                            <div className="flex justify-between items-center text-primary">
-                              <span className="text-sm font-medium">Avg. Cost Per Mile</span>
-                              <span className="font-medium">$0.42</span>
+                          <div className="space-y-4">
+                            <div className="space-y-4">
+                              <div className="p-3 bg-muted/20 rounded-md">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium">Total Expenses</span>
+                                  <span className="text-base font-bold">
+                                    ${monthlyFuelData.reduce((acc, curr) => acc + curr.cost, 0).toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Total fuel expenses across all vehicles
+                                </div>
+                              </div>
+
+                              <div className="space-y-3">
+                                <div>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-sm">Average Monthly</span>
+                                    <span className="font-medium">
+                                      ${Math.round(monthlyFuelData.reduce((acc, curr) => acc + curr.cost, 0) / monthlyFuelData.length).toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <Progress value={75} className="h-1.5" />
+                                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                    <span>Monthly budget utilization</span>
+                                    <span>75%</span>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-sm">Per Vehicle Average</span>
+                                    <span className="font-medium">
+                                      ${Math.round(monthlyFuelData.reduce((acc, curr) => acc + (curr.cost / curr.vehicles), 0) / monthlyFuelData.length).toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <Progress value={82} className="h-1.5" />
+                                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                    <span>Target efficiency</span>
+                                    <span>82%</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="p-2 bg-muted/20 rounded-md">
+                                  <div className="text-xs text-muted-foreground">Highest Month</div>
+                                  <div className="font-medium">${Math.max(...monthlyFuelData.map(m => m.cost)).toLocaleString()}</div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {monthlyFuelData.find(m => m.cost === Math.max(...monthlyFuelData.map(m => m.cost)))?.month}
+                                  </div>
+                                </div>
+                                <div className="p-2 bg-muted/20 rounded-md">
+                                  <div className="text-xs text-muted-foreground">Lowest Month</div>
+                                  <div className="font-medium">${Math.min(...monthlyFuelData.map(m => m.cost)).toLocaleString()}</div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {monthlyFuelData.find(m => m.cost === Math.min(...monthlyFuelData.map(m => m.cost)))?.month}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="pt-3 mt-1 border-t">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-sm font-medium">Cost Distribution</span>
+                                  <Select defaultValue="6months">
+                                    <SelectTrigger className="h-7 text-xs w-[100px]">
+                                      <SelectValue placeholder="Period" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="3months">3 Months</SelectItem>
+                                      <SelectItem value="6months">6 Months</SelectItem>
+                                      <SelectItem value="1year">1 Year</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">Fuel Costs</span>
+                                    <span>85%</span>
+                                  </div>
+                                  <Progress value={85} className="h-1" />
+                                  <div className="flex justify-between text-xs mt-2">
+                                    <span className="text-muted-foreground">Maintenance</span>
+                                    <span>12%</span>
+                                  </div>
+                                  <Progress value={12} className="h-1" />
+                                  <div className="flex justify-between text-xs mt-2">
+                                    <span className="text-muted-foreground">Other</span>
+                                    <span>3%</span>
+                                  </div>
+                                  <Progress value={3} className="h-1" />
+                                </div>
+                              </div>
+
+                              <div className="pt-3 mt-1 border-t">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-sm font-medium">Cost Trends</span>
+                                  <Badge variant="outline" className="text-xs">Last 30 Days</Badge>
+                                </div>
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <TrendingDown className="h-4 w-4 text-green-500" />
+                                      <span>Fuel Cost Trend</span>
+                                    </div>
+                                    <span className="text-green-500">-2.5%</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <TrendingUp className="h-4 w-4 text-amber-500" />
+                                      <span>Maintenance Cost</span>
+                                    </div>
+                                    <span className="text-amber-500">+1.8%</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <TrendingDown className="h-4 w-4 text-green-500" />
+                                      <span>Cost per Mile</span>
+                                    </div>
+                                    <span className="text-green-500">-3.2%</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <TrendingDown className="h-4 w-4 text-green-500" />
+                                      <span>Overall Costs</span>
+                                    </div>
+                                    <span className="text-green-500">-1.5%</span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
@@ -3678,7 +4471,15 @@ export default function Vehicles() {
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setDriverEditModalOpen(false)}>Cancel</Button>
-            <Button>Save Changes</Button>
+            <Button onClick={() => handleSubmitDriver({
+              name: (document.getElementById('name') as HTMLInputElement)?.value,
+              phone: (document.getElementById('phone') as HTMLInputElement)?.value,
+              email: (document.getElementById('email') as HTMLInputElement)?.value,
+              license: (document.getElementById('license') as HTMLInputElement)?.value,
+              status: 'active'
+            })}>
+              Save Changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -4420,6 +5221,32 @@ export default function Vehicles() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Add VehicleModal component */}
+      <VehicleModal 
+        open={modalOpen} 
+        onOpenChange={setModalOpen}
+        vehicle={selectedVehicle}
+        onSubmit={handleSubmitVehicle}
+      />
+
+      {/* Add AlertDialog component for delete confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vehicle</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {vehicleToDelete?.name}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

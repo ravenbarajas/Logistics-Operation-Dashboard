@@ -10,7 +10,7 @@ import { activeRoutes, scheduledRoutes, completedRoutes, routeTemplates } from "
 import { 
   AlertCircle, BarChart3, Clock, Fuel as FuelIcon, LineChart, PlusCircle, Route, 
   TrendingDown, Wind, Truck, Calendar, CheckCircle, Copy, RefreshCw, Settings,
-  Zap, DollarSign, Compass, MapIcon, Calculator, Separator as SeparatorIcon, ChevronLeft, ChevronRight, Search, ChevronsLeft, ChevronsRight
+  Zap, DollarSign, Compass, MapIcon, Calculator, Separator as SeparatorIcon, ChevronLeft, ChevronRight, Search, ChevronsLeft, ChevronsRight, Save, Play
 } from "lucide-react";
 import { BarChart } from "@/components/ui/bar-chart";
 import { LineChart as LineChartComponent } from "@/components/ui/line-chart";
@@ -298,8 +298,8 @@ export default function RouteOptimization() {
 
       {/* Route Management */}
       <div className="mb-8">
-        <Card className="shadow-sm overflow-hidden border dark:bg-black">
-          <CardHeader className="pb-0 bg-white dark:bg-black p-4">
+        <Card className="shadow-sm overflow-hidden border dark:bg-[rgb(9,9,11)]">
+          <CardHeader className="pb-0 bg-white dark:bg-[rgb(9,9,11)] p-4">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-1">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -314,7 +314,7 @@ export default function RouteOptimization() {
             </div>
           </CardHeader>
           
-          <div className="p-4 bg-white dark:bg-black">
+          <div className="p-4 bg-white dark:bg-[rgb(9,9,11)]">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap gap-2">
                 <Select value={activeTab} onValueChange={setActiveTab}>
@@ -412,7 +412,7 @@ export default function RouteOptimization() {
             </div>
           </div>
             
-          <div className="bg-white dark:bg-black transition-colors">
+          <div className="bg-white dark:bg-[rgb(9,9,11)] transition-colors">
             {activeTab === "active" && (
               <>
                 <div className="max-h-[calc(100vh-32rem)] overflow-y-auto">
@@ -447,7 +447,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(1)}
                           disabled={currentPage === 1}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="First page"
                         >
                           <ChevronsLeft className="h-4 w-4" />
@@ -457,7 +457,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(currentPage - 1)}
                           disabled={currentPage === 1}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Previous page"
                         >
                           <ChevronLeft className="h-4 w-4" />
@@ -471,7 +471,7 @@ export default function RouteOptimization() {
                               variant={currentPage === i+1 ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(i+1)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label={`Page ${i+1}`}
                               aria-current={currentPage === i+1 ? "page" : undefined}
                             >
@@ -485,7 +485,7 @@ export default function RouteOptimization() {
                               variant={currentPage === 1 ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(1)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label="Page 1"
                             >
                               1
@@ -498,7 +498,7 @@ export default function RouteOptimization() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handlePageChange(currentPage - 1)}
-                                className="h-8 w-8 bg-background"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage - 1}`}
                               >
                                 {currentPage - 1}
@@ -509,7 +509,7 @@ export default function RouteOptimization() {
                               <Button
                                 variant="default"
                                 size="icon"
-                                className="h-8 w-8 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage}`}
                                 aria-current="page"
                               >
@@ -522,7 +522,7 @@ export default function RouteOptimization() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handlePageChange(currentPage + 1)}
-                                className="h-8 w-8 bg-background"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage + 1}`}
                               >
                                 {currentPage + 1}
@@ -535,7 +535,7 @@ export default function RouteOptimization() {
                               variant={currentPage === totalPages ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(totalPages)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label={`Page ${totalPages}`}
                             >
                               {totalPages}
@@ -548,7 +548,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage === totalPages}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Next page"
                         >
                           <ChevronRight className="h-4 w-4" />
@@ -558,7 +558,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(totalPages)}
                           disabled={currentPage === totalPages}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Last page"
                         >
                           <ChevronsRight className="h-4 w-4" />
@@ -610,7 +610,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(1)}
                           disabled={currentPage === 1}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="First page"
                         >
                           <ChevronsLeft className="h-4 w-4" />
@@ -620,7 +620,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(currentPage - 1)}
                           disabled={currentPage === 1}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Previous page"
                         >
                           <ChevronLeft className="h-4 w-4" />
@@ -634,7 +634,7 @@ export default function RouteOptimization() {
                               variant={currentPage === i+1 ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(i+1)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label={`Page ${i+1}`}
                               aria-current={currentPage === i+1 ? "page" : undefined}
                             >
@@ -648,7 +648,7 @@ export default function RouteOptimization() {
                               variant={currentPage === 1 ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(1)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label="Page 1"
                             >
                               1
@@ -661,7 +661,7 @@ export default function RouteOptimization() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handlePageChange(currentPage - 1)}
-                                className="h-8 w-8 bg-background"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage - 1}`}
                               >
                                 {currentPage - 1}
@@ -672,7 +672,7 @@ export default function RouteOptimization() {
                               <Button
                                 variant="default"
                                 size="icon"
-                                className="h-8 w-8 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage}`}
                                 aria-current="page"
                               >
@@ -685,7 +685,7 @@ export default function RouteOptimization() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handlePageChange(currentPage + 1)}
-                                className="h-8 w-8 bg-background"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage + 1}`}
                               >
                                 {currentPage + 1}
@@ -698,7 +698,7 @@ export default function RouteOptimization() {
                               variant={currentPage === totalPages ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(totalPages)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label={`Page ${totalPages}`}
                             >
                               {totalPages}
@@ -711,7 +711,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage === totalPages}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Next page"
                         >
                           <ChevronRight className="h-4 w-4" />
@@ -721,7 +721,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(totalPages)}
                           disabled={currentPage === totalPages}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Last page"
                         >
                           <ChevronsRight className="h-4 w-4" />
@@ -770,7 +770,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(1)}
                           disabled={currentPage === 1}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="First page"
                         >
                           <ChevronsLeft className="h-4 w-4" />
@@ -780,7 +780,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(currentPage - 1)}
                           disabled={currentPage === 1}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Previous page"
                         >
                           <ChevronLeft className="h-4 w-4" />
@@ -794,7 +794,7 @@ export default function RouteOptimization() {
                               variant={currentPage === i+1 ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(i+1)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label={`Page ${i+1}`}
                               aria-current={currentPage === i+1 ? "page" : undefined}
                             >
@@ -808,7 +808,7 @@ export default function RouteOptimization() {
                               variant={currentPage === 1 ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(1)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label="Page 1"
                             >
                               1
@@ -821,7 +821,7 @@ export default function RouteOptimization() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handlePageChange(currentPage - 1)}
-                                className="h-8 w-8 bg-background"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage - 1}`}
                               >
                                 {currentPage - 1}
@@ -832,7 +832,7 @@ export default function RouteOptimization() {
                               <Button
                                 variant="default"
                                 size="icon"
-                                className="h-8 w-8 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage}`}
                                 aria-current="page"
                               >
@@ -845,7 +845,7 @@ export default function RouteOptimization() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handlePageChange(currentPage + 1)}
-                                className="h-8 w-8 bg-background"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage + 1}`}
                               >
                                 {currentPage + 1}
@@ -858,7 +858,7 @@ export default function RouteOptimization() {
                               variant={currentPage === totalPages ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(totalPages)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label={`Page ${totalPages}`}
                             >
                               {totalPages}
@@ -871,7 +871,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage === totalPages}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Next page"
                         >
                           <ChevronRight className="h-4 w-4" />
@@ -881,7 +881,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(totalPages)}
                           disabled={currentPage === totalPages}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Last page"
                         >
                           <ChevronsRight className="h-4 w-4" />
@@ -932,7 +932,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(1)}
                           disabled={currentPage === 1}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="First page"
                         >
                           <ChevronsLeft className="h-4 w-4" />
@@ -942,7 +942,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(currentPage - 1)}
                           disabled={currentPage === 1}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Previous page"
                         >
                           <ChevronLeft className="h-4 w-4" />
@@ -956,7 +956,7 @@ export default function RouteOptimization() {
                               variant={currentPage === i+1 ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(i+1)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label={`Page ${i+1}`}
                               aria-current={currentPage === i+1 ? "page" : undefined}
                             >
@@ -970,7 +970,7 @@ export default function RouteOptimization() {
                               variant={currentPage === 1 ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(1)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label="Page 1"
                             >
                               1
@@ -983,7 +983,7 @@ export default function RouteOptimization() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handlePageChange(currentPage - 1)}
-                                className="h-8 w-8 bg-background"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage - 1}`}
                               >
                                 {currentPage - 1}
@@ -994,7 +994,7 @@ export default function RouteOptimization() {
                               <Button
                                 variant="default"
                                 size="icon"
-                                className="h-8 w-8 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage}`}
                                 aria-current="page"
                               >
@@ -1007,7 +1007,7 @@ export default function RouteOptimization() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => handlePageChange(currentPage + 1)}
-                                className="h-8 w-8 bg-background"
+                                className="h-8 w-8"
                                 aria-label={`Page ${currentPage + 1}`}
                               >
                                 {currentPage + 1}
@@ -1020,7 +1020,7 @@ export default function RouteOptimization() {
                               variant={currentPage === totalPages ? "default" : "outline"}
                               size="icon"
                               onClick={() => handlePageChange(totalPages)}
-                              className="h-8 w-8 bg-background"
+                              className="h-8 w-8"
                               aria-label={`Page ${totalPages}`}
                             >
                               {totalPages}
@@ -1033,7 +1033,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage === totalPages}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Next page"
                         >
                           <ChevronRight className="h-4 w-4" />
@@ -1043,7 +1043,7 @@ export default function RouteOptimization() {
                           size="icon"
                           onClick={() => handlePageChange(totalPages)}
                           disabled={currentPage === totalPages}
-                          className="h-8 w-8 bg-background"
+                          className="h-8 w-8"
                           aria-label="Last page"
                         >
                           <ChevronsRight className="h-4 w-4" />
@@ -1066,16 +1066,33 @@ export default function RouteOptimization() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-primary" />
-              Route Optimization Engine
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-primary" />
+                <CardTitle>Route Optimization Engine</CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-8">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+                <Button variant="outline" size="sm" className="h-8">
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Settings
+                </Button>
+                <Button size="sm" className="h-8">
+                  <Play className="h-4 w-4 mr-2" />
+                  Run Optimization
+                </Button>
+              </div>
+            </div>
             <CardDescription>
-              Configure parameters and generate optimized routes
+              Advanced route optimization with machine learning algorithms
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Optimization Parameters */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="optimization-strategy">Optimization Strategy</Label>
@@ -1084,10 +1101,10 @@ export default function RouteOptimization() {
                       <SelectValue placeholder="Select strategy" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="distance">Minimize Distance</SelectItem>
-                      <SelectItem value="time">Minimize Time</SelectItem>
-                      <SelectItem value="fuel">Minimize Fuel Consumption</SelectItem>
-                      <SelectItem value="balanced">Balanced Approach</SelectItem>
+                      <SelectItem value="distance">Minimize Distance (Dijkstra's Algorithm)</SelectItem>
+                      <SelectItem value="time">Minimize Time (A* Search)</SelectItem>
+                      <SelectItem value="fuel">Minimize Fuel (Genetic Algorithm)</SelectItem>
+                      <SelectItem value="balanced">Balanced (Multi-Objective Optimization)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1099,61 +1116,217 @@ export default function RouteOptimization() {
                       <SelectValue placeholder="Select vehicle" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="delivery-van">Delivery Van</SelectItem>
-                      <SelectItem value="box-truck">26ft Box Truck</SelectItem>
-                      <SelectItem value="semi-truck">53ft Semi-Truck</SelectItem>
-                      <SelectItem value="electric-van">Electric Delivery Van</SelectItem>
+                      <SelectItem value="delivery-van">Delivery Van (2.5T)</SelectItem>
+                      <SelectItem value="box-truck">26ft Box Truck (12T)</SelectItem>
+                      <SelectItem value="semi-truck">53ft Semi-Truck (40T)</SelectItem>
+                      <SelectItem value="electric-van">Electric Delivery Van (3T)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               
+              {/* Basic Parameters */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="max-stops">Maximum Stops</Label>
                   <Input id="max-stops" type="number" defaultValue="10" min="1" max="50" />
+                  <p className="text-xs text-muted-foreground">Capacity: 50 stops per route</p>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="max-distance">Maximum Distance (mi)</Label>
                   <Input id="max-distance" type="number" defaultValue="500" min="1" max="2000" />
+                  <p className="text-xs text-muted-foreground">Range: 1-2000 miles</p>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="departure-time">Departure Time</Label>
                   <Input id="departure-time" type="time" defaultValue="08:00" />
+                  <p className="text-xs text-muted-foreground">24-hour format</p>
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="avoid-tolls" />
-                  <label
-                    htmlFor="avoid-tolls"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Avoid Tolls
-                  </label>
+              {/* Optimization Constraints */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Optimization Constraints</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="time-window">Time Window (hrs)</Label>
+                    <Input id="time-window" type="number" defaultValue="8" min="1" max="24" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="load-capacity">Load Capacity (%)</Label>
+                    <Input id="load-capacity" type="number" defaultValue="85" min="0" max="100" />
+                  </div>
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="avoid-highways" />
-                  <label
-                    htmlFor="avoid-highways"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Avoid Highways
-                  </label>
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="avoid-tolls" />
+                    <label htmlFor="avoid-tolls" className="text-sm font-medium leading-none">
+                      Avoid Tolls
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="avoid-highways" />
+                    <label htmlFor="avoid-highways" className="text-sm font-medium leading-none">
+                      Avoid Highways
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="prioritize-deliveries" defaultChecked />
+                    <label htmlFor="prioritize-deliveries" className="text-sm font-medium leading-none">
+                      Prioritize Time-Sensitive Deliveries
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="consider-traffic" defaultChecked />
+                    <label htmlFor="consider-traffic" className="text-sm font-medium leading-none">
+                      Consider Real-time Traffic
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Advanced Settings */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Advanced Settings</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="algorithm-complexity">Algorithm Complexity</Label>
+                    <Select defaultValue="medium">
+                      <SelectTrigger id="algorithm-complexity">
+                        <SelectValue placeholder="Select complexity" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low (Faster, Less Optimal)</SelectItem>
+                        <SelectItem value="medium">Medium (Balanced)</SelectItem>
+                        <SelectItem value="high">High (Slower, More Optimal)</SelectItem>
+                        <SelectItem value="extreme">Extreme (Maximum Optimization)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="optimization-timeout">Optimization Timeout (s)</Label>
+                    <Input id="optimization-timeout" type="number" defaultValue="30" min="5" max="300" />
+                    <p className="text-xs text-muted-foreground">Maximum time to find solution</p>
+                  </div>
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="prioritize-deliveries" defaultChecked />
-                  <label
-                    htmlFor="prioritize-deliveries"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Prioritize Time-Sensitive Deliveries
-                  </label>
+                <div className="space-y-2">
+                  <Label htmlFor="optimization-weights">Optimization Weights</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm">Distance</span>
+                        <span className="text-sm font-medium">40%</span>
+                      </div>
+                      <Progress value={40} className="h-2 [&>div]:bg-blue-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm">Time</span>
+                        <span className="text-sm font-medium">35%</span>
+                      </div>
+                      <Progress value={35} className="h-2 [&>div]:bg-green-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm">Cost</span>
+                        <span className="text-sm font-medium">25%</span>
+                      </div>
+                      <Progress value={25} className="h-2 [&>div]:bg-amber-500" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Traffic Data Sources</Label>
+                  <div className="flex flex-wrap gap-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="google-traffic" defaultChecked />
+                      <label htmlFor="google-traffic" className="text-sm font-medium leading-none">
+                        Google Maps
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="tomtom-traffic" defaultChecked />
+                      <label htmlFor="tomtom-traffic" className="text-sm font-medium leading-none">
+                        TomTom
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="here-traffic" />
+                      <label htmlFor="here-traffic" className="text-sm font-medium leading-none">
+                        HERE Maps
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="historical-traffic" defaultChecked />
+                      <label htmlFor="historical-traffic" className="text-sm font-medium leading-none">
+                        Historical Data
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Optimization Preview */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Optimization Preview</h4>
+                <div className="border rounded-md p-4 bg-muted/30">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm font-medium mb-2">Current Route</div>
+                      <div className="h-24 bg-background rounded-md flex items-center justify-center border">
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground">12 stops</div>
+                          <div className="text-sm text-muted-foreground">342 miles</div>
+                          <div className="text-sm text-muted-foreground">6.2 hours</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium mb-2">Optimized Route</div>
+                      <div className="h-24 bg-background rounded-md flex items-center justify-center border border-green-500/30">
+                        <div className="text-center">
+                          <div className="text-sm text-green-500">12 stops</div>
+                          <div className="text-sm text-green-500">298 miles (-12.9%)</div>
+                          <div className="text-sm text-green-500">5.1 hours (-17.7%)</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Algorithm Performance Metrics */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Algorithm Performance</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Computation Time</div>
+                    <div className="text-2xl font-bold">1.2s</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Memory Usage</div>
+                    <div className="text-2xl font-bold">256MB</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Iterations</div>
+                    <div className="text-2xl font-bold">1,245</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-sm text-muted-foreground">Convergence</div>
+                    <div className="text-2xl font-bold">98.5%</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1173,56 +1346,139 @@ export default function RouteOptimization() {
               <TrendingDown className="h-5 w-5 text-green-500" />
               Optimization Impact
             </CardTitle>
-            <CardDescription>Summary of optimization benefits</CardDescription>
+            <CardDescription>Real-time optimization metrics</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium">Distance Reduction</span>
-                <span className="text-sm text-green-500 font-medium">12%</span>
+          <CardContent className="space-y-6">
+            {/* Key Performance Indicators */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="text-sm text-muted-foreground">Total Routes</div>
+                <div className="text-2xl font-bold">186</div>
+                <div className="text-xs text-green-500">+12% from last week</div>
               </div>
-              <Progress value={12} className="h-2" />
+              <div className="space-y-2">
+                <div className="text-sm text-muted-foreground">Active Vehicles</div>
+                <div className="text-2xl font-bold">42</div>
+                <div className="text-xs text-green-500">92% utilization</div>
+              </div>
             </div>
             
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium">Fuel Savings</span>
-                <span className="text-sm text-green-500 font-medium">19.2%</span>
+            {/* Optimization Metrics */}
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium">Distance Reduction</span>
+                  <span className="text-sm text-green-500 font-medium">12%</span>
+                </div>
+                <Progress value={12} className="h-2 [&>div]:bg-green-500" />
+                <div className="text-xs text-muted-foreground mt-1">Saved 1,245 miles this week</div>
               </div>
-              <Progress value={19.2} className="h-2" />
+              
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium">Fuel Savings</span>
+                  <span className="text-sm text-green-500 font-medium">19.2%</span>
+                </div>
+                <Progress value={19.2} className="h-2 [&>div]:bg-green-500" />
+                <div className="text-xs text-muted-foreground mt-1">Saved 342 gallons this week</div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium">Time Efficiency</span>
+                  <span className="text-sm text-green-500 font-medium">16.4%</span>
+                </div>
+                <Progress value={16.4} className="h-2 [&>div]:bg-green-500" />
+                <div className="text-xs text-muted-foreground mt-1">Saved 124 hours this week</div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium">CO₂ Emissions</span>
+                  <span className="text-sm text-green-500 font-medium">19.3%</span>
+                </div>
+                <Progress value={19.3} className="h-2 [&>div]:bg-green-500" />
+                <div className="text-xs text-muted-foreground mt-1">Reduced by 3.2 tons this week</div>
+              </div>
             </div>
             
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium">Time Efficiency</span>
-                <span className="text-sm text-green-500 font-medium">16.4%</span>
+            {/* Cost Analysis */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium">Cost Analysis</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Fuel Cost</div>
+                  <div className="text-2xl font-bold">$8,245</div>
+                  <div className="text-xs text-green-500">Saved $1,945</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Labor Cost</div>
+                  <div className="text-2xl font-bold">$12,480</div>
+                  <div className="text-xs text-green-500">Saved $2,080</div>
+                </div>
               </div>
-              <Progress value={16.4} className="h-2" />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Maintenance</div>
+                  <div className="text-2xl font-bold">$3,560</div>
+                  <div className="text-xs text-green-500">Saved $720</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Tolls & Fees</div>
+                  <div className="text-2xl font-bold">$1,850</div>
+                  <div className="text-xs text-green-500">Saved $580</div>
+                </div>
+              </div>
+              
+              <div className="mt-4 py-3 px-4 bg-muted rounded-md">
+                <div className="text-sm font-medium mb-2 flex items-center">
+                  <DollarSign className="h-4 w-4 mr-1 text-green-500" />
+                  Total Monthly Savings
+                </div>
+                <div className="text-2xl font-bold">$14,325</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Based on 186 optimized routes
+                </div>
+              </div>
             </div>
             
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium">CO₂ Emissions</span>
-                <span className="text-sm text-green-500 font-medium">19.3%</span>
+            {/* Savings Forecast */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium">Savings Forecast</h4>
+              <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                <div className="text-xs text-muted-foreground">Monthly</div>
+                <div className="text-xs text-muted-foreground">Quarterly</div>
+                <div className="text-xs text-muted-foreground">Yearly</div>
               </div>
-              <Progress value={19.3} className="h-2" />
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="text-lg font-bold">$14,325</div>
+                <div className="text-lg font-bold">$42,975</div>
+                <div className="text-lg font-bold">$171,900</div>
+              </div>
+              <Separator className="my-3" />
+              <div className="text-xs text-center text-muted-foreground pt-1">
+                Projections based on current optimization patterns and route volume
+              </div>
             </div>
             
-            <Separator className="my-4" />
-            
-            <div className="flex justify-between items-center text-sm">
-              <span className="font-medium">Average Improvement</span>
-              <span className="text-green-500 font-bold">16.7%</span>
-            </div>
-            
-            <div className="mt-4 py-3 px-4 bg-muted rounded-md">
-              <div className="text-sm font-medium mb-2 flex items-center">
-                <DollarSign className="h-4 w-4 mr-1 text-green-500" />
-                Estimated Monthly Savings
+            {/* Environmental Impact */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium">Environmental Impact</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">CO₂ Reduction</div>
+                  <div className="text-2xl font-bold">3.2 tons</div>
+                  <div className="text-xs text-green-500">19.3% reduction</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Fuel Efficiency</div>
+                  <div className="text-2xl font-bold">18.4 mpg</div>
+                  <div className="text-xs text-green-500">+2.1 mpg improvement</div>
+                </div>
               </div>
-              <div className="text-2xl font-bold">$14,325</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Based on 186 optimized routes
+              <div className="text-xs text-muted-foreground mt-2">
+                Equivalent to planting 42 trees or removing 1.2 cars from the road annually
               </div>
             </div>
           </CardContent>
@@ -1240,14 +1496,107 @@ export default function RouteOptimization() {
             <CardDescription>Before vs. After Optimization</CardDescription>
           </CardHeader>
           <CardContent>
-            <BarChart
-              data={optimizationSummaryData} 
-              index="name" 
-              categories={["before", "after"]} 
-              colors={["#94a3b8", "#3b82f6"]} 
-              valueFormatter={(value: number) => `${value}${value > 1000 ? ' km' : value > 100 ? ' hr' : value > 30 ? ' gal' : ' kg'}`}
-              yAxisWidth={48}
-            />
+            <div className="space-y-6">
+              <BarChart
+                data={optimizationSummaryData} 
+                index="name" 
+                categories={["before", "after"]} 
+                colors={["#94a3b8", "#3b82f6"]} 
+                valueFormatter={(value: number) => `${value}${value > 1000 ? ' km' : value > 100 ? ' hr' : value > 30 ? ' gal' : ' kg'}`}
+                yAxisWidth={48}
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Total Distance</div>
+                  <div className="text-2xl font-bold">1,100 km</div>
+                  <div className="text-xs text-green-500">-12% from baseline</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Total Time</div>
+                  <div className="text-2xl font-bold">18.8 hrs</div>
+                  <div className="text-xs text-green-500">-16.4% from baseline</div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Fuel Usage</div>
+                  <div className="text-2xl font-bold">145 gal</div>
+                  <div className="text-xs text-green-500">-19.4% from baseline</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">CO₂ Emissions</div>
+                  <div className="text-2xl font-bold">1,485 kg</div>
+                  <div className="text-xs text-green-500">-19.3% from baseline</div>
+                </div>
+              </div>
+              
+              <div className="border-t pt-4">
+                <div className="text-sm font-medium mb-2">Efficiency Improvements</div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Route Consolidation</span>
+                    <span className="text-sm font-medium text-green-500">+15%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Load Balancing</span>
+                    <span className="text-sm font-medium text-green-500">+12%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Traffic Avoidance</span>
+                    <span className="text-sm font-medium text-green-500">+8%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t pt-4">
+                <div className="text-sm font-medium mb-2">Route Performance</div>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm">Urban Routes</span>
+                      <span className="text-sm font-medium text-amber-500">Medium</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-amber-500" style={{ width: "65%" }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>65% Utilized</span>
+                      <span>42 Deliveries</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm">Suburban Routes</span>
+                      <span className="text-sm font-medium text-green-500">Optimal</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-green-500" style={{ width: "85%" }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>85% Utilized</span>
+                      <span>68 Deliveries</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm">Highway Routes</span>
+                      <span className="text-sm font-medium text-red-500">Congested</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-red-500" style={{ width: "92%" }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>92% Utilized</span>
+                      <span>74 Deliveries</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
         
@@ -1260,33 +1609,159 @@ export default function RouteOptimization() {
             <CardDescription>Average travel times across time periods</CardDescription>
           </CardHeader>
           <CardContent>
-            <LineChartComponent
-              data={[
-                { time: "6 AM", urban: 22, suburban: 18, highway: 13 },
-                { time: "9 AM", urban: 36, suburban: 24, highway: 15 },
-                { time: "12 PM", urban: 30, suburban: 22, highway: 14 },
-                { time: "3 PM", urban: 32, suburban: 23, highway: 14 },
-                { time: "6 PM", urban: 37, suburban: 26, highway: 15 },
-                { time: "9 PM", urban: 24, suburban: 19, highway: 13 }
-              ]}
-              index="time"
-              categories={["urban", "suburban", "highway"]}
-              colors={["#ef4444", "#f97316", "#3b82f6"]}
-              valueFormatter={(value: number) => `${value} min`}
-              yAxisWidth={40}
-            />
-            <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
-              <div className="flex items-center">
-                <Badge className="w-2 h-2 rounded-full bg-red-500 mr-1 p-0" />
-                <span>Urban Routes</span>
+            <div className="space-y-6">
+              <LineChartComponent
+                data={[
+                  { time: "6 AM", urban: 22, suburban: 18, highway: 13 },
+                  { time: "9 AM", urban: 36, suburban: 24, highway: 15 },
+                  { time: "12 PM", urban: 30, suburban: 22, highway: 14 },
+                  { time: "3 PM", urban: 32, suburban: 23, highway: 14 },
+                  { time: "6 PM", urban: 37, suburban: 26, highway: 15 },
+                  { time: "9 PM", urban: 24, suburban: 19, highway: 13 }
+                ]}
+                index="time"
+                categories={["urban", "suburban", "highway"]}
+                colors={["#ef4444", "#f97316", "#3b82f6"]}
+                valueFormatter={(value: number) => `${value} min`}
+                yAxisWidth={40}
+              />
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Urban Routes</div>
+                  <div className="text-2xl font-bold">32 min</div>
+                  <div className="text-xs text-muted-foreground">Peak: 37 min</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Suburban Routes</div>
+                  <div className="text-2xl font-bold">22 min</div>
+                  <div className="text-xs text-muted-foreground">Peak: 26 min</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Highway Routes</div>
+                  <div className="text-2xl font-bold">14 min</div>
+                  <div className="text-xs text-muted-foreground">Peak: 15 min</div>
+                </div>
               </div>
-              <div className="flex items-center">
-                <Badge className="w-2 h-2 rounded-full bg-orange-500 mr-1 p-0" />
-                <span>Suburban Routes</span>
+              
+              <div className="border-t pt-4">
+                <div className="text-sm font-medium mb-2">Traffic Insights</div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Badge className="w-2 h-2 rounded-full bg-red-500 p-0" />
+                    <span className="text-sm">Urban routes show highest variability</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="w-2 h-2 rounded-full bg-orange-500 p-0" />
+                    <span className="text-sm">Suburban routes peak during rush hours</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="w-2 h-2 rounded-full bg-blue-500 p-0" />
+                    <span className="text-sm">Highway routes remain most consistent</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center">
-                <Badge className="w-2 h-2 rounded-full bg-blue-500 mr-1 p-0" />
-                <span>Highway Routes</span>
+              
+              <div className="bg-muted/30 p-3 rounded-md">
+                <div className="text-sm font-medium mb-1">Recommendations</div>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Schedule urban deliveries outside peak hours (10 AM - 3 PM)</li>
+                  <li>• Optimize suburban routes for morning/evening commutes</li>
+                  <li>• Prioritize highway routes during rush hours</li>
+                </ul>
+              </div>
+              
+              <div className="border-t pt-4">
+                <div className="text-sm font-medium mb-2">Traffic Congestion Index</div>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm">Morning Rush (7-9 AM)</span>
+                      <span className="text-sm font-medium text-red-500">High</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-red-500" style={{ width: "85%" }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>85% Congestion</span>
+                      <span>+12% from baseline</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm">Midday (11 AM - 3 PM)</span>
+                      <span className="text-sm font-medium text-amber-500">Medium</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-amber-500" style={{ width: "65%" }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>65% Congestion</span>
+                      <span>-5% from baseline</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm">Evening Rush (4-7 PM)</span>
+                      <span className="text-sm font-medium text-red-500">High</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-red-500" style={{ width: "90%" }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>90% Congestion</span>
+                      <span>+18% from baseline</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t pt-4">
+                <div className="text-sm font-medium mb-2">Weather Impact</div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="text-sm">Rainy Conditions</div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500" style={{ width: "75%" }}></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>+25% delay</span>
+                        <span>Affects 15% of routes</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm">Clear Conditions</div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-green-500" style={{ width: "95%" }}></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>+5% delay</span>
+                        <span>Affects 85% of routes</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t pt-4">
+                <div className="text-sm font-medium mb-2">Traffic Prediction</div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Short-term (24h)</span>
+                    <span className="text-sm font-medium text-green-500">92% accuracy</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Medium-term (7d)</span>
+                    <span className="text-sm font-medium text-amber-500">78% accuracy</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Long-term (30d)</span>
+                    <span className="text-sm font-medium text-red-500">65% accuracy</span>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>

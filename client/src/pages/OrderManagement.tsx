@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -52,7 +52,25 @@ import {
   Plus,
   RefreshCw,
   AlertTriangle,
-  Clipboard
+  Clipboard,
+  Filter,
+  CheckCircle2,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  FileText,
+  Pencil,
+  Trash2,
+  FileEdit,
+  BarChartBig,
+  SendHorizonal,
+  ArrowDown,
+  ArrowUp,
+  ArrowBigRight,
+  CalendarDays,
+  CircleCheck
 } from "lucide-react";
 import {
   BarChart,
@@ -69,8 +87,23 @@ import {
   Pie,
   Cell,
   AreaChart,
-  Area
+  Area,
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Scatter,
+  ScatterChart,
+  ZAxis
 } from 'recharts';
+import {
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
+  BarChart as RechartsBarChart,
+  PieChart as RechartsPieChart
+} from "recharts";
+import { OrderPerformanceMonitor } from "@/components/orders/OrderPerformanceMonitor";
 
 // Define order type
 interface Order {
@@ -523,7 +556,16 @@ export default function OrderManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>(orders);
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  
+  // Selection state
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   
   // Calculate order statistics 
   const totalOrders = orderList.length;
@@ -533,161 +575,490 @@ export default function OrderManagement() {
   const cancelledOrders = orderList.filter(order => order.status === "cancelled").length;
   const pendingPayment = orderList.filter(order => order.payment === "pending").length;
   
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+  // Order counts for the pie chart
+  const orderCounts = {
+    processing: processingOrders,
+    shipped: shippedOrders,
+    delivered: deliveredOrders,
+    cancelled: cancelledOrders
   };
   
-  // Add a new order
+  // Update filtered orders whenever filters change
+  useEffect(() => {
+    const filtered = orderList.filter(order => {
+      // Apply search filter
+      const matchesSearch = searchTerm === "" || 
+        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (order.customerEmail && order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (order.trackingNumber && order.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      // Apply date filter
+      let matchesDate = true;
+      if (dateFilter !== 'all') {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const orderDate = new Date(order.date);
+        
+        if (dateFilter === 'today') {
+          matchesDate = orderDate.toDateString() === today.toDateString();
+        } else if (dateFilter === 'yesterday') {
+          matchesDate = orderDate.toDateString() === yesterday.toDateString();
+        } else if (dateFilter === 'week') {
+          const weekAgo = new Date(today);
+          weekAgo.setDate(today.getDate() - 7);
+          matchesDate = orderDate >= weekAgo;
+        }
+      }
+      
+      // Apply payment filter
+      const matchesPayment = paymentFilter === "all" || order.payment === paymentFilter;
+      
+      // Apply status filter
+      const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+      
+      return matchesSearch && matchesDate && matchesPayment && matchesStatus;
+    });
+    
+    setFilteredOrders(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [orderList, searchTerm, dateFilter, paymentFilter, statusFilter]);
+  
+  // Handle adding a new order
   const handleAddOrder = (newOrder: Order) => {
     setOrderList([newOrder, ...orderList]);
   };
   
-  // Filter orders for display
-  const getFilteredOrders = (status?: Order['status']) => {
-    let filtered = orderList;
-    
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(order => 
-        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (order.customerEmail && order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (order.trackingNumber && order.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-    
-    // Apply date filter
-    if (dateFilter !== 'all') {
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      filtered = filtered.filter(order => {
-        const orderDate = new Date(order.date);
-        
-        if (dateFilter === 'today') {
-          return orderDate.toDateString() === today.toDateString();
-        }
-        
-        if (dateFilter === 'yesterday') {
-          return orderDate.toDateString() === yesterday.toDateString();
-        }
-        
-        if (dateFilter === 'week') {
-          const weekAgo = new Date(today);
-          weekAgo.setDate(today.getDate() - 7);
-          return orderDate >= weekAgo;
-        }
-        
-        return true;
-      });
-    }
-    
-    // Apply payment filter
-    if (paymentFilter !== 'all') {
-      filtered = filtered.filter(order => order.payment === paymentFilter);
-    }
-    
-    // Apply status filter if provided
-    if (status) {
-      filtered = filtered.filter(order => order.status === status);
-    }
-    
-    return filtered;
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
   
-  // Count orders by status
-  const orderCounts = {
-    processing: orderList.filter(order => order.status === 'processing').length,
-    shipped: orderList.filter(order => order.status === 'shipped').length,
-    delivered: orderList.filter(order => order.status === 'delivered').length,
-    cancelled: orderList.filter(order => order.status === 'cancelled').length,
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
   };
   
-  // Render order table
-  const renderOrderTable = (orders: Order[]) => {
+  // Calculate pagination values
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
+  
+  // Selection handlers
+  const handleToggleOrderSelection = (orderId: string) => {
+    setSelectedOrders(prev => {
+      if (prev.includes(orderId)) {
+        return prev.filter(id => id !== orderId);
+      } else {
+        return [...prev, orderId];
+      }
+    });
+  };
+  
+  const handleSelectAll = (selected: boolean) => {
+    if (selected) {
+      setSelectedOrders(paginatedOrders.map(o => o.id));
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+  
+  // Batch operations handler
+  const handleBatchStatusChange = (status: string) => {
+    setOrderList(prev => 
+      prev.map(order => 
+        selectedOrders.includes(order.id) 
+          ? { ...order, status: status as Order['status'] } 
+          : order
+      )
+    );
+    setSelectedOrders([]);
+  };
+  
+  // Render enhanced order table
+  const renderEnhancedOrderTable = () => {
     return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Order ID</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Items</TableHead>
-            <TableHead>Total</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Payment</TableHead>
-            <TableHead>Shipping</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {orders.length > 0 ? (
-            orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell>{order.customer}</TableCell>
-                <TableCell>{order.items}</TableCell>
-                <TableCell>{order.total}</TableCell>
-                <TableCell>{order.date}</TableCell>
-                <TableCell>
-                  <Badge variant={
-                    order.status === 'processing' ? 'warning' : 
-                    order.status === 'shipped' ? 'secondary' : 
-                    order.status === 'delivered' ? 'success' : 
-                    'destructive'
-                  }>
-                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={
-                    order.payment === 'completed' ? 'success' : 
-                    order.payment === 'pending' ? 'warning' : 
-                    'destructive'
-                  }>
-                    {order.payment.charAt(0).toUpperCase() + order.payment.slice(1)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {order.shipping.toUpperCase()}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>View details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit order</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>Update status</DropdownMenuItem>
-                      <DropdownMenuItem>Generate invoice</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive">
-                        Cancel order
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-background border-b">
+          <div className="flex flex-col space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center text-xl">
+                  <ShoppingCart className="h-5 w-5 mr-2 text-primary" />
+                  Order Management
+                </CardTitle>
+                <CardDescription>View and manage customer orders</CardDescription>
+              </div>
+              <Button onClick={() => setIsNewOrderModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Order
+              </Button>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search orders..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 w-full h-9"
+                />
+              </div>
+              
+              <Select defaultValue={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[150px] h-9">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="processing">Processing</SelectItem>
+                  <SelectItem value="shipped">Shipped</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select defaultValue={paymentFilter} onValueChange={setPaymentFilter}>
+                <SelectTrigger className="w-[150px] h-9">
+                  <SelectValue placeholder="Payment status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Payments</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="failed">Failed</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={(size) => handlePageSizeChange(Number(size))}
+                >
+                  <SelectTrigger className="h-9 w-[70px]">
+                    <SelectValue placeholder={pageSize.toString()} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[5, 10, 25, 50].map((size) => (
+                      <SelectItem key={size} value={size.toString()}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button variant="outline" className="h-9 ml-auto" onClick={() => setOrderList(orders)}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        
+        {/* Batch Operations */}
+        {selectedOrders.length > 0 && (
+          <div className="p-3 bg-muted/30 border-b">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center">
+                <Badge variant="secondary" className="mr-2">{selectedOrders.length}</Badge>
+                <span className="text-sm font-medium">orders selected</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Select defaultValue="" onValueChange={(value) => value && handleBatchStatusChange(value)}>
+                  <SelectTrigger className="h-8 w-[180px]">
+                    <SelectValue placeholder="Change Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="processing">Set Processing</SelectItem>
+                    <SelectItem value="shipped">Set Shipped</SelectItem>
+                    <SelectItem value="delivered">Set Delivered</SelectItem>
+                    <SelectItem value="cancelled">Set Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" className="h-8" onClick={() => setSelectedOrders([])}>
+                  Clear Selection
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <CardContent className="p-0">
+          {filteredOrders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 p-6">
+              <ShoppingCart className="h-12 w-12 text-muted-foreground/30 mb-4" />
+              <h3 className="text-lg font-medium text-center mb-2">No orders found</h3>
+              <p className="text-sm text-muted-foreground text-center mb-4">
+                {searchTerm || statusFilter !== "all" || paymentFilter !== "all" || dateFilter !== "all"
+                  ? "Try adjusting your search filters to find what you're looking for." 
+                  : "Get started by creating your first order."}
+              </p>
+              {!searchTerm && statusFilter === "all" && paymentFilter === "all" && dateFilter === "all" && (
+                <Button onClick={() => setIsNewOrderModalOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Order
+                </Button>
+              )}
+            </div>
           ) : (
-            <TableRow>
-              <TableCell colSpan={9} className="text-center py-10">
-                No orders found matching the criteria
-              </TableCell>
-            </TableRow>
+            <div>
+              <div className="overflow-auto">
+                <table className="w-full">
+                  <thead className="bg-muted/50 text-sm">
+                    <tr>
+                      <th className="py-3 px-4 text-left font-medium w-[40px]">
+                        <input
+                          type="checkbox"
+                          checked={selectedOrders.length === paginatedOrders.length && paginatedOrders.length > 0}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                      </th>
+                      <th className="py-3 px-4 text-left font-medium">Order ID</th>
+                      <th className="py-3 px-4 text-left font-medium">Customer</th>
+                      <th className="py-3 px-4 text-center font-medium">Items</th>
+                      <th className="py-3 px-4 text-right font-medium">Total</th>
+                      <th className="py-3 px-4 text-left font-medium">Date</th>
+                      <th className="py-3 px-4 text-left font-medium">Status</th>
+                      <th className="py-3 px-4 text-left font-medium">Payment</th>
+                      <th className="py-3 px-4 text-left font-medium">Shipping</th>
+                      <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {paginatedOrders.map((order) => {
+                      const statusColor = 
+                        order.status === 'processing' ? 'amber' : 
+                        order.status === 'shipped' ? 'blue' : 
+                        order.status === 'delivered' ? 'green' : 
+                        'red';
+                      
+                      const paymentColor = 
+                        order.payment === 'completed' ? 'green' : 
+                        order.payment === 'pending' ? 'amber' : 
+                        'red';
+                      
+                      const statusLabel = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+                      const paymentLabel = order.payment.charAt(0).toUpperCase() + order.payment.slice(1);
+                      
+                      return (
+                        <tr key={order.id} className="hover:bg-muted/50 transition-colors">
+                          <td className="py-3 px-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedOrders.includes(order.id)}
+                              onChange={() => handleToggleOrderSelection(order.id)}
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </td>
+                          <td className="py-3 px-4 font-medium">{order.id}</td>
+                          <td className="py-3 px-4">
+                            <div className="font-medium">{order.customer}</div>
+                            {order.customerEmail && (
+                              <div className="text-xs text-muted-foreground mt-1">{order.customerEmail}</div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-center">{order.items}</td>
+                          <td className="py-3 px-4 text-right font-medium">{order.total}</td>
+                          <td className="py-3 px-4">{order.date}</td>
+                          <td className="py-3 px-4">
+                            <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
+                              {statusLabel}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge className={`bg-${paymentColor}-500/10 text-${paymentColor}-500 border-${paymentColor}-500/20`}>
+                              {paymentLabel}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant="outline">
+                              {order.shipping.toUpperCase()}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                title="View Details"
+                              >
+                                <FileText className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                title="Edit Order"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                title="Cancel Order"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Pagination */}
+              <div className="border-t">
+                <div className="flex items-center justify-between py-4 px-6">
+                  <div className="flex-1 text-sm text-muted-foreground">
+                    Showing {Math.min((currentPage - 1) * pageSize + 1, filteredOrders.length)} to {Math.min(currentPage * pageSize, filteredOrders.length)} of {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'}
+                  </div>
+                  
+                  <div className="flex-1 flex justify-center">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8"
+                        aria-label="First page"
+                      >
+                        <ChevronsLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8"
+                        aria-label="Previous page"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      
+                      {totalPages <= 5 ? (
+                        // Show all pages if 5 or fewer
+                        [...Array(totalPages)].map((_, i) => (
+                          <Button
+                            key={`page-${i+1}`}
+                            variant={currentPage === i+1 ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => handlePageChange(i+1)}
+                            className="h-8 w-8"
+                            aria-label={`Page ${i+1}`}
+                            aria-current={currentPage === i+1 ? "page" : undefined}
+                          >
+                            {i+1}
+                          </Button>
+                        ))
+                      ) : (
+                        // Show limited pages with ellipsis for better navigation
+                        <>
+                          <Button
+                            variant={currentPage === 1 ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => handlePageChange(1)}
+                            className="h-8 w-8"
+                            aria-label="Page 1"
+                          >
+                            1
+                          </Button>
+                          
+                          {currentPage > 3 && <span className="mx-1">...</span>}
+                          
+                          {currentPage > 2 && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              className="h-8 w-8"
+                              aria-label={`Page ${currentPage - 1}`}
+                            >
+                              {currentPage - 1}
+                            </Button>
+                          )}
+                          
+                          {currentPage !== 1 && currentPage !== totalPages && (
+                            <Button
+                              variant="default"
+                              size="icon"
+                              onClick={() => handlePageChange(currentPage)}
+                              className="h-8 w-8"
+                              aria-label={`Page ${currentPage}`}
+                              aria-current="page"
+                            >
+                              {currentPage}
+                            </Button>
+                          )}
+                          
+                          {currentPage < totalPages - 1 && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              className="h-8 w-8"
+                              aria-label={`Page ${currentPage + 1}`}
+                            >
+                              {currentPage + 1}
+                            </Button>
+                          )}
+                          
+                          {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                          
+                          <Button
+                            variant={currentPage === totalPages ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => handlePageChange(totalPages)}
+                            className="h-8 w-8"
+                            aria-label={`Page ${totalPages}`}
+                          >
+                            {totalPages}
+                          </Button>
+                        </>
+                      )}
+                      
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8"
+                        aria-label="Next page"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8"
+                        aria-label="Last page"
+                      >
+                        <ChevronsRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 flex justify-end">
+                    {/* Space for potential additional controls */}
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
-        </TableBody>
-      </Table>
+        </CardContent>
+      </Card>
     );
   };
 
@@ -762,7 +1133,18 @@ export default function OrderManagement() {
         </Card>
       </div>
 
-      {/* Charts Section */}
+      {/* Enhanced Order Table */}
+      {renderEnhancedOrderTable()}
+      
+      <NewOrderModal 
+        isOpen={isNewOrderModalOpen} 
+        onClose={() => setIsNewOrderModalOpen(false)}
+        onSuccess={handleAddOrder}
+      />
+
+      <div className="mb-6"></div>
+
+      {/* Order Volume - Order Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -833,7 +1215,7 @@ export default function OrderManagement() {
             <CardTitle>Order Status</CardTitle>
             <CardDescription>Distribution of orders by current status</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-2">
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -871,6 +1253,7 @@ export default function OrderManagement() {
         </Card>
       </div>
 
+      {/* Shipping Methods */}
       <Card className="mb-6">
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -926,154 +1309,6 @@ export default function OrderManagement() {
           </div>
         </CardContent>
       </Card>
-
-      <Tabs defaultValue="all" className="mb-6">
-        <TabsList className="mb-4">
-          <TabsTrigger value="all">All Orders</TabsTrigger>
-          <TabsTrigger value="processing">Processing ({orderCounts.processing})</TabsTrigger>
-          <TabsTrigger value="shipped">Shipped ({orderCounts.shipped})</TabsTrigger>
-          <TabsTrigger value="delivered">Delivered ({orderCounts.delivered})</TabsTrigger>
-          <TabsTrigger value="cancelled">Cancelled ({orderCounts.cancelled})</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="all">
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-                <div>
-                  <CardTitle>Order List</CardTitle>
-                  <CardDescription>Manage and process customer orders</CardDescription>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 opacity-50" />
-                    <Select value={dateFilter} onValueChange={setDateFilter}>
-                      <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Date range" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="today">Today</SelectItem>
-                        <SelectItem value="yesterday">Yesterday</SelectItem>
-                        <SelectItem value="week">This Week</SelectItem>
-                        <SelectItem value="all">All Time</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Payment" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Payments</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="failed">Failed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {renderOrderTable(getFilteredOrders())}
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredOrders().length} of {orderList.length} orders
-              </div>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="processing">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Processing Orders</CardTitle>
-                  <CardDescription>Orders currently being prepared for shipping</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {renderOrderTable(getFilteredOrders("processing"))}
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredOrders("processing").length} of {orderCounts.processing} processing orders
-              </div>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="shipped">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Shipped Orders</CardTitle>
-                  <CardDescription>Orders in transit to customers</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {renderOrderTable(getFilteredOrders("shipped"))}
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredOrders("shipped").length} of {orderCounts.shipped} shipped orders
-              </div>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="delivered">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Delivered Orders</CardTitle>
-                  <CardDescription>Successfully completed orders</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {renderOrderTable(getFilteredOrders("delivered"))}
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredOrders("delivered").length} of {orderCounts.delivered} delivered orders
-              </div>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="cancelled">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Cancelled Orders</CardTitle>
-                  <CardDescription>Orders that have been cancelled</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {renderOrderTable(getFilteredOrders("cancelled"))}
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredOrders("cancelled").length} of {orderCounts.cancelled} cancelled orders
-              </div>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      
-      <NewOrderModal 
-        isOpen={isNewOrderModalOpen} 
-        onClose={() => setIsNewOrderModalOpen(false)}
-        onSuccess={handleAddOrder}
-      />
 
       {/* Advanced Analytics Section */}
       <div className="mt-10 mb-6">
@@ -1177,8 +1412,15 @@ export default function OrderManagement() {
               {/* Fulfillment metrics content will be shown when this tab is active */}
             </TabsContent>
             
-            <TabsContent value="performance" className="p-0">
-              {/* Performance analysis content will be shown when this tab is active */}
+            <TabsContent value="performance" className="p-4">
+              <OrderPerformanceMonitor 
+                orders={[
+                  { id: "ORD-8761", name: "Acme Inc. Order", type: "Business", status: "processing", performanceScore: 86 },
+                  { id: "ORD-8760", name: "TechCorp Order", type: "Business", status: "shipped", performanceScore: 92 },
+                  { id: "ORD-8759", name: "GlobalTrade Order", type: "Business", status: "processing", performanceScore: 78 },
+                  { id: "ORD-8758", name: "Metro Supplies Order", type: "Business", status: "delivered", performanceScore: 95 }
+                ]}
+              />
             </TabsContent>
             
             <TabsContent value="regional" className="p-0">

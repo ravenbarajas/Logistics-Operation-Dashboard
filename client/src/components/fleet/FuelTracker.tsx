@@ -153,16 +153,15 @@ export function FuelTracker({ records, vehicles, vehiclesFuelData, onAddFuelReco
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-      <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center text-xl">
-                  <Fuel className="h-5 w-5 mr-2 text-primary" />
-                  Fuel Management System
-                </CardTitle>
-                <CardDescription>Monitor fuel consumption and costs across your fleet</CardDescription>
-              </div>
-            </div>
-            
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center text-xl">
+              <Fuel className="h-5 w-5 mr-2 text-primary" />
+              Fuel Management System
+            </CardTitle>
+            <CardDescription>Monitor fuel consumption and costs across your fleet</CardDescription>
+          </div>
+        </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>

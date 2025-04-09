@@ -218,14 +218,14 @@ export function OrderPerformanceMonitor({
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+    <div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4">
         <div>
-          <CardTitle className="flex items-center text-xl">
+          <div className="flex items-center text-xl font-semibold">
             <Activity className="h-5 w-5 mr-2 text-primary" />
             Order Performance Dashboard
-          </CardTitle>
-          <CardDescription>Real-time performance metrics for your orders</CardDescription>
+          </div>
+          <p className="text-sm text-muted-foreground">Real-time performance metrics for your orders</p>
         </div>
         
         <div className="mt-2 md:mt-0">
@@ -243,14 +243,20 @@ export function OrderPerformanceMonitor({
         </div>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="overview">Performance Overview</TabsTrigger>
-          <TabsTrigger value="issues">Order Issues</TabsTrigger>
-          <TabsTrigger value="alerts">Order Alerts</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full p-4">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="overview" className="text-xs">
+            Performance Overview
+          </TabsTrigger>
+          <TabsTrigger value="issues" className="text-xs">
+            Order Issues
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="text-xs">
+            System Alerts
+          </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="overview" className="space-y-4">
+        <TabsContent value="overview" className="pt-4 space-y-4">
           {/* Performance Score Card */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card className="md:col-span-1">
@@ -398,7 +404,7 @@ export function OrderPerformanceMonitor({
           </div>
         </TabsContent>
         
-        <TabsContent value="issues" className="space-y-4">
+        <TabsContent value="issues" className="pt-4 space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <Card>
               <CardHeader className="pb-2">
@@ -463,7 +469,7 @@ export function OrderPerformanceMonitor({
           </div>
         </TabsContent>
         
-        <TabsContent value="alerts" className="space-y-4">
+        <TabsContent value="alerts" className="pt-4 space-y-4">
           <div className="grid grid-cols-1 gap-4">
             <Card>
               <CardHeader className="pb-2">

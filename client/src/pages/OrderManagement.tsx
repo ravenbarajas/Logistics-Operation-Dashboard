@@ -1311,60 +1311,62 @@ export default function OrderManagement() {
       </Card>
 
       {/* Advanced Analytics Section */}
-      <div className="mt-10 mb-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <h2 className="text-2xl font-bold">Order Performance Analytics</h2>
-          
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="h-8">
-              <CalendarIcon className="h-3.5 w-3.5 mr-1" />
-              Last 7 Days
-            </Button>
-            <Button variant="outline" size="sm" className="h-8">
-              <CalendarIcon className="h-3.5 w-3.5 mr-1" />
-              Last 30 Days
-            </Button>
-            <Button variant="outline" size="sm" className="h-8">
-              <CalendarIcon className="h-3.5 w-3.5 mr-1" />
-              Last Quarter
-            </Button>
-            <Button variant="outline" size="sm" className="h-8" asChild>
-              <div className="flex items-center cursor-pointer">
-                <Clipboard className="h-3.5 w-3.5 mr-1" />
-                Export Data
-              </div>
-            </Button>
-          </div>
-        </div>
-
-        <div className="border rounded-lg mb-6 overflow-hidden">
-          <Tabs defaultValue="overview" className="w-full">
-            <div className="border-b bg-muted/40">
-              <div className="flex overflow-x-auto">
-                <TabsList className="bg-transparent h-10 p-0">
-                  <TabsTrigger value="overview" className="rounded-none h-10 px-4 data-[state=active]:bg-background">
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger value="fulfillment" className="rounded-none h-10 px-4 data-[state=active]:bg-background">
-                    Fulfillment Metrics
-                  </TabsTrigger>
-                  <TabsTrigger value="performance" className="rounded-none h-10 px-4 data-[state=active]:bg-background">
-                    Performance Analysis
-                  </TabsTrigger>
-                  <TabsTrigger value="regional" className="rounded-none h-10 px-4 data-[state=active]:bg-background">
-                    Regional Distribution
-                  </TabsTrigger>
-                  <TabsTrigger value="anomalies" className="rounded-none h-10 px-4 data-[state=active]:bg-background">
-                    Anomaly Detection
-                  </TabsTrigger>
-                  <TabsTrigger value="technical" className="rounded-none h-10 px-4 data-[state=active]:bg-background">
-                    Technical Performance
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <CardTitle>Order Performance Analytics</CardTitle>
+              <CardDescription>Advanced metrics and insights for order processing and fulfillment</CardDescription>
             </div>
             
-            <TabsContent value="overview" className="p-4">
+            {/* Filtering options */}
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" className="h-8">
+                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                Last 7 Days
+              </Button>
+              <Button variant="outline" size="sm" className="h-8">
+                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                Last 30 Days
+              </Button>
+              <Button variant="outline" size="sm" className="h-8">
+                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                Last Quarter
+              </Button>
+              <Button variant="outline" size="sm" className="h-8" asChild>
+                <div className="flex items-center cursor-pointer">
+                  <Clipboard className="h-3.5 w-3.5 mr-1" />
+                  Export Data
+                </div>
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Tabs defaultValue="overview" className="w-full p-4">
+            <TabsList className="w-full grid grid-cols-6 mb-4">
+              <TabsTrigger value="overview" className="text-xs">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="fulfillment" className="text-xs">
+                Fulfillment Metrics
+              </TabsTrigger>
+              <TabsTrigger value="performance" className="text-xs">
+                Performance Analysis
+              </TabsTrigger>
+              <TabsTrigger value="regional" className="text-xs">
+                Regional Distribution
+              </TabsTrigger>
+              <TabsTrigger value="anomalies" className="text-xs">
+                Anomaly Detection
+              </TabsTrigger>
+              <TabsTrigger value="technical" className="text-xs">
+                Technical Performance
+              </TabsTrigger>
+            </TabsList>
+            
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="p-0">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <Card className="bg-background shadow-none">
                   <CardContent className="p-3">
@@ -1408,35 +1410,796 @@ export default function OrderManagement() {
               </div>
             </TabsContent>
             
+            {/* Fulfillment Metrics Tab */}  
             <TabsContent value="fulfillment" className="p-0">
-              {/* Fulfillment metrics content will be shown when this tab is active */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">Avg Delivery Time</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">3.2 days</div>
+                    <div className="text-xs text-muted-foreground">-0.4 days from last month</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">Order Fill Rate</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">96.8%</div>
+                    <div className="text-xs text-muted-foreground">+1.2% from target</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-medium">Processing Cycle</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">4.5 hrs</div>
+                    <div className="text-xs text-muted-foreground">Within SLA target</div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Order Fulfillment Timeline</CardTitle>
+                    <CardDescription>Average time spent in each phase of order processing</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={[
+                            { stage: 'Order Verification', hours: 1.2 },
+                            { stage: 'Payment Processing', hours: 0.4 },
+                            { stage: 'Inventory Allocation', hours: 0.8 },
+                            { stage: 'Picking & Packing', hours: 1.5 },
+                            { stage: 'Shipping Preparation', hours: 0.6 },
+                            { stage: 'Carrier Pickup', hours: 5.5 },
+                            { stage: 'In Transit', hours: 58.2 },
+                            { stage: 'Delivery', hours: 8.8 },
+                          ]}
+                          layout="vertical"
+                          margin={{ top: 20, right: 30, left: 120, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis type="number" className="text-xs" />
+                          <YAxis dataKey="stage" type="category" className="text-xs" width={120} />
+                          <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                          <Legend />
+                          <Bar dataKey="hours" name="Hours" fill="hsl(var(--primary))" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Fulfillment Success Rate</CardTitle>
+                    <CardDescription>Order completion success by carrier and region</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span>FedEx</span>
+                          <span className="font-medium">98.2%</span>
+                        </div>
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500 rounded-full" style={{ width: '98.2%' }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span>UPS</span>
+                          <span className="font-medium">97.5%</span>
+                        </div>
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-green-500 rounded-full" style={{ width: '97.5%' }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span>DHL</span>
+                          <span className="font-medium">94.7%</span>
+                        </div>
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-amber-500 rounded-full" style={{ width: '94.7%' }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span>USPS</span>
+                          <span className="font-medium">92.3%</span>
+                        </div>
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-purple-500 rounded-full" style={{ width: '92.3%' }}></div>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4 border-t mt-4">
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span>Domestic</span>
+                          <span className="font-medium">98.1%</span>
+                        </div>
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500 rounded-full" style={{ width: '98.1%' }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span>International</span>
+                          <span className="font-medium">91.4%</span>
+                        </div>
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-amber-500 rounded-full" style={{ width: '91.4%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Fulfillment Service Level Compliance</CardTitle>
+                  <CardDescription>Performance against SLA targets by shipping method and order priority</CardDescription>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <div className="border-b">
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Shipping Method</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Priority</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Target Time</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Actual Time</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Variance</div>
+                      <div className="py-2 px-4 font-medium text-xs w-1/6">Compliance</div>
+                    </div>
+                  </div>
+                  <div className="divide-y">
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Express Air</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">High</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">24 hours</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">22.5 hours</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-green-500">-1.5 hours</div>
+                      <div className="py-2 px-4 text-xs w-1/6 text-green-500">100%</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Ground Premium</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Medium</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">48 hours</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">45.2 hours</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-green-500">-2.8 hours</div>
+                      <div className="py-2 px-4 text-xs w-1/6 text-green-500">97.5%</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Standard Ground</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Regular</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">5 days</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">5.4 days</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-amber-500">+0.4 days</div>
+                      <div className="py-2 px-4 text-xs w-1/6 text-amber-500">91.8%</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Economy</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Low</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">7 days</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">8.2 days</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-red-500">+1.2 days</div>
+                      <div className="py-2 px-4 text-xs w-1/6 text-red-500">85.3%</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6">International</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Medium</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">10 days</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">11.5 days</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-amber-500">+1.5 days</div>
+                      <div className="py-2 px-4 text-xs w-1/6 text-amber-500">88.9%</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
             
-            <TabsContent value="performance" className="p-4">
-              <OrderPerformanceMonitor 
-                orders={[
-                  { id: "ORD-8761", name: "Acme Inc. Order", type: "Business", status: "processing", performanceScore: 86 },
-                  { id: "ORD-8760", name: "TechCorp Order", type: "Business", status: "shipped", performanceScore: 92 },
-                  { id: "ORD-8759", name: "GlobalTrade Order", type: "Business", status: "processing", performanceScore: 78 },
-                  { id: "ORD-8758", name: "Metro Supplies Order", type: "Business", status: "delivered", performanceScore: 95 }
-                ]}
-              />
+            {/* Performance Analysis Tab */}
+            <TabsContent value="performance" className="p-0">
+              <Card>
+                <CardContent className="p-0">
+                  <OrderPerformanceMonitor 
+                    orders={[
+                      { id: "ORD-8761", name: "Acme Inc. Order", type: "Business", status: "processing", performanceScore: 86 },
+                      { id: "ORD-8760", name: "TechCorp Order", type: "Business", status: "shipped", performanceScore: 92 },
+                      { id: "ORD-8759", name: "GlobalTrade Order", type: "Business", status: "processing", performanceScore: 78 },
+                      { id: "ORD-8758", name: "Metro Supplies Order", type: "Business", status: "delivered", performanceScore: 95 }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
             </TabsContent>
-            
+
+            {/* Regional Distribution Tab */}
             <TabsContent value="regional" className="p-0">
-              {/* Regional distribution content will be shown when this tab is active */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">Top Region</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">Northeast</div>
+                    <div className="text-xs text-muted-foreground">42% of total volume</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">Fastest Growth</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">Southwest</div>
+                    <div className="text-xs text-muted-foreground">+23% year-over-year</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-medium">Highest AOV</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">West</div>
+                    <div className="text-xs text-muted-foreground">$245 average order</div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Order Distribution by Region</CardTitle>
+                    <CardDescription>Geographic breakdown of order volume</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Northeast', value: 42 },
+                              { name: 'Southeast', value: 18 },
+                              { name: 'Midwest', value: 15 },
+                              { name: 'Southwest', value: 12 },
+                              { name: 'West', value: 13 },
+                            ]}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {[
+                              { name: 'Northeast', value: 42 },
+                              { name: 'Southeast', value: 18 },
+                              { name: 'Midwest', value: 15 },
+                              { name: 'Southwest', value: 12 },
+                              { name: 'West', value: 13 },
+                            ].map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value) => [`${value}%`, 'Order Volume']}
+                            contentStyle={{ 
+                              background: 'hsl(var(--card))', 
+                              borderColor: 'hsl(var(--border))' 
+                            }} 
+                          />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Regional Growth Trends</CardTitle>
+                    <CardDescription>YoY growth by geographical area</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={[
+                            { region: 'Northeast', growth: 8 },
+                            { region: 'Southeast', growth: 12 },
+                            { region: 'Midwest', growth: 5 },
+                            { region: 'Southwest', growth: 23 },
+                            { region: 'West', growth: 15 },
+                          ]}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis dataKey="region" className="text-xs" />
+                          <YAxis 
+                            className="text-xs" 
+                            tickFormatter={(value) => `${value}%`}
+                          />
+                          <Tooltip
+                            formatter={(value) => [`${value}%`, 'Growth Rate']}
+                            contentStyle={{ 
+                              background: 'hsl(var(--card))', 
+                              borderColor: 'hsl(var(--border))' 
+                            }}
+                          />
+                          <Legend />
+                          <Bar dataKey="growth" name="YoY Growth" fill="hsl(var(--primary))" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Regional Performance Metrics</CardTitle>
+                  <CardDescription>Detailed order and fulfillment statistics by region</CardDescription>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <div className="border-b">
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Region</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Order Volume</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Avg Order Value</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Fulfillment Rate</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Delivery Time</div>
+                      <div className="py-2 px-4 font-medium text-xs w-1/6">Return Rate</div>
+                    </div>
+                  </div>
+                  <div className="divide-y">
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">Northeast</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">4,521</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">$218</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-green-500">98.4%</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">2.8 days</div>
+                      <div className="py-2 px-4 text-xs w-1/6">3.2%</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">Southeast</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">1,932</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">$185</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-amber-500">92.1%</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">3.5 days</div>
+                      <div className="py-2 px-4 text-xs w-1/6">4.1%</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">Midwest</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">1,614</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">$205</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-green-500">97.8%</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">3.2 days</div>
+                      <div className="py-2 px-4 text-xs w-1/6">2.8%</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">Southwest</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">1,291</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">$230</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-green-500">95.6%</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">3.0 days</div>
+                      <div className="py-2 px-4 text-xs w-1/6">3.5%</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">West</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">1,398</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">$245</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6 text-green-500">96.3%</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">2.9 days</div>
+                      <div className="py-2 px-4 text-xs w-1/6">2.9%</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
-            
+
+            {/* Anomalies Detection Tab */}
             <TabsContent value="anomalies" className="p-0">
-              {/* Anomaly detection content will be shown when this tab is active */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                      <span className="text-sm font-medium">Active Anomalies</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">7</div>
+                    <div className="text-xs text-muted-foreground">3 high severity</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-medium">Detection Latency</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">4.2m</div>
+                    <div className="text-xs text-muted-foreground">-25% from baseline</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">Resolution Rate</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">94.8%</div>
+                    <div className="text-xs text-muted-foreground">Within 24 hours</div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Anomaly Distribution</CardTitle>
+                    <CardDescription>Types of anomalies detected in the system</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Processing Delays', value: 35 },
+                              { name: 'Payment Failures', value: 25 },
+                              { name: 'Inventory Mismatches', value: 18 },
+                              { name: 'Shipping Exceptions', value: 15 },
+                              { name: 'API Errors', value: 7 },
+                            ]}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {[
+                              { name: 'Processing Delays', value: 35 },
+                              { name: 'Payment Failures', value: 25 },
+                              { name: 'Inventory Mismatches', value: 18 },
+                              { name: 'Shipping Exceptions', value: 15 },
+                              { name: 'API Errors', value: 7 },
+                            ].map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value) => [`${value}%`, 'Occurrence']}
+                            contentStyle={{ 
+                              background: 'hsl(var(--card))', 
+                              borderColor: 'hsl(var(--border))' 
+                            }} 
+                          />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Anomaly Detection Trend</CardTitle>
+                    <CardDescription>Number of anomalies detected over time</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={[
+                            { date: 'Apr 15', count: 12, resolved: 10 },
+                            { date: 'Apr 16', count: 15, resolved: 14 },
+                            { date: 'Apr 17', count: 8, resolved: 8 },
+                            { date: 'Apr 18', count: 10, resolved: 9 },
+                            { date: 'Apr 19', count: 14, resolved: 12 },
+                            { date: 'Apr 20', count: 9, resolved: 9 },
+                            { date: 'Apr 21', count: 7, resolved: 5 },
+                          ]}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis dataKey="date" className="text-xs" />
+                          <YAxis className="text-xs" />
+                          <Tooltip
+                            contentStyle={{ 
+                              background: 'hsl(var(--card))', 
+                              borderColor: 'hsl(var(--border))' 
+                            }}
+                          />
+                          <Legend />
+                          <Line type="monotone" dataKey="count" name="Detected" stroke="#ef4444" strokeWidth={2} />
+                          <Line type="monotone" dataKey="resolved" name="Resolved" stroke="#22c55e" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Active Anomalies</CardTitle>
+                  <CardDescription>Current anomalies requiring attention</CardDescription>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <div className="border-b">
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">ID</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/4">Description</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Type</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Detected</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Severity</div>
+                      <div className="py-2 px-4 font-medium text-xs w-1/12">Status</div>
+                    </div>
+                  </div>
+                  <div className="divide-y">
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">ANM-1082</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/4">Payment gateway response time exceeding threshold</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Payment Failure</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">2h ago</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">
+                        <Badge className="bg-red-500">High</Badge>
+                      </div>
+                      <div className="py-2 px-4 text-xs w-1/12">Active</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">ANM-1081</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/4">Order processing queue growing abnormally</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Processing Delay</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">4h ago</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">
+                        <Badge className="bg-red-500">High</Badge>
+                      </div>
+                      <div className="py-2 px-4 text-xs w-1/12">Active</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">ANM-1080</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/4">Inventory synchronization failures detected</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Inventory Mismatch</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">5h ago</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">
+                        <Badge className="bg-red-500">High</Badge>
+                      </div>
+                      <div className="py-2 px-4 text-xs w-1/12">Active</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">ANM-1079</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/4">Shipping label generation intermittent failures</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Shipping Exception</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">6h ago</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">
+                        <Badge className="bg-amber-500">Medium</Badge>
+                      </div>
+                      <div className="py-2 px-4 text-xs w-1/12">Active</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">ANM-1078</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/4">Unusual spike in order cancellations</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">Processing Delay</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">8h ago</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/6">
+                        <Badge className="bg-amber-500">Medium</Badge>
+                      </div>
+                      <div className="py-2 px-4 text-xs w-1/12">Active</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
             
+            {/* Technical Performance Tab */}
             <TabsContent value="technical" className="p-0">
-              {/* Technical performance content will be shown when this tab is active */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">Processing Rate</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">142/hr</div>
+                    <div className="text-xs text-muted-foreground">+18% from baseline</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">Response Time</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">2.4s</div>
+                    <div className="text-xs text-muted-foreground">-0.3s from last week</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-medium">System Load</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">68%</div>
+                    <div className="text-xs text-muted-foreground">Within optimal range</div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                      <span className="text-sm font-medium">Error Count</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">17</div>
+                    <div className="text-xs text-muted-foreground">Last 24 hours</div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Charts Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>System Resource Utilization</CardTitle>
+                    <CardDescription>CPU, Memory and Network metrics over time</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={[
+                            { time: '00:00', cpu: 42, memory: 35, network: 15 },
+                            { time: '04:00', cpu: 28, memory: 32, network: 13 },
+                            { time: '08:00', cpu: 55, memory: 40, network: 25 },
+                            { time: '12:00', cpu: 78, memory: 52, network: 38 },
+                            { time: '16:00', cpu: 82, memory: 58, network: 42 },
+                            { time: '20:00', cpu: 65, memory: 45, network: 32 },
+                            { time: '24:00', cpu: 45, memory: 38, network: 20 },
+                          ]}
+                          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis dataKey="time" className="text-xs" />
+                          <YAxis className="text-xs" />
+                          <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                          <Legend />
+                          <Line type="monotone" dataKey="cpu" name="CPU %" stroke="#3b82f6" strokeWidth={2} />
+                          <Line type="monotone" dataKey="memory" name="Memory %" stroke="#10b981" strokeWidth={2} />
+                          <Line type="monotone" dataKey="network" name="Network Mb/s" stroke="#f59e0b" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Request Distribution</CardTitle>
+                    <CardDescription>API endpoint performance metrics</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={[
+                            { endpoint: '/orders/create', requests: 1250, latency: 145 },
+                            { endpoint: '/orders/update', requests: 830, latency: 132 },
+                            { endpoint: '/orders/status', requests: 2380, latency: 87 },
+                            { endpoint: '/orders/search', requests: 1890, latency: 220 },
+                            { endpoint: '/orders/metrics', requests: 560, latency: 175 },
+                          ]}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            dataKey="endpoint" 
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}}
+                            angle={-45}
+                            textAnchor="end"
+                          />
+                          <YAxis yAxisId="left" orientation="left" className="text-xs" />
+                          <YAxis yAxisId="right" orientation="right" className="text-xs" />
+                          <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                          <Legend />
+                          <Bar yAxisId="left" dataKey="requests" name="Request Count" fill="hsl(var(--primary))" />
+                          <Line yAxisId="right" type="monotone" dataKey="latency" name="Latency (ms)" stroke="#ef4444" strokeWidth={2} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Technical Logs Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Technical Performance Logs</CardTitle>
+                  <CardDescription>Recent system events and performance metrics</CardDescription>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <div className="border-b">
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Timestamp</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Component</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Metric</div>
+                      <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Value</div>
+                      <div className="py-2 px-4 font-medium text-xs w-1/5">Status</div>
+                    </div>
+                  </div>
+                  <div className="divide-y">
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:42:18</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Order Processor</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Request Latency</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">132ms</div>
+                      <div className="py-2 px-4 text-xs w-1/5 text-green-500">Normal</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:40:55</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Database</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Query Time</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">215ms</div>
+                      <div className="py-2 px-4 text-xs w-1/5 text-amber-500">Warning</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:39:12</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Payment Gateway</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Response Time</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">1.2s</div>
+                      <div className="py-2 px-4 text-xs w-1/5 text-red-500">Critical</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:38:45</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Inventory API</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Availability Check</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">87ms</div>
+                      <div className="py-2 px-4 text-xs w-1/5 text-green-500">Normal</div>
+                    </div>
+                    <div className="flex">
+                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:37:22</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Shipping Calculator</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">Computation Time</div>
+                      <div className="py-2 px-4 border-r text-xs w-1/5">342ms</div>
+                      <div className="py-2 px-4 text-xs w-1/5 text-amber-500">Warning</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Order Fulfillment KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

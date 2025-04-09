@@ -1791,11 +1791,6 @@ export default function RouteOptimization() {
       
       {/* Advanced Analytics Section */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4 flex items-center">
-          <Calculator className="h-6 w-6 mr-2 text-primary" />
-          Advanced Route Analytics
-        </h2>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader>
@@ -1891,6 +1886,14 @@ export default function RouteOptimization() {
                   </div>
                   <Progress value={84} className="h-2" />
                 </div>
+                
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium">Refrigerated Trucks</span>
+                    <span className="text-sm font-medium">71%</span>
+                  </div>
+                  <Progress value={71} className="h-2" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1938,6 +1941,18 @@ export default function RouteOptimization() {
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>92% Utilized</span>
                     <span>74 Deliveries</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium">Evening (6PM-10PM)</span>
+                    <span className="text-sm font-medium text-blue-500">Low Traffic</span>
+                  </div>
+                  <Progress value={55} className="h-2 bg-muted" />
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>55% Utilized</span>
+                    <span>38 Deliveries</span>
                   </div>
                 </div>
               </div>

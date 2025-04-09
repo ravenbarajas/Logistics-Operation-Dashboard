@@ -70,7 +70,8 @@ import {
   ArrowUp,
   ArrowBigRight,
   CalendarDays,
-  CircleCheck
+  CircleCheck,
+  Globe
 } from "lucide-react";
 import {
   BarChart,
@@ -1367,7 +1368,8 @@ export default function OrderManagement() {
             
             {/* Overview Tab */}
             <TabsContent value="overview" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {/* Key Metrics Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
                 <Card className="bg-background shadow-none">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2">
@@ -1400,7 +1402,137 @@ export default function OrderManagement() {
                     <div className="text-xs text-muted-foreground">Within acceptable threshold</div>
                   </CardContent>
                 </Card>
+                
+                {/* Additional cards */}
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">Fulfillment Rate</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">96.8%</div>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+                      <span>+1.2% from target</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-purple-500" />
+                      <span className="text-sm font-medium">Top Region</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">Northeast</div>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <BarChart className="h-3 w-3 mr-1 text-purple-500" />
+                      <span>42% of volume</span>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
+              
+              {/* Insights Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Performance Summary */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Performance Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Delivery Efficiency</span>
+                        <span className="font-medium">92%</span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-green-500 rounded-full" style={{ width: '92%' }}></div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Technical Uptime</span>
+                        <span className="font-medium">99.7%</span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: '99.7%' }}></div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Order Processing</span>
+                        <span className="font-medium">88%</span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full" style={{ width: '88%' }}></div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Regional Distribution */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Regional Distribution</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Northeast</span>
+                        <span className="text-xs font-medium">42%</span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: '42%' }}></div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Southeast</span>
+                        <span className="text-xs font-medium">18%</span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-green-500 rounded-full" style={{ width: '18%' }}></div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Midwest</span>
+                        <span className="text-xs font-medium">22%</span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full" style={{ width: '22%' }}></div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">West</span>
+                        <span className="text-xs font-medium">18%</span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-purple-500 rounded-full" style={{ width: '18%' }}></div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Alerts Section */}
+              <Card className="mb-6">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center">
+                    <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
+                    Active Alerts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-2">
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-md bg-amber-500/10 border border-amber-200">
+                      <h4 className="font-medium text-sm mb-1 text-amber-600">Payment Gateway Latency</h4>
+                      <p className="text-xs text-muted-foreground">Response time exceeding threshold (1.2s)</p>
+                    </div>
+                    <div className="p-3 rounded-md bg-red-500/10 border border-red-200">
+                      <h4 className="font-medium text-sm mb-1 text-red-600">Order Processing Queue</h4>
+                      <p className="text-xs text-muted-foreground">Queue growing abnormally (24 pending)</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               
               <div className="text-sm text-muted-foreground mb-4">
                 <div className="flex items-center">
@@ -1612,7 +1744,7 @@ export default function OrderManagement() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+                </Card>
             </TabsContent>
             
             {/* Performance Analysis Tab */}
@@ -1639,7 +1771,7 @@ export default function OrderManagement() {
                     <div className="flex items-center gap-2">
                       <Truck className="h-4 w-4 text-blue-500" />
                       <span className="text-sm font-medium">Top Region</span>
-                    </div>
+              </div>
                     <div className="mt-1 text-xl font-bold">Northeast</div>
                     <div className="text-xs text-muted-foreground">42% of total volume</div>
                   </CardContent>
@@ -1714,7 +1846,7 @@ export default function OrderManagement() {
                           <Legend />
                         </PieChart>
                       </ResponsiveContainer>
-                    </div>
+                          </div>
                   </CardContent>
                 </Card>
                 
@@ -1753,10 +1885,10 @@ export default function OrderManagement() {
                           <Bar dataKey="growth" name="YoY Growth" fill="hsl(var(--primary))" />
                         </BarChart>
                       </ResponsiveContainer>
-                    </div>
+                            </div>
                   </CardContent>
                 </Card>
-              </div>
+                          </div>
               
               <Card>
                 <CardHeader>
@@ -1772,7 +1904,7 @@ export default function OrderManagement() {
                       <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Fulfillment Rate</div>
                       <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Delivery Time</div>
                       <div className="py-2 px-4 font-medium text-xs w-1/6">Return Rate</div>
-                    </div>
+                        </div>
                   </div>
                   <div className="divide-y">
                     <div className="flex">
@@ -1815,9 +1947,9 @@ export default function OrderManagement() {
                       <div className="py-2 px-4 border-r text-xs w-1/6">2.9 days</div>
                       <div className="py-2 px-4 text-xs w-1/6">2.9%</div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    </div>
+                  </CardContent>
+                </Card>
             </TabsContent>
 
             {/* Anomalies Detection Tab */}
@@ -1828,7 +1960,7 @@ export default function OrderManagement() {
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-red-500" />
                       <span className="text-sm font-medium">Active Anomalies</span>
-                    </div>
+                      </div>
                     <div className="mt-1 text-xl font-bold">7</div>
                     <div className="text-xs text-muted-foreground">3 high severity</div>
                   </CardContent>
@@ -1839,7 +1971,7 @@ export default function OrderManagement() {
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-amber-500" />
                       <span className="text-sm font-medium">Detection Latency</span>
-                    </div>
+                      </div>
                     <div className="mt-1 text-xl font-bold">4.2m</div>
                     <div className="text-xs text-muted-foreground">-25% from baseline</div>
                   </CardContent>
@@ -1850,7 +1982,7 @@ export default function OrderManagement() {
                     <div className="flex items-center gap-2">
                       <RefreshCw className="h-4 w-4 text-green-500" />
                       <span className="text-sm font-medium">Resolution Rate</span>
-                    </div>
+                      </div>
                     <div className="mt-1 text-xl font-bold">94.8%</div>
                     <div className="text-xs text-muted-foreground">Within 24 hours</div>
                   </CardContent>
@@ -1960,8 +2092,8 @@ export default function OrderManagement() {
                       <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Detected</div>
                       <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Severity</div>
                       <div className="py-2 px-4 font-medium text-xs w-1/12">Status</div>
-                    </div>
-                  </div>
+                </div>
+              </div>
                   <div className="divide-y">
                     <div className="flex">
                       <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">ANM-1082</div>
@@ -2022,11 +2154,11 @@ export default function OrderManagement() {
             <TabsContent value="technical" className="p-0">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <Card className="bg-background shadow-none">
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-2">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-blue-500" />
                       <span className="text-sm font-medium">Processing Rate</span>
-                    </div>
+                  </div>
                     <div className="mt-1 text-xl font-bold">142/hr</div>
                     <div className="text-xs text-muted-foreground">+18% from baseline</div>
                   </CardContent>
@@ -2037,19 +2169,19 @@ export default function OrderManagement() {
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-green-500" />
                       <span className="text-sm font-medium">Response Time</span>
-                    </div>
+                  </div>
                     <div className="mt-1 text-xl font-bold">2.4s</div>
                     <div className="text-xs text-muted-foreground">-0.3s from last week</div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-background shadow-none">
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-2">
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-background shadow-none">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-2">
                       <RefreshCw className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm font-medium">System Load</span>
-                    </div>
-                    <div className="mt-1 text-xl font-bold">68%</div>
+                    <span className="text-sm font-medium">System Load</span>
+                  </div>
+                  <div className="mt-1 text-xl font-bold">68%</div>
                     <div className="text-xs text-muted-foreground">Within optimal range</div>
                   </CardContent>
                 </Card>
@@ -2059,20 +2191,20 @@ export default function OrderManagement() {
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-red-500" />
                       <span className="text-sm font-medium">Error Count</span>
-                    </div>
+                  </div>
                     <div className="mt-1 text-xl font-bold">17</div>
                     <div className="text-xs text-muted-foreground">Last 24 hours</div>
-                  </CardContent>
-                </Card>
-              </div>
-              
+                </CardContent>
+              </Card>
+            </div>
+            
               {/* Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <Card>
-                  <CardHeader>
+              <CardHeader>
                     <CardTitle>System Resource Utilization</CardTitle>
                     <CardDescription>CPU, Memory and Network metrics over time</CardDescription>
-                  </CardHeader>
+              </CardHeader>
                   <CardContent className="px-2">
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
@@ -2192,19 +2324,19 @@ export default function OrderManagement() {
                       <div className="py-2 px-4 border-r text-xs w-1/5">Computation Time</div>
                       <div className="py-2 px-4 border-r text-xs w-1/5">342ms</div>
                       <div className="py-2 px-4 text-xs w-1/5 text-amber-500">Warning</div>
-                    </div>
                   </div>
+                </div>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
-
+              </CardContent>
+            </Card>
+            
       {/* Order Fulfillment KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
+              <Card>
+                <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Order Fulfillment Rate</CardTitle>
           </CardHeader>
           <CardContent className="px-6">
@@ -2212,7 +2344,7 @@ export default function OrderManagement() {
             <div className="flex items-center mt-1">
               <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
               <p className="text-xs text-muted-foreground">2.1% above target</p>
-            </div>
+                  </div>
             <div className="h-1 w-full bg-muted mt-3">
               <div className="h-1 bg-primary" style={{ width: '96.4%' }}></div>
             </div>
@@ -2222,16 +2354,16 @@ export default function OrderManagement() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Avg. Processing Time</CardTitle>
-          </CardHeader>
+                </CardHeader>
           <CardContent className="px-6">
             <div className="text-2xl font-bold text-amber-500">1.8 days</div>
             <div className="flex items-center mt-1">
               <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
               <p className="text-xs text-muted-foreground">0.2 days below target</p>
-            </div>
+                    </div>
             <div className="h-1 w-full bg-muted mt-3">
               <div className="h-1 bg-amber-500" style={{ width: '75%' }}></div>
-            </div>
+                    </div>
           </CardContent>
         </Card>
 
@@ -2244,15 +2376,15 @@ export default function OrderManagement() {
             <div className="flex items-center mt-1">
               <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
               <p className="text-xs text-muted-foreground">1.7% improvement from last month</p>
-            </div>
+                    </div>
             <div className="h-1 w-full bg-muted mt-3">
               <div className="h-1 bg-green-500" style={{ width: '94.2%' }}></div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Return Rate</CardTitle>
           </CardHeader>
           <CardContent className="px-6">
@@ -2386,9 +2518,9 @@ export default function OrderManagement() {
                 <SelectItem value="15min">15 minutes</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
+                  </div>
+                </CardHeader>
+                <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             <div className="space-y-4">
               <div>
@@ -2480,28 +2612,28 @@ export default function OrderManagement() {
             
             <div className="bg-muted/30 rounded-md p-3">
               <div className="text-sm font-medium mb-2">System Status</div>
-              <div className="space-y-2">
+                  <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
                     <span className="text-sm">Order API</span>
-                  </div>
+                    </div>
                   <span className="text-xs text-muted-foreground">Operational</span>
-                </div>
-                
+                    </div>
+                    
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
                     <span className="text-sm">Payment Processor</span>
-                  </div>
+                    </div>
                   <span className="text-xs text-muted-foreground">Operational</span>
-                </div>
-                
+                    </div>
+                    
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full bg-amber-500 mr-2"></div>
                     <span className="text-sm">Inventory System</span>
-                  </div>
+                    </div>
                   <span className="text-xs text-muted-foreground">Degraded</span>
                 </div>
                 
@@ -2526,11 +2658,11 @@ export default function OrderManagement() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                 </div>
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
       {/* Order Volume Heatmap */}
       <Card className="mb-6">
         <CardHeader>
@@ -2548,10 +2680,10 @@ export default function OrderManagement() {
               </Button>
               <Button variant="outline" size="sm">
                 Quarter
-              </Button>
+                    </Button>
             </div>
-          </div>
-        </CardHeader>
+                  </div>
+                </CardHeader>
         <CardContent className="px-2">
           <div className="h-64">
             {/* This would be a heatmap visualization in a real implementation */}
@@ -2599,8 +2731,8 @@ export default function OrderManagement() {
                 <div className="bg-[#053772] flex items-center justify-center text-xs">79</div>
                 <div className="bg-[#0a56ab] flex items-center justify-center text-xs">67</div>
                 <div className="bg-[#1f85e2] flex items-center justify-center text-xs">25</div>
-              </div>
-            </div>
+                    </div>
+                    </div>
             
             <div className="flex justify-center mt-4">
               <div className="flex items-center">
@@ -2621,10 +2753,10 @@ export default function OrderManagement() {
                   <span>High</span>
                 </div>
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
       {/* Regional Performance Analysis */}
       <Card className="mb-6">
@@ -2708,8 +2840,8 @@ export default function OrderManagement() {
           <CardHeader>
             <CardTitle>Weekly Order Trends</CardTitle>
             <CardDescription>4-week comparison with year-over-year growth</CardDescription>
-          </CardHeader>
-          <CardContent className="px-2">
+                </CardHeader>
+                <CardContent className="px-2">
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
@@ -2757,7 +2889,7 @@ export default function OrderManagement() {
                   <Bar yAxisId="right" dataKey="growth" name="YoY Growth" fill="#82ca9d" />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
+                        </div>
           </CardContent>
         </Card>
 
@@ -2812,10 +2944,10 @@ export default function OrderManagement() {
                   <Line type="monotone" dataKey="target" name="Target" stroke="#ff7300" strokeWidth={2} strokeDasharray="5 5" />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+                          </div>
           </CardContent>
         </Card>
-      </div>
+                        </div>
 
       {/* Order Issues and Alerts */}
       <Card className="mb-6">
@@ -2824,12 +2956,12 @@ export default function OrderManagement() {
             <div>
               <CardTitle>Order Risk Management</CardTitle>
               <CardDescription>Monitor and address potential order issues</CardDescription>
-            </div>
+                      </div>
             <Button variant="outline" size="sm">
               <AlertTriangle className="h-4 w-4 mr-2" />
               View All Alerts
             </Button>
-          </div>
+                  </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -2906,9 +3038,9 @@ export default function OrderManagement() {
               </TableRow>
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-
+                </CardContent>
+              </Card>
+              
       {/* Order Processing Flow Diagram */}
       <Card className="mb-6">
         <CardHeader>
@@ -2921,8 +3053,8 @@ export default function OrderManagement() {
               View Service Topology
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
+                </CardHeader>
+                <CardContent>
           <div className="overflow-x-auto">
             <div className="min-w-[800px] py-4">
               {/* Flow Diagram - This would use a proper flow diagram library in a real implementation */}
@@ -2932,9 +3064,9 @@ export default function OrderManagement() {
                   <div className="w-24 h-20 border rounded bg-blue-50 flex flex-col items-center justify-center">
                     <div className="text-xs font-medium text-center">Web / Mobile Clients</div>
                     <div className="text-[10px] text-muted-foreground mt-1">42 req/sec</div>
-                  </div>
+                    </div>
                   <div className="text-[10px] text-green-500 mt-1">98.7% uptime</div>
-                </div>
+                    </div>
                 
                 {/* API Gateway */}
                 <div className="flex flex-col items-center">

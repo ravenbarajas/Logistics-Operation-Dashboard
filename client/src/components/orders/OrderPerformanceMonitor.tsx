@@ -44,7 +44,16 @@ import {
   AlertTriangle,
   RefreshCw,
   Scale,
+  Filter,
+  ChevronDown
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface PerformanceMetric {
   name: string;
@@ -99,101 +108,288 @@ export function OrderPerformanceMonitor({
 }: OrderPerformanceMonitorProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedOrder, setSelectedOrder] = useState(selectedOrderId || (orders.length > 0 ? orders[0].id : ''));
+  const [metricFilter, setMetricFilter] = useState<string>("all");
 
-  // Mock data - would come from API in a real app
-  const performanceMetrics: PerformanceMetric[] = [
-    { name: 'Processing Time', score: 92, status: 'good', lastChecked: new Date('2024-03-15') },
-    { name: 'Payment Efficiency', score: 88, status: 'good', lastChecked: new Date('2024-03-10') },
-    { name: 'Shipping Speed', score: 75, status: 'warning', lastChecked: new Date('2024-03-12'), nextCheck: new Date('2024-04-12') },
-    { name: 'Order Accuracy', score: 95, status: 'good', lastChecked: new Date('2024-03-05') },
-    { name: 'Customer Satisfaction', score: 82, status: 'good', lastChecked: new Date('2024-03-08') },
-    { name: 'Return Rate', score: 90, status: 'good', lastChecked: new Date('2024-03-20') },
-    { name: 'Delivery Success', score: 62, status: 'warning', lastChecked: new Date('2024-03-18'), nextCheck: new Date('2024-04-18') },
-    { name: 'Error Rate', score: 45, status: 'critical', lastChecked: new Date('2024-03-01'), nextCheck: new Date('2024-04-01') }
-  ];
+  // Get the selected order object
+  const selectedOrderObj = orders.find(order => order.id === selectedOrder) || orders[0];
 
-  const orderIssues: OrderIssue[] = [
-    {
-      orderId: orders[0]?.id || '1',
-      orderName: orders[0]?.name || 'ORD-8761',
-      issue: 'Delayed Processing',
-      detectedDate: new Date('2024-04-15'),
-      confidence: 92,
-      severity: 'high',
-      estimatedImpact: 350,
-      description: 'Order processing time exceeding SLA by 48 hours. Immediate attention required.'
-    },
-    {
-      orderId: orders[0]?.id || '1',
-      orderName: orders[0]?.name || 'ORD-8761',
-      issue: 'Payment Verification',
-      detectedDate: new Date('2024-05-05'),
-      confidence: 85,
-      severity: 'medium',
-      estimatedImpact: 120,
-      description: 'Payment verification taking longer than usual. Consider manual review to expedite.'
-    },
-    {
-      orderId: orders[1]?.id || '2',
-      orderName: orders[1]?.name || 'ORD-8760',
-      issue: 'Inventory Availability',
-      detectedDate: new Date('2024-04-22'),
-      confidence: 88,
-      severity: 'medium',
-      estimatedImpact: 250,
-      description: 'Inventory not allocated in expected timeframe. Check for stock issues.'
+  // Generate order-specific performance metrics
+  const getOrderMetrics = (orderId: string): PerformanceMetric[] => {
+    // Base metrics with standard patterns
+    const baseMetrics: PerformanceMetric[] = [
+      { name: 'Processing Time', score: 92, status: 'good', lastChecked: new Date('2024-03-15') },
+      { name: 'Payment Efficiency', score: 88, status: 'good', lastChecked: new Date('2024-03-10') },
+      { name: 'Shipping Speed', score: 75, status: 'warning', lastChecked: new Date('2024-03-12'), nextCheck: new Date('2024-04-12') },
+      { name: 'Order Accuracy', score: 95, status: 'good', lastChecked: new Date('2024-03-05') },
+      { name: 'Customer Satisfaction', score: 82, status: 'good', lastChecked: new Date('2024-03-08') },
+      { name: 'Return Rate', score: 90, status: 'good', lastChecked: new Date('2024-03-20') },
+      { name: 'Delivery Success', score: 62, status: 'warning', lastChecked: new Date('2024-03-18'), nextCheck: new Date('2024-04-18') },
+      { name: 'Error Rate', score: 45, status: 'critical', lastChecked: new Date('2024-03-01'), nextCheck: new Date('2024-04-01') }
+    ];
+
+    // Find the order to get its performance score
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return baseMetrics;
+
+    // Adjust metrics based on order performance score and status
+    const adjustedMetrics = baseMetrics.map(metric => {
+      let adjustedScore = metric.score;
+      let adjustedStatus = metric.status;
+      
+      // Adjust based on order performance score
+      if (order.performanceScore > 90) {
+        // High performing orders have better metrics
+        adjustedScore = Math.min(100, metric.score + 5);
+      } else if (order.performanceScore < 80) {
+        // Lower performing orders have worse metrics
+        adjustedScore = Math.max(20, metric.score - 15);
+      }
+      
+      // Update status based on new score
+      if (adjustedScore >= 80) adjustedStatus = 'good';
+      else if (adjustedScore >= 60) adjustedStatus = 'warning';
+      else adjustedStatus = 'critical';
+      
+      // Orders that are still processing typically have issues with delivery
+      if (order.status === 'processing' && 
+          (metric.name === 'Delivery Success' || metric.name === 'Shipping Speed')) {
+        adjustedScore = Math.max(20, adjustedScore - 25);
+        adjustedStatus = 'critical';
+      }
+      
+      // Delivered orders have better delivery scores
+      if (order.status === 'delivered' && 
+          (metric.name === 'Delivery Success' || metric.name === 'Shipping Speed')) {
+        adjustedScore = Math.min(100, adjustedScore + 20);
+        adjustedStatus = 'good';
+      }
+      
+      return {
+        ...metric,
+        score: adjustedScore,
+        status: adjustedStatus
+      };
+    });
+
+    return adjustedMetrics;
+  };
+
+  // Get performanceMetrics based on selected order
+  const performanceMetrics = getOrderMetrics(selectedOrder);
+
+  // Generate order-specific issues
+  const getOrderIssues = (orderId: string): OrderIssue[] => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return [];
+
+    // Base issues that apply to this order
+    const orderIssues: OrderIssue[] = [];
+    
+    // Add issues based on order status and performance
+    if (order.status === 'processing') {
+      orderIssues.push({
+        orderId: order.id,
+        orderName: order.name,
+        issue: 'Processing Delay',
+        detectedDate: new Date('2024-04-15'),
+        confidence: 92,
+        severity: 'high',
+        estimatedImpact: 350,
+        description: 'Order processing time exceeding SLA by 48 hours. Immediate attention required.'
+      });
     }
-  ];
-
-  const orderAlerts: OrderAlert[] = [
-    {
-      code: 'OE-420',
-      description: 'Order Processing Delay Detected',
-      severity: 'warning',
-      timestamp: new Date('2024-03-18'),
-      resolved: false
-    },
-    {
-      code: 'OP-300',
-      description: 'Multiple Payment Verification Failures',
-      severity: 'critical',
-      timestamp: new Date('2024-03-19'),
-      resolved: false
-    },
-    {
-      code: 'OS-171',
-      description: 'Shipping Partner API Latency',
-      severity: 'warning',
-      timestamp: new Date('2024-03-15'),
-      resolved: true
-    },
-    {
-      code: 'OC-100',
-      description: 'Customer Notification Sent',
-      severity: 'info',
-      timestamp: new Date('2024-03-10'),
-      resolved: true
+    
+    if (order.performanceScore < 80) {
+      orderIssues.push({
+        orderId: order.id,
+        orderName: order.name,
+        issue: 'Payment Verification',
+        detectedDate: new Date('2024-05-05'),
+        confidence: 85,
+        severity: 'medium',
+        estimatedImpact: 120,
+        description: 'Payment verification taking longer than usual. Consider manual review to expedite.'
+      });
     }
-  ];
+    
+    if (order.status === 'shipped' && order.performanceScore < 95) {
+      orderIssues.push({
+        orderId: order.id,
+        orderName: order.name,
+        issue: 'Tracking Information Delay',
+        detectedDate: new Date('2024-04-22'),
+        confidence: 88,
+        severity: 'medium',
+        estimatedImpact: 250,
+        description: 'Tracking information not updating as expected. May require carrier follow-up.'
+      });
+    }
 
-  const performanceComponentData = [
-    { subject: 'Processing', A: 92, fullMark: 100 },
-    { subject: 'Payment', A: 88, fullMark: 100 },
-    { subject: 'Shipping', A: 75, fullMark: 100 },
-    { subject: 'Accuracy', A: 95, fullMark: 100 },
-    { subject: 'Satisfaction', A: 82, fullMark: 100 },
-    { subject: 'Returns', A: 62, fullMark: 100 },
-  ];
+    return orderIssues;
+  };
 
-  // Historical performance metrics
-  const performanceTrendData = [
-    { month: 'Oct', score: 98 },
-    { month: 'Nov', score: 96 },
-    { month: 'Dec', score: 94 },
-    { month: 'Jan', score: 90 },
-    { month: 'Feb', score: 85 },
-    { month: 'Mar', score: 78 },
-  ];
+  // Get order issues based on selected order
+  const orderIssues = getOrderIssues(selectedOrder);
+
+  // System-wide alerts (not specific to an order)
+  const getOrderAlerts = (orderId: string): OrderAlert[] => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return [];
+
+    // Base alerts that apply to the system
+    const baseAlerts: OrderAlert[] = [
+      {
+        code: 'OE-420',
+        description: 'Order Processing Delay Detected',
+        severity: 'warning',
+        timestamp: new Date('2024-03-18'),
+        resolved: false
+      },
+      {
+        code: 'OP-300',
+        description: 'Multiple Payment Verification Failures',
+        severity: 'critical',
+        timestamp: new Date('2024-03-19'),
+        resolved: false
+      },
+      {
+        code: 'OS-171',
+        description: 'Shipping Partner API Latency',
+        severity: 'warning',
+        timestamp: new Date('2024-03-15'),
+        resolved: true
+      },
+      {
+        code: 'OC-100',
+        description: 'Customer Notification Sent',
+        severity: 'info',
+        timestamp: new Date('2024-03-10'),
+        resolved: true
+      }
+    ];
+    
+    // Filter and customize alerts based on order
+    let filteredAlerts = [...baseAlerts];
+    
+    // For orders with high performance score, show fewer critical alerts
+    if (order.performanceScore >= 90) {
+      filteredAlerts = filteredAlerts.filter(alert => 
+        alert.severity !== 'critical' || alert.resolved === true
+      );
+    }
+    
+    // For orders with low performance score, add more alerts
+    if (order.performanceScore < 80) {
+      filteredAlerts.push({
+        code: 'OA-215',
+        description: `Performance Issues with ${order.name}`,
+        severity: 'warning',
+        timestamp: new Date('2024-03-20'),
+        resolved: false
+      });
+    }
+    
+    // Add specific alerts based on order status
+    if (order.status === 'processing') {
+      filteredAlerts.push({
+        code: 'OW-112',
+        description: `Workflow delay for ${order.name}`,
+        severity: 'warning',
+        timestamp: new Date('2024-03-22'),
+        resolved: false
+      });
+    }
+    
+    if (order.status === 'shipped') {
+      filteredAlerts.push({
+        code: 'OD-355',
+        description: `Delivery monitoring active for ${order.name}`,
+        severity: 'info',
+        timestamp: new Date('2024-03-21'),
+        resolved: false
+      });
+    }
+    
+    return filteredAlerts;
+  };
+
+  // Get order alerts based on selected order
+  const orderAlerts = getOrderAlerts(selectedOrder);
+
+  // Generate radar chart data based on selected order's metrics
+  const getPerformanceComponentData = (metrics: PerformanceMetric[], orderPerformanceScore: number) => {
+    // Get base values from metrics
+    const baseValues = [
+      { subject: 'Processing', A: metrics.find(m => m.name === 'Processing Time')?.score || 0, fullMark: 100 },
+      { subject: 'Payment', A: metrics.find(m => m.name === 'Payment Efficiency')?.score || 0, fullMark: 100 },
+      { subject: 'Shipping', A: metrics.find(m => m.name === 'Shipping Speed')?.score || 0, fullMark: 100 },
+      { subject: 'Accuracy', A: metrics.find(m => m.name === 'Order Accuracy')?.score || 0, fullMark: 100 },
+      { subject: 'Satisfaction', A: metrics.find(m => m.name === 'Customer Satisfaction')?.score || 0, fullMark: 100 },
+      { subject: 'Returns', A: metrics.find(m => m.name === 'Return Rate')?.score || 0, fullMark: 100 },
+    ];
+
+    // Calculate the average of the metrics
+    const metricAverage = baseValues.reduce((sum, item) => sum + item.A, 0) / baseValues.length;
+    
+    // If there's a significant difference between the metric average and the overall score,
+    // adjust the radar values to better align with the overall performance score
+    if (Math.abs(metricAverage - orderPerformanceScore) > 5) {
+      const adjustmentFactor = orderPerformanceScore / metricAverage;
+      
+      return baseValues.map(item => ({
+        ...item,
+        // Adjust each value, but keep it within reasonable bounds
+        A: Math.min(100, Math.max(20, Math.round(item.A * adjustmentFactor)))
+      }));
+    }
+    
+    return baseValues;
+  };
+
+  // Get the selected order's performance score
+  const selectedOrderPerformanceScore = selectedOrderObj ? selectedOrderObj.performanceScore : 0;
+  
+  // Get radar chart data based on selected order
+  const performanceComponentData = getPerformanceComponentData(performanceMetrics, selectedOrderPerformanceScore);
+
+  // Generate trend data that varies based on order
+  const getPerformanceTrendData = (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    
+    // Base trend showing general decline/improvement
+    const baseTrend = [
+      { month: 'Oct', score: 98 },
+      { month: 'Nov', score: 96 },
+      { month: 'Dec', score: 94 },
+      { month: 'Jan', score: 90 },
+      { month: 'Feb', score: 85 },
+      { month: 'Mar', score: 78 },
+    ];
+    
+    if (!order) return baseTrend;
+    
+    // Adjust trend based on order performance score
+    const trendDirection = order.performanceScore >= 85 ? 'improving' : 'declining';
+    
+    return baseTrend.map((point, index) => {
+      if (trendDirection === 'improving') {
+        // Trend improves over time
+        return { 
+          month: point.month, 
+          score: Math.min(98, 70 + (index * 5)) 
+        };
+      } else {
+        // Trend declines over time
+        return { 
+          month: point.month, 
+          score: Math.max(65, 98 - (index * 5)) 
+        };
+      }
+    });
+  };
+
+  // Get trend data based on selected order
+  const performanceTrendData = getPerformanceTrendData(selectedOrder);
 
   const handleOrderChange = (orderId: string) => {
     setSelectedOrder(orderId);
@@ -204,7 +400,9 @@ export function OrderPerformanceMonitor({
 
   // Get overall performance score
   const getOverallPerformanceScore = () => {
-    return performanceMetrics.reduce((sum, metric) => sum + metric.score, 0) / performanceMetrics.length;
+    // Instead of calculating from metrics, use the selectedOrder's performanceScore directly
+    const selectedOrderData = orders.find(order => order.id === selectedOrder);
+    return selectedOrderData ? selectedOrderData.performanceScore : 0;
   };
 
   const getPerformanceStatus = (score: number) => {
@@ -213,9 +411,26 @@ export function OrderPerformanceMonitor({
     return 'critical';
   };
 
-  const filteredIssues = orderIssues.filter(
-    issue => issue.orderId === selectedOrder
-  );
+  // Get filtered metrics based on the selected filter
+  const getFilteredMetrics = () => {
+    if (metricFilter === "all") {
+      return performanceMetrics;
+    } else if (metricFilter === "critical") {
+      return performanceMetrics.filter(metric => metric.status === 'critical');
+    } else if (metricFilter === "warning") {
+      return performanceMetrics.filter(metric => metric.status === 'warning');
+    } else if (metricFilter === "good") {
+      return performanceMetrics.filter(metric => metric.status === 'good');
+    } else if (metricFilter === "processing") {
+      return performanceMetrics.filter(metric => metric.name.toLowerCase().includes('processing'));
+    } else if (metricFilter === "shipping") {
+      return performanceMetrics.filter(metric => metric.name.toLowerCase().includes('shipping') || metric.name.toLowerCase().includes('delivery'));
+    } else {
+      return performanceMetrics;
+    }
+  };
+
+  const filteredMetrics = getFilteredMetrics();
 
   return (
     <div>
@@ -225,7 +440,9 @@ export function OrderPerformanceMonitor({
             <Activity className="h-5 w-5 mr-2 text-primary" />
             Order Performance Dashboard
           </div>
-          <p className="text-sm text-muted-foreground">Real-time performance metrics for your orders</p>
+          <p className="text-sm text-muted-foreground">
+            {selectedOrderObj ? `Viewing performance for ${selectedOrderObj.name}` : 'Real-time performance metrics for your orders'}
+          </p>
         </div>
         
         <div className="mt-2 md:mt-0">
@@ -364,40 +581,79 @@ export function OrderPerformanceMonitor({
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center">
-                  <Scale className="h-5 w-5 mr-2 text-primary" />
-                  Performance Metrics Details
-                </CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-base flex items-center">
+                    <Scale className="h-5 w-5 mr-2 text-primary" />
+                    Performance Metrics Details
+                  </CardTitle>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 gap-1">
+                        <Filter className="h-4 w-4" />
+                        Filter
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setMetricFilter("all")}>
+                        All Metrics
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMetricFilter("good")}>
+                        Good Status
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMetricFilter("warning")}>
+                        Warning Status
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMetricFilter("critical")}>
+                        Critical Status
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMetricFilter("processing")}>
+                        Processing Metrics
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setMetricFilter("shipping")}>
+                        Shipping Metrics
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
                 <CardDescription>
-                  Detailed performance metrics by component
+                  {metricFilter === "all" 
+                    ? "Detailed performance metrics by component" 
+                    : `Filtered by: ${metricFilter.charAt(0).toUpperCase() + metricFilter.slice(1)}`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 max-h-64 overflow-auto pr-2">
-                  {performanceMetrics.map((metric, index) => (
-                    <div 
-                      key={index} 
-                      className="flex flex-col space-y-2 pb-3 border-b border-border last:border-0 last:pb-0"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="font-medium">{metric.name}</div>
-                        <Badge className={
-                          metric.status === 'good' ? 'bg-green-500' :
-                          metric.status === 'warning' ? 'bg-amber-500' :
-                          'bg-red-500'
-                        }>
-                          {metric.score}%
-                        </Badge>
+                  {filteredMetrics.length > 0 ? (
+                    filteredMetrics.map((metric, index) => (
+                      <div 
+                        key={index} 
+                        className="flex flex-col space-y-2 pb-3 border-b border-border last:border-0 last:pb-0"
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="font-medium">{metric.name}</div>
+                          <Badge className={
+                            metric.status === 'good' ? 'bg-green-500' :
+                            metric.status === 'warning' ? 'bg-amber-500' :
+                            'bg-red-500'
+                          }>
+                            {metric.score}%
+                          </Badge>
+                        </div>
+                        <Progress value={metric.score} className="h-2" />
+                        <div className="flex justify-between items-center text-xs text-muted-foreground">
+                          <span>Last checked: {metric.lastChecked.toLocaleDateString()}</span>
+                          {metric.nextCheck && (
+                            <span>Next check: {metric.nextCheck.toLocaleDateString()}</span>
+                          )}
+                        </div>
                       </div>
-                      <Progress value={metric.score} className="h-2" />
-                      <div className="flex justify-between items-center text-xs text-muted-foreground">
-                        <span>Last checked: {metric.lastChecked.toLocaleDateString()}</span>
-                        {metric.nextCheck && (
-                          <span>Next check: {metric.nextCheck.toLocaleDateString()}</span>
-                        )}
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-muted-foreground">
+                      No metrics match the selected filter.
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -418,8 +674,8 @@ export function OrderPerformanceMonitor({
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {filteredIssues.length > 0 ? (
-                    filteredIssues.map((issue, index) => (
+                  {orderIssues.length > 0 ? (
+                    orderIssues.map((issue, index) => (
                       <Card key={index} className="border border-muted">
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">

@@ -98,7 +98,8 @@ import {
   PolarRadiusAxis,
   Scatter,
   ScatterChart,
-  ZAxis
+  ZAxis,
+  ComposedChart
 } from 'recharts';
 import {
   Tooltip as RechartsTooltip,
@@ -563,6 +564,117 @@ export default function OrderManagement() {
   const [pageSize, setPageSize] = useState(5);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
+  const [timelineView, setTimelineView] = useState<'avg' | 'max' | 'min'>('avg');
+  const [timelineData, setTimelineData] = useState([
+    {
+      stage: 'Order Verification',
+      hours: 1.2,
+      minHours: 0.9,
+      maxHours: 1.8,
+      target: 1.0,
+      status: 'warning' as 'optimal' | 'warning' | 'critical',
+      processRate: 92,
+      nodeType: 'start' as 'start' | 'process' | 'bottleneck' | 'external',
+      dependencies: [] as string[],
+      sla: 1.0,
+      description: 'Validation of order details and fraud check'
+    },
+    {
+      stage: 'Payment Processing',
+      hours: 0.4,
+      minHours: 0.3,
+      maxHours: 0.7,
+      target: 0.5,
+      status: 'optimal' as 'optimal' | 'warning' | 'critical',
+      processRate: 98,
+      nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
+      dependencies: ['Order Verification'],
+      sla: 0.5,
+      description: 'Payment gateway processing and verification'
+    },
+    {
+      stage: 'Inventory Allocation',
+      hours: 0.8,
+      minHours: 0.5,
+      maxHours: 1.3,
+      target: 1.0,
+      status: 'optimal' as 'optimal' | 'warning' | 'critical',
+      processRate: 95,
+      nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
+      dependencies: ['Payment Processing'],
+      sla: 1.0,
+      description: 'Reserved inventory assignment from available stock'
+    },
+    {
+      stage: 'Picking & Packing',
+      hours: 1.5,
+      minHours: 0.8,
+      maxHours: 2.4,
+      target: 1.0,
+      status: 'critical' as 'optimal' | 'warning' | 'critical',
+      processRate: 75,
+      nodeType: 'bottleneck' as 'start' | 'process' | 'bottleneck' | 'external',
+      dependencies: ['Inventory Allocation'],
+      sla: 1.0,
+      description: 'Physical collection and packaging of items'
+    },
+    {
+      stage: 'Shipping Preparation',
+      hours: 0.6,
+      minHours: 0.4,
+      maxHours: 1.0,
+      target: 0.5,
+      status: 'warning' as 'optimal' | 'warning' | 'critical',
+      processRate: 88,
+      nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
+      dependencies: ['Picking & Packing'],
+      sla: 0.5,
+      description: 'Label generation and carrier assignment'
+    },
+    {
+      stage: 'Carrier Pickup',
+      hours: 5.5,
+      minHours: 3.5,
+      maxHours: 8.2,
+      target: 4.0,
+      status: 'critical' as 'optimal' | 'warning' | 'critical',
+      processRate: 65,
+      nodeType: 'external' as 'start' | 'process' | 'bottleneck' | 'external',
+      dependencies: ['Shipping Preparation'],
+      sla: 4.0,
+      description: 'Awaiting carrier collection from facility'
+    },
+    {
+      stage: 'In Transit',
+      hours: 58.2,
+      minHours: 48.5,
+      maxHours: 72.0,
+      target: 60.0,
+      status: 'optimal' as 'optimal' | 'warning' | 'critical',
+      processRate: 97,
+      nodeType: 'external' as 'start' | 'process' | 'bottleneck' | 'external',
+      dependencies: ['Carrier Pickup'],
+      sla: 72.0,
+      description: 'Package en route to delivery destination'
+    }
+  ]);
+  
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  
+  // Function to calculate timeline total hours
+  const getTimelineTotalHours = (data: typeof timelineData, view: 'avg' | 'max' | 'min'): string => {
+    const total = data.reduce((sum, item) => {
+      if (view === 'avg') {
+        return sum + item.hours;
+      } else if (view === 'min') {
+        return sum + item.minHours;
+      } else {
+        return sum + item.maxHours;
+      }
+    }, 0);
+    
+    return total.toFixed(1);
+  };
   
   // Calculate order metrics
   const totalOrders = filteredOrders.length;
@@ -1070,6 +1182,24 @@ export default function OrderManagement() {
     );
   };
 
+  // Add useEffect to detect system theme
+  useEffect(() => {
+    // Check if the user prefers dark mode
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(prefersDarkMode ? 'dark' : 'light');
+    
+    // Listen for changes to color scheme preference
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setTheme(e.matches ? 'dark' : 'light');
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -1208,61 +1338,256 @@ export default function OrderManagement() {
             
             {/* Volume & Revenue Tab */}
             <TabsContent value="volume" className="p-0 pt-0">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={orderVolumeData}
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart
+                    data={[
+                      { date: 'Aug 12', orders: 32, revenue: 9800, target: 30, forecast: 32, anomaly: false },
+                      { date: 'Aug 13', orders: 28, revenue: 8600, target: 30, forecast: 31, anomaly: false },
+                      { date: 'Aug 14', orders: 35, revenue: 11200, target: 30, forecast: 33, anomaly: false },
+                      { date: 'Aug 15', orders: 42, revenue: 13500, target: 32, forecast: 35, anomaly: true },
+                      { date: 'Aug 16', orders: 38, revenue: 12100, target: 32, forecast: 34, anomaly: false },
+                      { date: 'Aug 17', orders: 45, revenue: 14800, target: 32, forecast: 36, anomaly: true },
+                      { date: 'Aug 18', orders: 40, revenue: 13200, target: 34, forecast: 38, anomaly: false },
+                    ]}
                     margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="date" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    yAxisId="left"
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    yAxisId="right"
-                    orientation="right"
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                    formatter={(value, name) => {
-                      if (name === 'revenue') return [`$${value}`, 'Revenue'];
-                      return [value, 'Orders'];
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    yAxisId="left"
-                    type="monotone" 
-                    dataKey="orders" 
-                    name="Orders" 
-                    stroke="hsl(var(--primary))" 
-                    activeDot={{ r: 8 }} 
-                    strokeWidth={2}
-                  />
-                  <Line 
-                    yAxisId="right"
-                    type="monotone" 
-                    dataKey="revenue" 
-                    name="Revenue" 
-                    stroke="#82ca9d" 
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="date" 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <YAxis 
+                      yAxisId="left"
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                      label={{ value: 'Orders', angle: -90, position: 'insideLeft', offset: -5 }}
+                    />
+                    <YAxis 
+                      yAxisId="right"
+                      orientation="right"
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                      label={{ value: 'Revenue ($)', angle: 90, position: 'insideRight', offset: -5 }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                      formatter={(value, name) => {
+                        if (name === 'revenue') return [`$${value}`, 'Revenue'];
+                        if (name === 'target') return [value, 'Target Orders'];
+                        if (name === 'forecast') return [value, 'Forecasted Orders'];
+                        return [value, typeof name === 'string' ? name.charAt(0).toUpperCase() + name.slice(1) : name];
+                      }}
+                    />
+                    <Legend />
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#82ca9d" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <Bar 
+                      yAxisId="left"
+                      dataKey="orders" 
+                      name="Orders" 
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                      barSize={20}
+                    />
+                    <Area
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="revenue"
+                      name="Revenue"
+                      stroke="#82ca9d"
+                      fillOpacity={1}
+                      fill="url(#colorRevenue)"
+                    />
+                    <Line 
+                      yAxisId="left"
+                      type="monotone" 
+                      dataKey="target" 
+                      name="Target" 
+                      stroke="#ff7300" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                    />
+                    <Line 
+                      yAxisId="left"
+                      type="monotone" 
+                      dataKey="forecast" 
+                      name="Forecast" 
+                      stroke="#8884d8" 
+                      strokeWidth={2}
+                    />
+                    <Scatter
+                      yAxisId="left"
+                      dataKey="orders"
+                      fill="#ff0000"
+                      name="Anomaly"
+                      shape="circle"
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-medium">Weekly Order Trends</CardTitle>
+                    <CardDescription>4-week comparison with year-over-year growth</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={[
+                            { week: 'Week 1', thisYear: 245, lastYear: 210, growth: 16.7 },
+                            { week: 'Week 2', thisYear: 285, lastYear: 232, growth: 22.8 },
+                            { week: 'Week 3', thisYear: 255, lastYear: 258, growth: -1.2 },
+                            { week: 'Week 4', thisYear: 290, lastYear: 240, growth: 20.8 },
+                          ]}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            dataKey="week" 
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}}
+                          />
+                          <YAxis 
+                            yAxisId="left"
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}}
+                          />
+                          <YAxis 
+                            yAxisId="right"
+                            orientation="right"
+                            domain={[-20, 40]}
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}}
+                            label={{ value: 'Growth %', angle: 90, position: 'insideRight' }}
+                          />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              borderColor: 'hsl(var(--border))',
+                              color: 'hsl(var(--foreground))'
+                            }}
+                            formatter={(value, name) => {
+                              if (name === 'growth') return [`${value}%`, 'YoY Growth'];
+                              return [value, name === 'thisYear' ? 'This Year' : 'Last Year'];
+                            }}
+                          />
+                          <Legend />
+                    <Line 
+                      yAxisId="left"
+                      type="monotone" 
+                            dataKey="thisYear" 
+                            name="This Year" 
+                            stroke="hsl(var(--primary))" 
+                            activeDot={{ r: 8 }} 
+                      strokeWidth={2}
+                    />
+                    <Line 
+                      yAxisId="left"
+                      type="monotone" 
+                            dataKey="lastYear" 
+                            name="Last Year" 
+                            stroke="#82ca9d" 
+                            strokeWidth={2}
+                            strokeDasharray="3 3"
+                          />
+                          <Bar
+                            yAxisId="right"
+                            dataKey="growth"
+                            name="Growth"
+                            fill="#8884d8"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-medium">Order-to-Delivery Performance</CardTitle>
+                    <CardDescription>Time from order placement to delivery completion</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={[
+                            { month: 'Jan', time: 3.2, target: 3.0 },
+                            { month: 'Feb', time: 3.3, target: 3.0 },
+                            { month: 'Mar', time: 3.0, target: 3.0 },
+                            { month: 'Apr', time: 2.8, target: 2.8 },
+                            { month: 'May', time: 2.7, target: 2.8 },
+                            { month: 'Jun', time: 2.5, target: 2.8 },
+                            { month: 'Jul', time: 2.4, target: 2.5 },
+                            { month: 'Aug', time: 2.5, target: 2.5 },
+                          ]}
+                          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                        >
+                          <defs>
+                            <linearGradient id="colorTime" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                              <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            dataKey="month" 
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}}
+                          />
+                          <YAxis 
+                            className="text-xs" 
+                            label={{ value: 'Days', angle: -90, position: 'insideLeft' }}
+                            tick={{fill: 'hsl(var(--foreground))'}}
+                          />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              borderColor: 'hsl(var(--border))',
+                              color: 'hsl(var(--foreground))'
+                            }}
+                            formatter={(value, name) => {
+                              return [`${value} days`, name === 'time' ? 'Actual Time' : 'Target Time'];
+                            }}
+                          />
+                          <Legend />
+                          <Area 
+                            type="monotone" 
+                            dataKey="time" 
+                            name="Delivery Time" 
+                      stroke="#8884d8" 
+                            fillOpacity={1} 
+                            fill="url(#colorTime)" 
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="target" 
+                            name="Target Time" 
+                            stroke="#ff7300" 
+                      strokeWidth={2}
+                            strokeDasharray="3 3"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="bg-background shadow-none">
                   <CardContent className="p-3">
@@ -1311,7 +1636,7 @@ export default function OrderManagement() {
             <TabsContent value="status" className="p-0 pt-0">
               <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+                  <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg font-medium">Order Status Distribution</CardTitle>
                     </CardHeader>
@@ -1613,7 +1938,10 @@ export default function OrderManagement() {
                         </CardTitle>
                         <CardDescription>Process efficiency analysis & optimization</CardDescription>
                       </div>
-                      <Select defaultValue="avg">
+                      <Select 
+                        defaultValue="avg" 
+                        onValueChange={(value) => setTimelineView(value as 'avg' | 'max' | 'min')}
+                      >
                         <SelectTrigger className="h-8 text-xs w-[120px]">
                           <SelectValue placeholder="View Mode" />
                         </SelectTrigger>
@@ -1640,90 +1968,18 @@ export default function OrderManagement() {
                         <span>Critical</span>
                       </div>
                       <div className="ml-auto flex items-center">
-                        <span className="font-medium text-xs">Total: 68.2h</span>
+                        <span className="font-medium text-xs">
+                          Total: {getTimelineTotalHours(timelineData, timelineView)}h
+                        </span>
                       </div>
                     </div>
                     
                     <div className="space-y-1">
-                      {[
-                        { 
-                          stage: 'Order Verification', 
-                          hours: 1.2, 
-                          target: 1.0,
-                          status: 'warning' as 'optimal' | 'warning' | 'critical',
-                          processRate: 92,
-                          nodeType: 'start' as 'start' | 'process' | 'bottleneck' | 'external',
-                          dependencies: [],
-                          sla: 1.0,
-                          description: 'Validation of order details and fraud check'
-                        },
-                        { 
-                          stage: 'Payment Processing', 
-                          hours: 0.4, 
-                          target: 0.5,
-                          status: 'optimal' as 'optimal' | 'warning' | 'critical',
-                          processRate: 98,
-                          nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
-                          dependencies: ['Order Verification'],
-                          sla: 0.5,
-                          description: 'Payment gateway processing and verification'
-                        },
-                        { 
-                          stage: 'Inventory Allocation', 
-                          hours: 0.8, 
-                          target: 1.0,
-                          status: 'optimal' as 'optimal' | 'warning' | 'critical',
-                          processRate: 95,
-                          nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
-                          dependencies: ['Payment Processing'],
-                          sla: 1.0,
-                          description: 'Reserved inventory assignment from available stock'
-                        },
-                        { 
-                          stage: 'Picking & Packing', 
-                          hours: 1.5, 
-                          target: 1.0,
-                          status: 'critical' as 'optimal' | 'warning' | 'critical',
-                          processRate: 75,
-                          nodeType: 'bottleneck' as 'start' | 'process' | 'bottleneck' | 'external',
-                          dependencies: ['Inventory Allocation'],
-                          sla: 1.0,
-                          description: 'Physical collection and packaging of items'
-                        },
-                        { 
-                          stage: 'Shipping Preparation', 
-                          hours: 0.6, 
-                          target: 0.5,
-                          status: 'warning' as 'optimal' | 'warning' | 'critical',
-                          processRate: 88,
-                          nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
-                          dependencies: ['Picking & Packing'],
-                          sla: 0.5,
-                          description: 'Label generation and carrier assignment'
-                        },
-                        { 
-                          stage: 'Carrier Pickup', 
-                          hours: 5.5, 
-                          target: 4.0,
-                          status: 'critical' as 'optimal' | 'warning' | 'critical',
-                          processRate: 65,
-                          nodeType: 'external' as 'start' | 'process' | 'bottleneck' | 'external',
-                          dependencies: ['Shipping Preparation'],
-                          sla: 4.0,
-                          description: 'Awaiting carrier collection from facility'
-                        },
-                        { 
-                          stage: 'In Transit', 
-                          hours: 58.2, 
-                          target: 60.0,
-                          status: 'optimal' as 'optimal' | 'warning' | 'critical',
-                          processRate: 97,
-                          nodeType: 'external' as 'start' | 'process' | 'bottleneck' | 'external',
-                          dependencies: ['Carrier Pickup'],
-                          sla: 72.0,
-                          description: 'Package en route to delivery destination'
-                        }
-                      ].map((item, index) => {
+                      {timelineData
+                        .filter(item => timelineView === 'avg' || (
+                          timelineView === 'min' ? item.minHours !== undefined : item.maxHours !== undefined
+                        ))
+                        .map((item, index) => {
                         // Calculate various metrics for visualization
                         const statusColors: Record<'optimal' | 'warning' | 'critical', string> = {
                           optimal: 'bg-emerald-500',
@@ -1738,17 +1994,34 @@ export default function OrderManagement() {
                           external: <Globe className="h-3.5 w-3.5 text-purple-500" />
                         };
                         
+                        // Get the correct hours based on selected view
+                        const displayHours = timelineView === 'avg' ? item.hours :
+                                            timelineView === 'min' ? (item.minHours || item.hours) :
+                                            (item.maxHours || item.hours);
+                                            
+                        // Get the status based on the current view
+                        const displayStatus = timelineView === 'avg' 
+                          ? item.status 
+                          : timelineView === 'min' 
+                            ? 'optimal'
+                            : (displayHours > item.target * 1.2 ? 'critical' : 'warning');
+                        
                         // Calculate width for Gantt-style bar
-                        const maxInternalHours = 10;
+                        const maxInternalHours = timelineView === 'max' ? 15 : 10;
                         const maxWidth = item.stage === 'In Transit' || item.stage === 'Carrier Pickup'
-                          ? `${Math.min(98, (item.hours / 60) * 100)}%`
-                          : `${Math.min(98, (item.hours / maxInternalHours) * 100)}%`;
+                          ? `${Math.min(98, (displayHours / 60) * 100)}%`
+                          : `${Math.min(98, (displayHours / maxInternalHours) * 100)}%`;
                         
                         // Calculate efficiency color
-                        const efficiency = (item.target / item.hours) * 100;
+                        const efficiency = (item.target / displayHours) * 100;
                         const efficiencyColor = 
                           efficiency >= 95 ? 'text-emerald-500' :
                           efficiency >= 80 ? 'text-amber-500' : 'text-red-500';
+
+                        // Calculate appropriate process rate based on view
+                        const displayRate = timelineView === 'avg' ? item.processRate :
+                                           timelineView === 'min' ? Math.min(100, item.processRate + 10) :
+                                           Math.max(50, item.processRate - 15);
                           
                         return (
                           <div key={item.stage} className="relative group">
@@ -1769,7 +2042,7 @@ export default function OrderManagement() {
                                 <div className="h-2.5 w-full bg-muted/30 rounded-sm overflow-hidden flex relative">
                                   {/* Actual time */}
                                   <div 
-                                    className={`h-full ${statusColors[item.status]} flex items-center rounded-sm`} 
+                                    className={`h-full ${statusColors[displayStatus]} flex items-center rounded-sm`} 
                                     style={{ width: maxWidth }}
                                   ></div>
                                   
@@ -1787,21 +2060,21 @@ export default function OrderManagement() {
                               {/* Metrics */}
                               <div className="flex items-center gap-2 text-xs w-24 justify-end">
                                 <div className="flex flex-col items-end">
-                                  <div className="font-medium">{item.hours}h</div>
+                                  <div className="font-medium">{displayHours}h</div>
                                   <div className="text-xs text-muted-foreground">
                                     SLA: {item.sla}h
                                   </div>
                                 </div>
                                 <div 
-                                  className={`w-8 h-5 rounded-sm flex items-center justify-center text-white text-xs font-medium ${statusColors[item.status]}`}
+                                  className={`w-8 h-5 rounded-sm flex items-center justify-center text-white text-xs font-medium ${statusColors[displayStatus]}`}
                                 >
-                                  {item.processRate}%
+                                  {displayRate}%
                                 </div>
                               </div>
                             </div>
                             
                             {/* Connector line */}
-                            {index < 6 && (
+                            {index < timelineData.length - 1 && (
                               <div className="absolute left-3 top-10 w-0.5 h-2 bg-muted-foreground/30"></div>
                             )}
                           </div>
@@ -1814,18 +2087,25 @@ export default function OrderManagement() {
                       <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-muted-foreground">Last updated: Today, 14:32</span>
                     </div>
-                    <Button variant="outline" size="sm" className="h-8 text-xs">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-8 text-xs"
+                      onClick={() => setTimelineView('avg')}
+                    >
                       <RefreshCw className="h-3.5 w-3.5 mr-1" />
                       Recalculate
                     </Button>
                   </CardFooter>
                 </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Processing Stage Analysis</CardTitle>
-                      <CardDescription>Bottleneck identification and optimization</CardDescription>
+                      <div>
+                        <CardTitle className="text-base">Processing Stage Analysis</CardTitle>
+                        <CardDescription>Bottleneck identification and optimization</CardDescription>
+                      </div>
                     </CardHeader>
                     <CardContent className="overflow-auto max-h-[calc(100%-3rem)]">
                       <div className="space-y-4">
@@ -1898,9 +2178,11 @@ export default function OrderManagement() {
                   </Card>
                   
                   <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base">Process Efficiency Metrics</CardTitle>
-                      <CardDescription className="text-sm">Current performance against SLA targets</CardDescription>
+                    <CardHeader className="pb-2">
+                      <div>
+                        <CardTitle className="text-base">Process Efficiency Metrics</CardTitle>
+                        <CardDescription className="text-sm">Current performance against SLA targets</CardDescription>
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-6">
@@ -2030,37 +2312,259 @@ export default function OrderManagement() {
             
             {/* Average Order Value Tab */}
             <TabsContent value="value" className="p-0 pt-0">
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={[
-                      { month: 'Jan', value: 320 },
-                      { month: 'Feb', value: 332 },
-                      { month: 'Mar', value: 301 },
-                      { month: 'Apr', value: 334 },
-                      { month: 'May', value: 390 },
-                      { month: 'Jun', value: 330 },
-                      { month: 'Jul', value: 350 }
-                    ]}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="month" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
-                    <YAxis className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
-                      formatter={(value) => [`$${value}`, 'Average Order Value']}
-                    />
-                    <Legend />
-                    <Area type="monotone" dataKey="value" name="Order Value" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-medium">AOV Trend Analysis</CardTitle>
+                    <CardDescription>Monthly trends with moving average and forecasting</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-2">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart
+                          data={[
+                            { month: 'Jan', value: 320, ma3: null, ma6: null, forecast: null, benchmark: 310 },
+                            { month: 'Feb', value: 332, ma3: null, ma6: null, forecast: null, benchmark: 310 },
+                            { month: 'Mar', value: 301, ma3: 317.7, ma6: null, forecast: null, benchmark: 310 },
+                            { month: 'Apr', value: 334, ma3: 322.3, ma6: null, forecast: null, benchmark: 325 },
+                            { month: 'May', value: 390, ma3: 341.7, ma6: null, forecast: null, benchmark: 325 },
+                            { month: 'Jun', value: 330, ma3: 351.3, ma6: 334.5, forecast: null, benchmark: 325 },
+                            { month: 'Jul', value: 350, ma3: 356.7, ma6: 339.5, forecast: null, benchmark: 340 },
+                            { month: 'Aug', value: 368, ma3: 349.3, ma6: 345.5, forecast: null, benchmark: 340 },
+                            { month: 'Sep', value: 352, ma3: 356.7, ma6: 349.1, forecast: null, benchmark: 340 },
+                            { month: 'Oct', value: null, ma3: null, ma6: null, forecast: 358, benchmark: 350 },
+                            { month: 'Nov', value: null, ma3: null, ma6: null, forecast: 362, benchmark: 350 },
+                            { month: 'Dec', value: null, ma3: null, ma6: null, forecast: 370, benchmark: 350 },
+                          ]}
+                          margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            dataKey="month" 
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}} 
+                          />
+                          <YAxis 
+                            domain={[290, 400]}
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}}
+                            label={{ value: 'Order Value ($)', angle: -90, position: 'insideLeft', offset: -5 }}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              borderColor: 'hsl(var(--border))',
+                              color: 'hsl(var(--foreground))'
+                            }}
+                            formatter={(value) => value ? [`$${value}`, ''] : ['-', '']}
+                            labelFormatter={(label) => `Month: ${label}`}
+                          />
+                          <Legend />
+                          <defs>
+                            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                              <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
+                            </linearGradient>
+                          </defs>
+                          <Bar 
+                            dataKey="value" 
+                            name="Actual AOV" 
+                            fill="url(#colorValue)"
+                            radius={[4, 4, 0, 0]} 
+                            barSize={20}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="ma3" 
+                            name="3-Month MA" 
+                            stroke="#ff7300" 
+                            strokeWidth={2}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="ma6" 
+                            name="6-Month MA" 
+                            stroke="#82ca9d" 
+                            strokeWidth={2}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="forecast" 
+                            name="Forecast" 
+                            stroke="#8884d8" 
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="benchmark" 
+                            name="Benchmark" 
+                            stroke="#d1495b" 
+                            strokeWidth={1}
+                            strokeDasharray="3 3"
+                          />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-medium">AOV Distribution Analysis</CardTitle>
+                    <CardDescription>Order value segmentation and statistical analysis</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={[
+                              { range: '<$100', count: 42, percentage: 8 },
+                              { range: '$100-$200', count: 86, percentage: 17 },
+                              { range: '$200-$300', count: 118, percentage: 24 },
+                              { range: '$300-$400', count: 135, percentage: 27 },
+                              { range: '$400-$500', count: 78, percentage: 16 },
+                              { range: '>$500', count: 41, percentage: 8 },
+                            ]}
+                            margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="range" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                            <YAxis className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                              formatter={(value, name) => [name === 'count' ? value : `${value}%`, name === 'count' ? 'Orders' : 'Percentage']}
+                            />
+                            <Bar dataKey="count" name="Orders" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="percentage" name="Percentage" fill="#82ca9d" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-3 mt-2">
+                        <div className="border rounded-md p-3">
+                          <div className="text-xs font-medium text-muted-foreground">Median</div>
+                          <div className="text-lg font-bold">$342.50</div>
+                          <div className="text-xs flex items-center">
+                            <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
+                            <span>+$18.30 YoY</span>
+                          </div>
+                        </div>
+                        <div className="border rounded-md p-3">
+                          <div className="text-xs font-medium text-muted-foreground">Std Deviation</div>
+                          <div className="text-lg font-bold">$115.72</div>
+                          <div className="text-xs flex items-center">
+                            <ArrowDown className="h-3 w-3 text-green-500 mr-1" />
+                            <span>-12.8% YoY</span>
+                          </div>
+                        </div>
+                        <div className="border rounded-md p-3">
+                          <div className="text-xs font-medium text-muted-foreground">MAD</div>
+                          <div className="text-lg font-bold">$84.21</div>
+                          <div className="text-xs flex items-center">
+                            <ArrowDown className="h-3 w-3 text-green-500 mr-1" />
+                            <span>-8.2% YoY</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+
+              <div className="grid grid-cols-1 gap-6 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle className="text-lg font-medium">Segmented AOV Analysis</CardTitle>
+                        <CardDescription>Order value breakdown by category, customer segment, and region</CardDescription>
+                      </div>
+                      <Select defaultValue="category">
+                        <SelectTrigger className="w-[180px] h-8 text-xs">
+                          <SelectValue placeholder="Select dimension" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="category">Product Category</SelectItem>
+                          <SelectItem value="segment">Customer Segment</SelectItem>
+                          <SelectItem value="region">Region</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ScatterChart
+                          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis 
+                            type="number" 
+                            dataKey="orderCount" 
+                            name="Order Count" 
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}} 
+                            label={{ value: 'Order Volume', position: 'insideBottom', offset: -5 }}
+                          />
+                          <YAxis 
+                            type="number" 
+                            dataKey="aov" 
+                            name="AOV" 
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}} 
+                            label={{ value: 'Average Order Value ($)', angle: -90, position: 'insideLeft', offset: -5 }}
+                            domain={[200, 500]}
+                          />
+                          <ZAxis 
+                            type="number" 
+                            dataKey="revenue" 
+                            range={[60, 400]} 
+                            name="Revenue" 
+                          />
+                          <Tooltip 
+                            cursor={{ strokeDasharray: '3 3' }}
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              borderColor: 'hsl(var(--border))',
+                              color: 'hsl(var(--foreground))'
+                            }}
+                            formatter={(value, name) => {
+                              if (name === 'AOV') return [`$${value}`, name];
+                              if (name === 'Order Count') return [value, name];
+                              if (name === 'Revenue') return [`$${(Number(value)/1000).toFixed(1)}k`, name];
+                              return [value, name];
+                            }}
+                            labelFormatter={(label) => `${label}`}
+                          />
+                          <Legend />
+                          <Scatter 
+                            name="Product Categories" 
+                            data={[
+                              { name: 'Shipping Supplies', orderCount: 145, aov: 248, revenue: 35960 },
+                              { name: 'Warehouse Equipment', orderCount: 78, aov: 478, revenue: 37284 },
+                              { name: 'Safety Products', orderCount: 112, aov: 362, revenue: 40544 },
+                              { name: 'Packaging Materials', orderCount: 189, aov: 295, revenue: 55755 },
+                              { name: 'Transport Equipment', orderCount: 67, aov: 412, revenue: 27604 },
+                              { name: 'Office Supplies', orderCount: 203, aov: 218, revenue: 44254 },
+                            ]}
+                            fill="#8884d8" 
+                            shape="circle"
+                            label={{ dataKey: 'name', position: 'top', fill: 'hsl(var(--foreground))', fontSize: 10 }}
+                          />
+                        </ScatterChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="bg-background shadow-none">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2">
@@ -2089,6 +2593,16 @@ export default function OrderManagement() {
                     </div>
                     <div className="mt-1 text-xl font-bold">$336.71</div>
                     <div className="text-xs text-muted-foreground">8.2% above forecast</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-purple-500" />
+                      <span className="text-sm font-medium">AOV Elasticity</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">0.83</div>
+                    <div className="text-xs text-muted-foreground">Expected growth with 5% price increase</div>
                   </CardContent>
                 </Card>
               </div>
@@ -3264,125 +3778,6 @@ export default function OrderManagement() {
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* Order Trends and Forecasting */}
-      <div className="mt-10 mb-6">
-        <h2 className="text-2xl font-bold mb-4">Order Trends & Forecasting</h2>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card>
-          <CardHeader>
-            <CardTitle>Weekly Order Trends</CardTitle>
-            <CardDescription>4-week comparison with year-over-year growth</CardDescription>
-                </CardHeader>
-                <CardContent className="px-2">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={[
-                    { week: 'Week 1', thisYear: 245, lastYear: 210, growth: 16.7 },
-                    { week: 'Week 2', thisYear: 285, lastYear: 232, growth: 22.8 },
-                    { week: 'Week 3', thisYear: 255, lastYear: 258, growth: -1.2 },
-                    { week: 'Week 4', thisYear: 290, lastYear: 240, growth: 20.8 },
-                  ]}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="week" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    yAxisId="left"
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    yAxisId="right"
-                    orientation="right"
-                    domain={[-20, 40]}
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                    label={{ value: 'Growth %', angle: 90, position: 'insideRight' }}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                    formatter={(value, name) => {
-                      if (name === 'growth') return [`${value}%`, 'YoY Growth'];
-                      return [value, name === 'thisYear' ? 'This Year' : 'Last Year'];
-                    }}
-                  />
-                  <Legend />
-                  <Line yAxisId="left" type="monotone" dataKey="thisYear" name="This Year" stroke="hsl(var(--primary))" activeDot={{ r: 8 }} strokeWidth={2} />
-                  <Line yAxisId="left" type="monotone" dataKey="lastYear" name="Last Year" stroke="#8884d8" strokeDasharray="5 5" strokeWidth={2} />
-                  <Bar yAxisId="right" dataKey="growth" name="YoY Growth" fill="#82ca9d" />
-                </LineChart>
-              </ResponsiveContainer>
-                        </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Order-to-Delivery Performance</CardTitle>
-            <CardDescription>Time from order placement to delivery completion</CardDescription>
-          </CardHeader>
-          <CardContent className="px-2">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={[
-                    { month: 'Jan', time: 3.2, target: 3.0 },
-                    { month: 'Feb', time: 3.3, target: 3.0 },
-                    { month: 'Mar', time: 3.0, target: 3.0 },
-                    { month: 'Apr', time: 2.8, target: 2.8 },
-                    { month: 'May', time: 2.7, target: 2.8 },
-                    { month: 'Jun', time: 2.5, target: 2.8 },
-                    { month: 'Jul', time: 2.4, target: 2.5 },
-                    { month: 'Aug', time: 2.5, target: 2.5 },
-                  ]}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="colorTime" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="month" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    className="text-xs" 
-                    label={{ value: 'Days', angle: -90, position: 'insideLeft' }}
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                    formatter={(value) => [`${value} days`, 'Avg. Time']}
-                  />
-                  <Legend />
-                  <Area type="monotone" dataKey="time" name="Actual Time" stroke="#8884d8" fillOpacity={1} fill="url(#colorTime)" />
-                  <Line type="monotone" dataKey="target" name="Target" stroke="#ff7300" strokeWidth={2} strokeDasharray="5 5" />
-                </AreaChart>
-              </ResponsiveContainer>
-                          </div>
-          </CardContent>
-        </Card>
-                        </div>
 
       {/* Order Issues and Alerts */}
       <Card className="mb-6">

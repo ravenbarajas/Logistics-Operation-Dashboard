@@ -71,7 +71,8 @@ import {
   ArrowBigRight,
   CalendarDays,
   CircleCheck,
-  Globe
+  Globe,
+  PieChart
 } from "lucide-react";
 import {
   BarChart,
@@ -84,7 +85,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
+  PieChart as RechartsPieChart,
   Pie,
   Cell,
   AreaChart,
@@ -101,8 +102,7 @@ import {
 import {
   Tooltip as RechartsTooltip,
   Legend as RechartsLegend,
-  BarChart as RechartsBarChart,
-  PieChart as RechartsPieChart
+  BarChart as RechartsBarChart
 } from "recharts";
 import { OrderPerformanceMonitor } from "@/components/orders/OrderPerformanceMonitor";
 
@@ -344,7 +344,6 @@ const orders: Order[] = [
     notes: ""
   }
 ];
-
 // Order status data for pie chart
 const orderStatusData = [
   { name: 'Processing', value: 35 },
@@ -554,28 +553,35 @@ function NewOrderModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClos
 
 export default function OrderManagement() {
   const [orderList, setOrderList] = useState<Order[]>(orders);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [dateFilter, setDateFilter] = useState("all");
-  const [paymentFilter, setPaymentFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [filteredOrders, setFilteredOrders] = useState<Order[]>(orders);
-  const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
-  
-  // Pagination state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  
-  // Selection state
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
   
-  // Calculate order statistics 
-  const totalOrders = orderList.length;
-  const processingOrders = orderList.filter(order => order.status === "processing").length;
-  const shippedOrders = orderList.filter(order => order.status === "shipped").length;
-  const deliveredOrders = orderList.filter(order => order.status === "delivered").length;
-  const cancelledOrders = orderList.filter(order => order.status === "cancelled").length;
-  const pendingPayment = orderList.filter(order => order.payment === "pending").length;
+  // Calculate order metrics
+  const totalOrders = filteredOrders.length;
+  const processingOrders = filteredOrders.filter(order => order.status === "processing").length;
+  const shippedOrders = filteredOrders.filter(order => order.status === "shipped").length;
+  const deliveredOrders = filteredOrders.filter(order => order.status === "delivered").length;
+  const cancelledOrders = filteredOrders.filter(order => order.status === "cancelled").length;
+  const pendingPayment = filteredOrders.filter(order => order.payment === "pending").length;
   
+  // Summary object for order metrics
+  const summary = {
+    totalOrders,
+    processingOrders,
+    deliveredOrders,
+    pendingPayment,
+    processingPercentage: Math.round((processingOrders / totalOrders) * 100),
+    deliveredPercentage: Math.round((deliveredOrders / totalOrders) * 100),
+    pendingPercentage: Math.round((pendingPayment / totalOrders) * 100)
+  };
+
   // Order counts for the pie chart
   const orderCounts = {
     processing: processingOrders,
@@ -583,7 +589,7 @@ export default function OrderManagement() {
     delivered: deliveredOrders,
     cancelled: cancelledOrders
   };
-  
+
   // Update filtered orders whenever filters change
   useEffect(() => {
     const filtered = orderList.filter(order => {
@@ -1080,60 +1086,61 @@ export default function OrderManagement() {
       </div>
       
       {/* Order Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold">{totalOrders}</div>
-            <div className="flex items-center mt-1">
-              <ShoppingCart className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">All orders</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Processing</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold text-blue-500">{processingOrders}</div>
-            <div className="flex items-center mt-1">
-              <Package className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">{Math.round((processingOrders / totalOrders) * 100)}% of total orders</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Delivered</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold text-green-500">{deliveredOrders}</div>
-            <div className="flex items-center mt-1">
-              <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">{Math.round((deliveredOrders / totalOrders) * 100)}% delivery rate</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold text-amber-500">{pendingPayment}</div>
-            <div className="flex items-center mt-1">
-              <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">{Math.round((pendingPayment / totalOrders) * 100)}% of total orders</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+      {summary && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            </CardHeader>
+            <CardContent className="px-6">
+              <div className="text-2xl font-bold">{summary.totalOrders}</div>
+              <div className="flex items-center">
+                <ShoppingCart className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">All orders</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Processing</CardTitle>
+            </CardHeader>
+            <CardContent className="px-6">
+              <div className="text-2xl font-bold text-blue-500">{summary.processingOrders}</div>
+              <div className="flex items-center">
+                <Package className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{summary.processingPercentage}% of total orders</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Delivered</CardTitle>
+            </CardHeader>
+            <CardContent className="px-6">
+              <div className="text-2xl font-bold text-green-500">{summary.deliveredOrders}</div>
+              <div className="flex items-center">
+                <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{summary.deliveredPercentage}% delivery rate</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
+            </CardHeader>
+            <CardContent className="px-6">
+              <div className="text-2xl font-bold text-amber-500">{summary.pendingPayment}</div>
+              <div className="flex items-center">
+                <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">{summary.pendingPercentage}% of total orders</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       {/* Enhanced Order Table */}
       {renderEnhancedOrderTable()}
       
@@ -1145,169 +1152,577 @@ export default function OrderManagement() {
 
       <div className="mb-6"></div>
 
-      {/* Order Volume - Order Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Order Volume & Revenue</CardTitle>
-            <CardDescription>Daily order volume and revenue trends</CardDescription>
-          </CardHeader>
-          <CardContent className="px-2">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={orderVolumeData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="date" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    yAxisId="left"
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    yAxisId="right"
-                    orientation="right"
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                    formatter={(value, name) => {
-                      if (name === 'revenue') return [`$${value}`, 'Revenue'];
-                      return [value, 'Orders'];
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    yAxisId="left"
-                    type="monotone" 
-                    dataKey="orders" 
-                    name="Orders" 
-                    stroke="hsl(var(--primary))" 
-                    activeDot={{ r: 8 }} 
-                    strokeWidth={2}
-                  />
-                  <Line 
-                    yAxisId="right"
-                    type="monotone" 
-                    dataKey="revenue" 
-                    name="Revenue" 
-                    stroke="#82ca9d" 
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Status</CardTitle>
-            <CardDescription>Distribution of orders by current status</CardDescription>
-          </CardHeader>
-          <CardContent className="px-2">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Processing', value: orderCounts.processing },
-                      { name: 'Shipped', value: orderCounts.shipped },
-                      { name: 'Delivered', value: orderCounts.delivered },
-                      { name: 'Cancelled', value: orderCounts.cancelled },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {orderStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Shipping Methods */}
+      {/* Order Analytics Section */}
       <Card className="mb-6">
         <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <CardTitle>Shipping Methods</CardTitle>
-              <CardDescription>Distribution of orders by shipping carrier</CardDescription>
+              <CardTitle>Order Analytics Dashboard</CardTitle>
+              <CardDescription>Key metrics and performance indicators for orders</CardDescription>
             </div>
-            <Select defaultValue="week">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Time period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-                <SelectItem value="quarter">This Quarter</SelectItem>
-              </SelectContent>
-            </Select>
+            
+            {/* Filtering options */}
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" className="h-8">
+                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                Last 7 Days
+              </Button>
+              <Button variant="outline" size="sm" className="h-8">
+                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                Last 30 Days
+              </Button>
+              <Button variant="outline" size="sm" className="h-8">
+                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                Last Quarter
+              </Button>
+              <Button variant="outline" size="sm" className="h-8" asChild>
+                <div className="flex items-center cursor-pointer">
+                  <Clipboard className="h-3.5 w-3.5 mr-1" />
+                  Export Data
+                </div>
+              </Button>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="px-2">
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={shippingMethodsData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                layout="vertical"
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  type="number" 
-                  className="text-xs" 
-                  tick={{fill: 'hsl(var(--foreground))'}}
-                />
-                <YAxis 
-                  type="category"
-                  dataKey="name" 
-                  className="text-xs" 
-                  tick={{fill: 'hsl(var(--foreground))'}}
-                  width={80}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    borderColor: 'hsl(var(--border))',
-                    color: 'hsl(var(--foreground))'
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="value" name="Orders" fill="hsl(var(--primary))" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        <CardContent className="p-0">
+          <Tabs defaultValue="volume" className="w-full p-4">
+            <TabsList className="w-full grid grid-cols-4 mb-4">
+              <TabsTrigger value="volume" className="text-xs">
+                <BarChartBig className="h-3.5 w-3.5 mr-1" />
+                Volume & Revenue
+              </TabsTrigger>
+              <TabsTrigger value="status" className="text-xs">
+                <PieChart className="h-3.5 w-3.5 mr-1" />
+                Order Status
+              </TabsTrigger>
+              <TabsTrigger value="timeline" className="text-xs">
+                <Clock className="h-3.5 w-3.5 mr-1" />
+                Processing Timeline
+              </TabsTrigger>
+              <TabsTrigger value="value" className="text-xs">
+                <DollarSign className="h-3.5 w-3.5 mr-1" />
+                Average Order Value
+              </TabsTrigger>
+            </TabsList>
+            
+            {/* Volume & Revenue Tab */}
+            <TabsContent value="volume" className="p-0 pt-0">
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={orderVolumeData}
+                    margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="date" 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <YAxis 
+                      yAxisId="left"
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <YAxis 
+                      yAxisId="right"
+                      orientation="right"
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                      formatter={(value, name) => {
+                        if (name === 'revenue') return [`$${value}`, 'Revenue'];
+                        return [value, 'Orders'];
+                      }}
+                    />
+                    <Legend />
+                    <Line 
+                      yAxisId="left"
+                      type="monotone" 
+                      dataKey="orders" 
+                      name="Orders" 
+                      stroke="hsl(var(--primary))" 
+                      activeDot={{ r: 8 }} 
+                      strokeWidth={2}
+                    />
+                    <Line 
+                      yAxisId="right"
+                      type="monotone" 
+                      dataKey="revenue" 
+                      name="Revenue" 
+                      stroke="#82ca9d" 
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">Total Orders</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">{totalOrders}</div>
+                    <div className="text-xs text-muted-foreground">+8% from last period</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">Avg Order Value</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">$348.50</div>
+                    <div className="text-xs text-muted-foreground">+4.2% from last period</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-medium">Fulfillment Rate</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">96.8%</div>
+                    <div className="text-xs text-muted-foreground">+1.2% from target</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 text-purple-500" />
+                      <span className="text-sm font-medium">Return Rate</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">3.2%</div>
+                    <div className="text-xs text-muted-foreground">-0.5% from last period</div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            {/* Order Status Tab */}
+            <TabsContent value="status" className="p-0 pt-0">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg font-medium">Order Status Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                        <div className="flex items-center p-4 rounded-lg border border-border bg-muted/10 hover:bg-muted/20 transition-colors">
+                          <div className="relative w-16 h-16 mr-3">
+                            <svg className="w-16 h-16" viewBox="0 0 36 36">
+                              <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="hsl(var(--muted))"
+                                strokeWidth="3"
+                              />
+                              <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="#3b82f6"
+                                strokeWidth="3"
+                                strokeDasharray={`${(orderCounts.processing / totalOrders) * 100}, 100`}
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                              <div className="text-xs font-semibold">{Math.round((orderCounts.processing / totalOrders) * 100)}%</div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 rounded-full bg-[#3b82f6] mr-2"></div>
+                              <div className="text-sm font-medium">Processing</div>
+                            </div>
+                            <div className="text-2xl font-bold">{orderCounts.processing}</div>
+                            <div className="text-xs text-muted-foreground">Total orders in processing</div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center p-4 rounded-lg border border-border bg-muted/10 hover:bg-muted/20 transition-colors">
+                          <div className="relative w-16 h-16 mr-3">
+                            <svg className="w-16 h-16" viewBox="0 0 36 36">
+                              <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="hsl(var(--muted))"
+                                strokeWidth="3"
+                              />
+                              <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="#10b981"
+                                strokeWidth="3"
+                                strokeDasharray={`${(orderCounts.shipped / totalOrders) * 100}, 100`}
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                              <div className="text-xs font-semibold">{Math.round((orderCounts.shipped / totalOrders) * 100)}%</div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 rounded-full bg-[#10b981] mr-2"></div>
+                              <div className="text-sm font-medium">Shipped</div>
+                            </div>
+                            <div className="text-2xl font-bold">{orderCounts.shipped}</div>
+                            <div className="text-xs text-muted-foreground">Total orders in transit</div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center p-4 rounded-lg border border-border bg-muted/10 hover:bg-muted/20 transition-colors">
+                          <div className="relative w-16 h-16 mr-3">
+                            <svg className="w-16 h-16" viewBox="0 0 36 36">
+                              <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="hsl(var(--muted))"
+                                strokeWidth="3"
+                              />
+                              <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="#f59e0b"
+                                strokeWidth="3"
+                                strokeDasharray={`${(orderCounts.delivered / totalOrders) * 100}, 100`}
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                              <div className="text-xs font-semibold">{Math.round((orderCounts.delivered / totalOrders) * 100)}%</div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 rounded-full bg-[#f59e0b] mr-2"></div>
+                              <div className="text-sm font-medium">Delivered</div>
+                            </div>
+                            <div className="text-2xl font-bold">{orderCounts.delivered}</div>
+                            <div className="text-xs text-muted-foreground">Total orders delivered</div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center p-4 rounded-lg border border-border bg-muted/10 hover:bg-muted/20 transition-colors">
+                          <div className="relative w-16 h-16 mr-3">
+                            <svg className="w-16 h-16" viewBox="0 0 36 36">
+                              <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="hsl(var(--muted))"
+                                strokeWidth="3"
+                              />
+                              <path
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                stroke="#ec4899"
+                                strokeWidth="3"
+                                strokeDasharray={`${(orderCounts.cancelled / totalOrders) * 100}, 100`}
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                              <div className="text-xs font-semibold">{Math.round((orderCounts.cancelled / totalOrders) * 100)}%</div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 rounded-full bg-[#ec4899] mr-2"></div>
+                              <div className="text-sm font-medium">Cancelled</div>
+                            </div>
+                            <div className="text-2xl font-bold">{orderCounts.cancelled}</div>
+                            <div className="text-xs text-muted-foreground">Total orders cancelled</div>
+                          </div>
+                        </div>
+                        
+                        <div className="col-span-2 mt-5 border-t pt-4 border-border">
+                          <div className="text-sm font-medium mb-1">Order Status Progression</div>
+                          <div className="flex items-center space-x-1">
+                            <div className="h-2 bg-[#3b82f6] rounded-l-full" style={{ width: `${Math.round((orderCounts.processing / totalOrders) * 100)}%` }}></div>
+                            <div className="h-2 bg-[#10b981]" style={{ width: `${Math.round((orderCounts.shipped / totalOrders) * 100)}%` }}></div>
+                            <div className="h-2 bg-[#f59e0b]" style={{ width: `${Math.round((orderCounts.delivered / totalOrders) * 100)}%` }}></div>
+                            <div className="h-2 bg-[#ec4899] rounded-r-full" style={{ width: `${Math.round((orderCounts.cancelled / totalOrders) * 100)}%` }}></div>
+                          </div>
+                          <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                            <div>
+                              <span className="inline-block w-3 h-3 rounded-full bg-[#3b82f6] mr-1"></span> Processing
+                            </div>
+                            <div>
+                              <span className="inline-block w-3 h-3 rounded-full bg-[#10b981] mr-1"></span> Shipped
+                            </div>
+                            <div>
+                              <span className="inline-block w-3 h-3 rounded-full bg-[#f59e0b] mr-1"></span> Delivered
+                            </div>
+                            <div>
+                              <span className="inline-block w-3 h-3 rounded-full bg-[#ec4899] mr-1"></span> Cancelled
+                            </div>
+                          </div>
+                          <div className="flex justify-between mt-3">
+                            <div className="text-xs">
+                              <div className="font-medium">Total Active Orders</div>
+                              <div className="text-2xl font-bold">{totalOrders - orderCounts.cancelled}</div>
+                            </div>
+                            <div className="text-xs text-right">
+                              <div className="font-medium">Completion Rate</div>
+                              <div className="text-2xl font-bold">{Math.round((orderCounts.delivered / (totalOrders - orderCounts.cancelled)) * 100)}%</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg font-medium">Order Fulfillment Timeline</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="flex items-center space-x-4 border-l-4 border-[#3b82f6] pl-4 py-2 bg-muted/10 rounded-r-lg">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#3b82f6]/10">
+                              <Clock className="h-5 w-5 text-[#3b82f6]" />
+                            </div>
+                          </div>
+                          <div className="flex-grow">
+                            <div className="text-sm font-semibold">Order to Processing</div>
+                            <div className="text-2xl font-bold">2.4 <span className="text-sm text-muted-foreground font-normal">hrs</span></div>
+                            <div className="text-xs text-muted-foreground">Average time to start processing</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-4 border-l-4 border-[#10b981] pl-4 py-2 bg-muted/10 rounded-r-lg">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#10b981]/10">
+                              <Package className="h-5 w-5 text-[#10b981]" />
+                            </div>
+                          </div>
+                          <div className="flex-grow">
+                            <div className="text-sm font-semibold">Processing to Shipped</div>
+                            <div className="text-2xl font-bold">18.2 <span className="text-sm text-muted-foreground font-normal">hrs</span></div>
+                            <div className="text-xs text-muted-foreground">Average packaging and handoff time</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-4 border-l-4 border-[#f59e0b] pl-4 py-2 bg-muted/10 rounded-r-lg">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#f59e0b]/10">
+                              <Truck className="h-5 w-5 text-[#f59e0b]" />
+                            </div>
+                          </div>
+                          <div className="flex-grow">
+                            <div className="text-sm font-semibold">Shipped to Delivered</div>
+                            <div className="text-2xl font-bold">42.6 <span className="text-sm text-muted-foreground font-normal">hrs</span></div>
+                            <div className="text-xs text-muted-foreground">Average transit time to customer</div>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-2 px-2">
+                          <div className="text-sm font-medium mb-1">Total Fulfillment Time</div>
+                          <div className="flex items-center space-x-1">
+                            <div className="h-1.5 bg-[#3b82f6] rounded-l-full w-1/6"></div>
+                            <div className="h-1.5 bg-[#10b981] w-1/3"></div>
+                            <div className="h-1.5 bg-[#f59e0b] rounded-r-full w-1/2"></div>
+                          </div>
+                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                            <div>Order Placed</div>
+                            <div>63.2 hrs (2.6 days) Average</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <span className="text-sm font-medium">Completion Rate</span>
+                      </div>
+                      <div className="mt-1 text-xl font-bold">{Math.round((orderCounts.delivered / totalOrders) * 100)}%</div>
+                      <div className="text-xs text-muted-foreground">
+                        {orderCounts.delivered} of {totalOrders} orders completed
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4 text-red-500" />
+                        <span className="text-sm font-medium">Cancellation Rate</span>
+                      </div>
+                      <div className="mt-1 text-xl font-bold">{Math.round((orderCounts.cancelled / totalOrders) * 100)}%</div>
+                      <div className="text-xs text-muted-foreground">
+                        {orderCounts.cancelled} of {totalOrders} orders cancelled
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm font-medium">On-Time Delivery</span>
+                      </div>
+                      <div className="mt-1 text-xl font-bold">94%</div>
+                      <div className="text-xs text-muted-foreground">
+                        {Math.round(orderCounts.delivered * 0.94)} orders delivered on time
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 text-amber-500" />
+                        <span className="text-sm font-medium">Return Rate</span>
+                      </div>
+                      <div className="mt-1 text-xl font-bold">2.3%</div>
+                      <div className="text-xs text-muted-foreground">
+                        {Math.round(orderCounts.delivered * 0.023)} orders returned
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+            
+            {/* Processing Timeline Tab */}
+            <TabsContent value="timeline" className="p-0 pt-0">
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { stage: 'Order Verification', hours: 1.2 },
+                      { stage: 'Payment Processing', hours: 0.4 },
+                      { stage: 'Inventory Allocation', hours: 0.8 },
+                      { stage: 'Picking & Packing', hours: 1.5 },
+                      { stage: 'Shipping Preparation', hours: 0.6 },
+                      { stage: 'Carrier Pickup', hours: 5.5 },
+                      { stage: 'In Transit', hours: 58.2 },
+                    ]}
+                    layout="vertical"
+                    margin={{ top: 20, right: 30, left: 150, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                    <YAxis dataKey="stage" type="category" width={140} className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                      formatter={(value) => [`${value} hours`, 'Duration']}
+                    />
+                    <Legend />
+                    <Bar dataKey="hours" name="Processing Time" fill="hsl(var(--primary))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4">
+                <Card className="bg-background border-muted">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Critical Path Analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Total Processing Time (Average)</span>
+                        <span className="font-medium">8.5 hours</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Bottleneck Stage</span>
+                        <span className="font-medium text-amber-500">Picking & Packing</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Optimization Potential</span>
+                        <span className="font-medium text-green-500">32%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            {/* Average Order Value Tab */}
+            <TabsContent value="value" className="p-0 pt-0">
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={[
+                      { month: 'Jan', value: 320 },
+                      { month: 'Feb', value: 332 },
+                      { month: 'Mar', value: 301 },
+                      { month: 'Apr', value: 334 },
+                      { month: 'May', value: 390 },
+                      { month: 'Jun', value: 330 },
+                      { month: 'Jul', value: 350 }
+                    ]}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="month" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                    <YAxis className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                      formatter={(value) => [`$${value}`, 'Average Order Value']}
+                    />
+                    <Legend />
+                    <Area type="monotone" dataKey="value" name="Order Value" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">Monthly Growth</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">+4.2%</div>
+                    <div className="text-xs text-muted-foreground">Compared to previous month</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <BarChartBig className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">Highest Month</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">May ($390)</div>
+                    <div className="text-xs text-muted-foreground">21.8% above average</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-background shadow-none">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <ArrowUp className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-medium">YTD Average</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">$336.71</div>
+                    <div className="text-xs text-muted-foreground">8.2% above forecast</div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -2152,36 +2567,26 @@ export default function OrderManagement() {
             
             {/* Technical Performance Tab */}
             <TabsContent value="technical" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              {/* Technical Metrics Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <Card className="bg-background shadow-none">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm font-medium">Processing Rate</span>
-                  </div>
-                    <div className="mt-1 text-xl font-bold">142/hr</div>
-                    <div className="text-xs text-muted-foreground">+18% from baseline</div>
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">API Response Time</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">178ms</div>
+                    <div className="text-xs text-muted-foreground">-23ms from previous period</div>
                   </CardContent>
                 </Card>
                 
                 <Card className="bg-background shadow-none">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-green-500" />
-                      <span className="text-sm font-medium">Response Time</span>
-                  </div>
-                    <div className="mt-1 text-xl font-bold">2.4s</div>
-                    <div className="text-xs text-muted-foreground">-0.3s from last week</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-background shadow-none">
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2">
                       <RefreshCw className="h-4 w-4 text-amber-500" />
-                    <span className="text-sm font-medium">System Load</span>
-                  </div>
-                  <div className="mt-1 text-xl font-bold">68%</div>
+                      <span className="text-sm font-medium">System Load</span>
+                    </div>
+                    <div className="mt-1 text-xl font-bold">68%</div>
                     <div className="text-xs text-muted-foreground">Within optimal range</div>
                   </CardContent>
                 </Card>
@@ -2191,20 +2596,161 @@ export default function OrderManagement() {
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-red-500" />
                       <span className="text-sm font-medium">Error Count</span>
-                  </div>
+                    </div>
                     <div className="mt-1 text-xl font-bold">17</div>
                     <div className="text-xs text-muted-foreground">Last 24 hours</div>
-                </CardContent>
-              </Card>
-            </div>
-            
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* System Performance Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="text-sm font-medium">Order API Response Time</div>
+                      <div className="text-sm text-green-500 font-medium">178ms</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="bg-green-500 h-full rounded-full" style={{ width: '23%' }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <div>Target: &lt;250ms</div>
+                      <div>P95: 212ms</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="text-sm font-medium">Database Query Time</div>
+                      <div className="text-sm text-amber-500 font-medium">356ms</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="bg-amber-500 h-full rounded-full" style={{ width: '65%' }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <div>Target: &lt;300ms</div>
+                      <div>P95: 423ms</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="text-sm font-medium">Payment Gateway Latency</div>
+                      <div className="text-sm text-green-500 font-medium">422ms</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="bg-green-500 h-full rounded-full" style={{ width: '42%' }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <div>Target: &lt;500ms</div>
+                      <div>P95: 486ms</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="text-sm font-medium">Cache Hit Ratio</div>
+                      <div className="text-sm text-green-500 font-medium">94.8%</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="bg-green-500 h-full rounded-full" style={{ width: '94.8%' }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <div>Target: &gt;90%</div>
+                      <div>Min: 88.2%</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="text-sm font-medium">Order Processing Queue</div>
+                      <div className="text-sm text-blue-500 font-medium">24 orders</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="bg-blue-500 h-full rounded-full" style={{ width: '24%' }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <div>Capacity: 100</div>
+                      <div>Avg: 18</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="text-sm font-medium">Webhook Delivery Rate</div>
+                      <div className="text-sm text-green-500 font-medium">99.7%</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="bg-green-500 h-full rounded-full" style={{ width: '99.7%' }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <div>Target: &gt;99.5%</div>
+                      <div>Failures: 7</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-muted/30 rounded-md p-3">
+                  <div className="text-sm font-medium mb-2">System Status</div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                        <span className="text-sm">Order API</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">Operational</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                        <span className="text-sm">Payment Processor</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">Operational</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 rounded-full bg-amber-500 mr-2"></div>
+                        <span className="text-sm">Inventory System</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">Degraded</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                        <span className="text-sm">Shipping API</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">Operational</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                        <span className="text-sm">Notification Service</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">Operational</span>
+                    </div>
+                    
+                    <div className="pt-2 text-xs text-blue-500 flex items-center cursor-pointer">
+                      <span>View detailed status board</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
               {/* Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <Card>
-              <CardHeader>
-                    <CardTitle>System Resource Utilization</CardTitle>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">System Resource Utilization</CardTitle>
                     <CardDescription>CPU, Memory and Network metrics over time</CardDescription>
-              </CardHeader>
+                  </CardHeader>
                   <CardContent className="px-2">
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
@@ -2221,8 +2767,8 @@ export default function OrderManagement() {
                           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis dataKey="time" className="text-xs" />
-                          <YAxis className="text-xs" />
+                          <XAxis dataKey="time" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                          <YAxis className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
                           <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
                           <Legend />
                           <Line type="monotone" dataKey="cpu" name="CPU %" stroke="#3b82f6" strokeWidth={2} />
@@ -2235,9 +2781,9 @@ export default function OrderManagement() {
                 </Card>
                 
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Request Distribution</CardTitle>
-                    <CardDescription>API endpoint performance metrics</CardDescription>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">API Request Distribution</CardTitle>
+                    <CardDescription>Endpoint performance metrics</CardDescription>
                   </CardHeader>
                   <CardContent className="px-2">
                     <div className="h-80">
@@ -2260,8 +2806,8 @@ export default function OrderManagement() {
                             angle={-45}
                             textAnchor="end"
                           />
-                          <YAxis yAxisId="left" orientation="left" className="text-xs" />
-                          <YAxis yAxisId="right" orientation="right" className="text-xs" />
+                          <YAxis yAxisId="left" orientation="left" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                          <YAxis yAxisId="right" orientation="right" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
                           <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
                           <Legend />
                           <Bar yAxisId="left" dataKey="requests" name="Request Count" fill="hsl(var(--primary))" />
@@ -2273,11 +2819,26 @@ export default function OrderManagement() {
                 </Card>
               </div>
               
-              {/* Technical Logs Table */}
+              {/* System Logs Table */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Technical Performance Logs</CardTitle>
-                  <CardDescription>Recent system events and performance metrics</CardDescription>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">Technical Performance Logs</CardTitle>
+                      <CardDescription>Recent system events and performance metrics</CardDescription>
+                    </div>
+                    <Select defaultValue="realtime">
+                      <SelectTrigger className="w-[140px] h-8">
+                        <SelectValue placeholder="Update frequency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="realtime">Real-time</SelectItem>
+                        <SelectItem value="1min">1 minute</SelectItem>
+                        <SelectItem value="5min">5 minutes</SelectItem>
+                        <SelectItem value="15min">15 minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardHeader>
                 <CardContent className="px-0">
                   <div className="border-b">
@@ -2324,509 +2885,12 @@ export default function OrderManagement() {
                       <div className="py-2 px-4 border-r text-xs w-1/5">Computation Time</div>
                       <div className="py-2 px-4 border-r text-xs w-1/5">342ms</div>
                       <div className="py-2 px-4 text-xs w-1/5 text-amber-500">Warning</div>
+                    </div>
                   </div>
-                </div>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
-              </CardContent>
-            </Card>
-            
-      {/* Order Fulfillment KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Order Fulfillment Rate</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold text-primary">96.4%</div>
-            <div className="flex items-center mt-1">
-              <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
-              <p className="text-xs text-muted-foreground">2.1% above target</p>
-                  </div>
-            <div className="h-1 w-full bg-muted mt-3">
-              <div className="h-1 bg-primary" style={{ width: '96.4%' }}></div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Processing Time</CardTitle>
-                </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold text-amber-500">1.8 days</div>
-            <div className="flex items-center mt-1">
-              <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">0.2 days below target</p>
-                    </div>
-            <div className="h-1 w-full bg-muted mt-3">
-              <div className="h-1 bg-amber-500" style={{ width: '75%' }}></div>
-                    </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">On-Time Delivery</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold text-green-500">94.2%</div>
-            <div className="flex items-center mt-1">
-              <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">1.7% improvement from last month</p>
-                    </div>
-            <div className="h-1 w-full bg-muted mt-3">
-              <div className="h-1 bg-green-500" style={{ width: '94.2%' }}></div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Return Rate</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold text-blue-500">3.2%</div>
-            <div className="flex items-center mt-1">
-              <RefreshCw className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">0.5% decrease from last quarter</p>
-            </div>
-            <div className="h-1 w-full bg-muted mt-3">
-              <div className="h-1 bg-blue-500" style={{ width: '32%' }}></div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Order Timeline and Order Value Analysis */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Order Processing Timeline</CardTitle>
-            <CardDescription>Average time spent in each phase of order processing</CardDescription>
-          </CardHeader>
-          <CardContent className="px-2">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { stage: 'Order Received', hours: 2.4 },
-                    { stage: 'Payment Processing', hours: 4.1 },
-                    { stage: 'Inventory Allocation', hours: 5.8 },
-                    { stage: 'Packaging', hours: 7.2 },
-                    { stage: 'Shipping', hours: 24.6 },
-                    { stage: 'In Transit', hours: 38.5 },
-                  ]}
-                  layout="vertical"
-                  margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    type="number" 
-                    className="text-xs" 
-                    label={{ value: 'Hours', position: 'insideBottom', offset: -5 }}
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    type="category"
-                    dataKey="stage" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                    width={100}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                    formatter={(value) => [`${value} hours`, 'Duration']}
-                  />
-                  <Bar dataKey="hours" name="Hours" fill="hsl(var(--primary))" barSize={20} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Average Order Value</CardTitle>
-            <CardDescription>By customer segment</CardDescription>
-          </CardHeader>
-          <CardContent className="px-2">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Enterprise', value: 4200 },
-                      { name: 'Mid-Market', value: 2850 },
-                      { name: 'Small Business', value: 1350 },
-                      { name: 'Retail', value: 580 },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {[
-                      { name: 'Enterprise', value: 4200 },
-                      { name: 'Mid-Market', value: 2850 },
-                      { name: 'Small Business', value: 1350 },
-                      { name: 'Retail', value: 580 },
-                    ].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                    formatter={(value) => [`$${value}`, 'Avg. Order Value']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Technical System Performance Metrics */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-            <div>
-              <CardTitle>System Performance Metrics</CardTitle>
-              <CardDescription>Technical indicators for the order processing pipeline</CardDescription>
-            </div>
-            <Select defaultValue="realtime">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Update frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="realtime">Real-time</SelectItem>
-                <SelectItem value="1min">1 minute</SelectItem>
-                <SelectItem value="5min">5 minutes</SelectItem>
-                <SelectItem value="15min">15 minutes</SelectItem>
-              </SelectContent>
-            </Select>
-                  </div>
-                </CardHeader>
-                <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <div className="text-sm font-medium">Order API Response Time</div>
-                  <div className="text-sm text-green-500 font-medium">178ms</div>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="bg-green-500 h-full rounded-full" style={{ width: '23%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <div>Target: &lt;250ms</div>
-                  <div>P95: 212ms</div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <div className="text-sm font-medium">Database Query Time</div>
-                  <div className="text-sm text-amber-500 font-medium">356ms</div>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="bg-amber-500 h-full rounded-full" style={{ width: '65%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <div>Target: &lt;300ms</div>
-                  <div>P95: 423ms</div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <div className="text-sm font-medium">Payment Gateway Latency</div>
-                  <div className="text-sm text-green-500 font-medium">422ms</div>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="bg-green-500 h-full rounded-full" style={{ width: '42%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <div>Target: &lt;500ms</div>
-                  <div>P95: 486ms</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <div className="text-sm font-medium">Cache Hit Ratio</div>
-                  <div className="text-sm text-green-500 font-medium">94.8%</div>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="bg-green-500 h-full rounded-full" style={{ width: '94.8%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <div>Target: &gt;90%</div>
-                  <div>Min: 88.2%</div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <div className="text-sm font-medium">Order Processing Queue</div>
-                  <div className="text-sm text-blue-500 font-medium">24 orders</div>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="bg-blue-500 h-full rounded-full" style={{ width: '24%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <div>Capacity: 100</div>
-                  <div>Avg: 18</div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <div className="text-sm font-medium">Webhook Delivery Rate</div>
-                  <div className="text-sm text-green-500 font-medium">99.7%</div>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="bg-green-500 h-full rounded-full" style={{ width: '99.7%' }}></div>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <div>Target: &gt;99.5%</div>
-                  <div>Failures: 7</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-muted/30 rounded-md p-3">
-              <div className="text-sm font-medium mb-2">System Status</div>
-                  <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                    <span className="text-sm">Order API</span>
-                    </div>
-                  <span className="text-xs text-muted-foreground">Operational</span>
-                    </div>
-                    
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                    <span className="text-sm">Payment Processor</span>
-                    </div>
-                  <span className="text-xs text-muted-foreground">Operational</span>
-                    </div>
-                    
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-amber-500 mr-2"></div>
-                    <span className="text-sm">Inventory System</span>
-                    </div>
-                  <span className="text-xs text-muted-foreground">Degraded</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                    <span className="text-sm">Shipping API</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">Operational</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                    <span className="text-sm">Notification Service</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">Operational</span>
-                </div>
-                
-                <div className="pt-2 text-xs text-blue-500 flex items-center cursor-pointer">
-                  <span>View detailed status board</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                </div>
-              </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-      {/* Order Volume Heatmap */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-            <div>
-              <CardTitle>Order Volume Heatmap</CardTitle>
-              <CardDescription>Distribution of orders by day and hour (UTC)</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                Week
-              </Button>
-              <Button variant="outline" size="sm">
-                Month
-              </Button>
-              <Button variant="outline" size="sm">
-                Quarter
-                    </Button>
-            </div>
-                  </div>
-                </CardHeader>
-        <CardContent className="px-2">
-          <div className="h-64">
-            {/* This would be a heatmap visualization in a real implementation */}
-            <div className="border rounded overflow-hidden">
-              <div className="grid grid-cols-7 grid-rows-24 h-full">
-                {/* Days of week */}
-                <div className="bg-muted/30 flex items-center justify-center text-xs font-medium">Hour</div>
-                <div className="bg-muted/30 flex items-center justify-center text-xs font-medium">Mon</div>
-                <div className="bg-muted/30 flex items-center justify-center text-xs font-medium">Tue</div>
-                <div className="bg-muted/30 flex items-center justify-center text-xs font-medium">Wed</div>
-                <div className="bg-muted/30 flex items-center justify-center text-xs font-medium">Thu</div>
-                <div className="bg-muted/30 flex items-center justify-center text-xs font-medium">Fri</div>
-                <div className="bg-muted/30 flex items-center justify-center text-xs font-medium">Sat</div>
-                <div className="bg-muted/30 flex items-center justify-center text-xs font-medium">Sun</div>
-                
-                {/* Hours - would dynamically generate in a real implementation */}
-                <div className="bg-muted/30 flex items-center justify-center text-xs">00:00</div>
-                <div className="bg-[#f3faff] flex items-center justify-center text-xs">12</div>
-                <div className="bg-[#d6edff] flex items-center justify-center text-xs">18</div>
-                <div className="bg-[#c1e3ff] flex items-center justify-center text-xs">22</div>
-                <div className="bg-[#a7d8ff] flex items-center justify-center text-xs">28</div>
-                <div className="bg-[#8dceff] flex items-center justify-center text-xs">32</div>
-                <div className="bg-[#6ebdff] flex items-center justify-center text-xs">10</div>
-                
-                <div className="bg-muted/30 flex items-center justify-center text-xs">06:00</div>
-                <div className="bg-[#a7d8ff] flex items-center justify-center text-xs">27</div>
-                <div className="bg-[#6ebdff] flex items-center justify-center text-xs">38</div>
-                <div className="bg-[#54b4ff] flex items-center justify-center text-xs">42</div>
-                <div className="bg-[#3ba2fb] flex items-center justify-center text-xs">48</div>
-                <div className="bg-[#2b94f2] flex items-center justify-center text-xs">45</div>
-                <div className="bg-[#54b4ff] flex items-center justify-center text-xs">28</div>
-                
-                <div className="bg-muted/30 flex items-center justify-center text-xs">12:00</div>
-                <div className="bg-[#54b4ff] flex items-center justify-center text-xs">42</div>
-                <div className="bg-[#1f85e2] flex items-center justify-center text-xs">58</div>
-                <div className="bg-[#0e67c4] flex items-center justify-center text-xs">72</div>
-                <div className="bg-[#0a56ab] flex items-center justify-center text-xs">85</div>
-                <div className="bg-[#074487] flex items-center justify-center text-xs">76</div>
-                <div className="bg-[#0e67c4] flex items-center justify-center text-xs">32</div>
-                
-                <div className="bg-muted/30 flex items-center justify-center text-xs">18:00</div>
-                <div className="bg-[#2b94f2] flex items-center justify-center text-xs">47</div>
-                <div className="bg-[#0e67c4] flex items-center justify-center text-xs">62</div>
-                <div className="bg-[#074487] flex items-center justify-center text-xs">68</div>
-                <div className="bg-[#053772] flex items-center justify-center text-xs">79</div>
-                <div className="bg-[#0a56ab] flex items-center justify-center text-xs">67</div>
-                <div className="bg-[#1f85e2] flex items-center justify-center text-xs">25</div>
-                    </div>
-                    </div>
-            
-            <div className="flex justify-center mt-4">
-              <div className="flex items-center">
-                <div className="flex space-x-1">
-                  <div className="w-4 h-4 bg-[#f3faff]"></div>
-                  <div className="w-4 h-4 bg-[#d6edff]"></div>
-                  <div className="w-4 h-4 bg-[#a7d8ff]"></div>
-                  <div className="w-4 h-4 bg-[#6ebdff]"></div>
-                  <div className="w-4 h-4 bg-[#3ba2fb]"></div>
-                  <div className="w-4 h-4 bg-[#1f85e2]"></div>
-                  <div className="w-4 h-4 bg-[#0e67c4]"></div>
-                  <div className="w-4 h-4 bg-[#0a56ab]"></div>
-                  <div className="w-4 h-4 bg-[#074487]"></div>
-                  <div className="w-4 h-4 bg-[#053772]"></div>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground ml-2 w-32">
-                  <span>Low</span>
-                  <span>High</span>
-                </div>
-              </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-      {/* Regional Performance Analysis */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-            <div>
-              <CardTitle>Regional Order Performance</CardTitle>
-              <CardDescription>Delivery times and order volume by region</CardDescription>
-            </div>
-            <Select defaultValue="month">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Time period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-                <SelectItem value="quarter">This Quarter</SelectItem>
-                <SelectItem value="year">This Year</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent className="px-2">
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={[
-                  { region: 'Northeast', orderVolume: 450, deliveryTime: 2.1, target: 2.0 },
-                  { region: 'Southeast', orderVolume: 380, deliveryTime: 2.3, target: 2.0 },
-                  { region: 'Midwest', orderVolume: 410, deliveryTime: 2.6, target: 2.5 },
-                  { region: 'Southwest', orderVolume: 320, deliveryTime: 2.8, target: 2.5 },
-                  { region: 'West Coast', orderVolume: 520, deliveryTime: 1.9, target: 2.0 },
-                  { region: 'Northwest', orderVolume: 290, deliveryTime: 2.5, target: 2.5 },
-                ]}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  dataKey="region" 
-                  className="text-xs" 
-                  tick={{fill: 'hsl(var(--foreground))'}}
-                />
-                <YAxis 
-                  yAxisId="left"
-                  label={{ value: 'Order Volume', angle: -90, position: 'insideLeft' }}
-                  className="text-xs" 
-                  tick={{fill: 'hsl(var(--foreground))'}}
-                />
-                <YAxis 
-                  yAxisId="right"
-                  orientation="right"
-                  label={{ value: 'Delivery Time (Days)', angle: 90, position: 'insideRight' }}
-                  domain={[0, 5]}
-                  className="text-xs" 
-                  tick={{fill: 'hsl(var(--foreground))'}}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    borderColor: 'hsl(var(--border))',
-                    color: 'hsl(var(--foreground))'
-                  }}
-                />
-                <Legend />
-                <Bar yAxisId="left" dataKey="orderVolume" name="Order Volume" fill="hsl(var(--primary))" barSize={30} />
-                <Line yAxisId="right" type="monotone" dataKey="deliveryTime" name="Delivery Time" stroke="#ff7300" strokeWidth={2} />
-                <Line yAxisId="right" type="monotone" dataKey="target" name="Target Time" stroke="#82ca9d" strokeDasharray="5 5" strokeWidth={2} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
         </CardContent>
       </Card>
 

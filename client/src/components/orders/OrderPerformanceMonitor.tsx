@@ -45,7 +45,9 @@ import {
   RefreshCw,
   Scale,
   Filter,
-  ChevronDown
+  ChevronDown,
+  MapPin,
+  Globe,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -54,6 +56,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PieChart, Pie, Cell } from "recharts";
 
 interface PerformanceMetric {
   name: string;

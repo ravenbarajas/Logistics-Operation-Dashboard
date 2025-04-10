@@ -72,7 +72,8 @@ import {
   CalendarDays,
   CircleCheck,
   Globe,
-  PieChart
+  PieChart,
+  Activity
 } from "lucide-react";
 import {
   BarChart,
@@ -593,20 +594,20 @@ export default function OrderManagement() {
   // Update filtered orders whenever filters change
   useEffect(() => {
     const filtered = orderList.filter(order => {
-      // Apply search filter
+    // Apply search filter
       const matchesSearch = searchTerm === "" || 
         order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (order.customerEmail && order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (order.trackingNumber && order.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      // Apply date filter
+    
+    // Apply date filter
       let matchesDate = true;
-      if (dateFilter !== 'all') {
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        
+    if (dateFilter !== 'all') {
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
         const orderDate = new Date(order.date);
         
         if (dateFilter === 'today') {
@@ -618,9 +619,9 @@ export default function OrderManagement() {
           weekAgo.setDate(today.getDate() - 7);
           matchesDate = orderDate >= weekAgo;
         }
-      }
-      
-      // Apply payment filter
+    }
+    
+    // Apply payment filter
       const matchesPayment = paymentFilter === "all" || order.payment === paymentFilter;
       
       // Apply status filter
@@ -876,17 +877,17 @@ export default function OrderManagement() {
                           <td className="py-3 px-4">
                             <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
                               {statusLabel}
-                            </Badge>
+                  </Badge>
                           </td>
                           <td className="py-3 px-4">
                             <Badge className={`bg-${paymentColor}-500/10 text-${paymentColor}-500 border-${paymentColor}-500/20`}>
                               {paymentLabel}
-                            </Badge>
+                  </Badge>
                           </td>
                           <td className="py-3 px-4">
-                            <Badge variant="outline">
-                              {order.shipping.toUpperCase()}
-                            </Badge>
+                  <Badge variant="outline">
+                    {order.shipping.toUpperCase()}
+                  </Badge>
                           </td>
                           <td className="py-3 px-4 text-right">
                             <div className="flex items-center justify-end space-x-2">
@@ -897,7 +898,7 @@ export default function OrderManagement() {
                                 title="View Details"
                               >
                                 <FileText className="h-4 w-4" />
-                              </Button>
+                      </Button>
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
@@ -967,8 +968,8 @@ export default function OrderManagement() {
                           >
                             {i+1}
                           </Button>
-                        ))
-                      ) : (
+            ))
+          ) : (
                         // Show limited pages with ellipsis for better navigation
                         <>
                           <Button
@@ -1087,59 +1088,59 @@ export default function OrderManagement() {
       
       {/* Order Summary Cards */}
       {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-            </CardHeader>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+          </CardHeader>
             <CardContent className="px-6">
               <div className="text-2xl font-bold">{summary.totalOrders}</div>
-              <div className="flex items-center">
-                <ShoppingCart className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">All orders</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Processing</CardTitle>
-            </CardHeader>
+            <div className="flex items-center">
+              <ShoppingCart className="h-4 w-4 mr-1 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">All orders</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Processing</CardTitle>
+          </CardHeader>
             <CardContent className="px-6">
               <div className="text-2xl font-bold text-blue-500">{summary.processingOrders}</div>
-              <div className="flex items-center">
-                <Package className="h-4 w-4 mr-1 text-muted-foreground" />
+            <div className="flex items-center">
+              <Package className="h-4 w-4 mr-1 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">{summary.processingPercentage}% of total orders</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Delivered</CardTitle>
-            </CardHeader>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Delivered</CardTitle>
+          </CardHeader>
             <CardContent className="px-6">
               <div className="text-2xl font-bold text-green-500">{summary.deliveredOrders}</div>
-              <div className="flex items-center">
-                <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+            <div className="flex items-center">
+              <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">{summary.deliveredPercentage}% delivery rate</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
-            </CardHeader>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
+          </CardHeader>
             <CardContent className="px-6">
               <div className="text-2xl font-bold text-amber-500">{summary.pendingPayment}</div>
-              <div className="flex items-center">
-                <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+            <div className="flex items-center">
+              <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">{summary.pendingPercentage}% of total orders</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       )}
       {/* Enhanced Order Table */}
       {renderEnhancedOrderTable()}
@@ -1159,7 +1160,7 @@ export default function OrderManagement() {
             <div>
               <CardTitle>Order Analytics Dashboard</CardTitle>
               <CardDescription>Key metrics and performance indicators for orders</CardDescription>
-            </div>
+              </div>
             
             {/* Filtering options */}
             <div className="flex flex-wrap gap-2">
@@ -1179,11 +1180,11 @@ export default function OrderManagement() {
                 <div className="flex items-center cursor-pointer">
                   <Clipboard className="h-3.5 w-3.5 mr-1" />
                   Export Data
-                </div>
+              </div>
               </Button>
             </div>
-          </div>
-        </CardHeader>
+            </div>
+          </CardHeader>
         <CardContent className="p-0">
           <Tabs defaultValue="volume" className="w-full p-4">
             <TabsList className="w-full grid grid-cols-4 mb-4">
@@ -1207,61 +1208,61 @@ export default function OrderManagement() {
             
             {/* Volume & Revenue Tab */}
             <TabsContent value="volume" className="p-0 pt-0">
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={orderVolumeData}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={orderVolumeData}
                     margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
-                      dataKey="date" 
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                    />
-                    <YAxis 
-                      yAxisId="left"
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                    />
-                    <YAxis 
-                      yAxisId="right"
-                      orientation="right"
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
-                      formatter={(value, name) => {
-                        if (name === 'revenue') return [`$${value}`, 'Revenue'];
-                        return [value, 'Orders'];
-                      }}
-                    />
-                    <Legend />
-                    <Line 
-                      yAxisId="left"
-                      type="monotone" 
-                      dataKey="orders" 
-                      name="Orders" 
-                      stroke="hsl(var(--primary))" 
-                      activeDot={{ r: 8 }} 
-                      strokeWidth={2}
-                    />
-                    <Line 
-                      yAxisId="right"
-                      type="monotone" 
-                      dataKey="revenue" 
-                      name="Revenue" 
-                      stroke="#82ca9d" 
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="date" 
+                    className="text-xs" 
+                    tick={{fill: 'hsl(var(--foreground))'}}
+                  />
+                  <YAxis 
+                    yAxisId="left"
+                    className="text-xs" 
+                    tick={{fill: 'hsl(var(--foreground))'}}
+                  />
+                  <YAxis 
+                    yAxisId="right"
+                    orientation="right"
+                    className="text-xs" 
+                    tick={{fill: 'hsl(var(--foreground))'}}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      borderColor: 'hsl(var(--border))',
+                      color: 'hsl(var(--foreground))'
+                    }}
+                    formatter={(value, name) => {
+                      if (name === 'revenue') return [`$${value}`, 'Revenue'];
+                      return [value, 'Orders'];
+                    }}
+                  />
+                  <Legend />
+                  <Line 
+                    yAxisId="left"
+                    type="monotone" 
+                    dataKey="orders" 
+                    name="Orders" 
+                    stroke="hsl(var(--primary))" 
+                    activeDot={{ r: 8 }} 
+                    strokeWidth={2}
+                  />
+                  <Line 
+                    yAxisId="right"
+                    type="monotone" 
+                    dataKey="revenue" 
+                    name="Revenue" 
+                    stroke="#82ca9d" 
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="bg-background shadow-none">
                   <CardContent className="p-3">
@@ -1271,8 +1272,8 @@ export default function OrderManagement() {
                     </div>
                     <div className="mt-1 text-xl font-bold">{totalOrders}</div>
                     <div className="text-xs text-muted-foreground">+8% from last period</div>
-                  </CardContent>
-                </Card>
+          </CardContent>
+        </Card>
                 <Card className="bg-background shadow-none">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2">
@@ -1310,7 +1311,7 @@ export default function OrderManagement() {
             <TabsContent value="status" className="p-0 pt-0">
               <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card>
+        <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg font-medium">Order Status Distribution</CardTitle>
                     </CardHeader>
@@ -1601,59 +1602,429 @@ export default function OrderManagement() {
             
             {/* Processing Timeline Tab */}
             <TabsContent value="timeline" className="p-0 pt-0">
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={[
-                      { stage: 'Order Verification', hours: 1.2 },
-                      { stage: 'Payment Processing', hours: 0.4 },
-                      { stage: 'Inventory Allocation', hours: 0.8 },
-                      { stage: 'Picking & Packing', hours: 1.5 },
-                      { stage: 'Shipping Preparation', hours: 0.6 },
-                      { stage: 'Carrier Pickup', hours: 5.5 },
-                      { stage: 'In Transit', hours: 58.2 },
-                    ]}
-                    layout="vertical"
-                    margin={{ top: 20, right: 30, left: 150, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
-                    <YAxis dataKey="stage" type="category" width={140} className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
-                      formatter={(value) => [`${value} hours`, 'Duration']}
-                    />
-                    <Legend />
-                    <Bar dataKey="hours" name="Processing Time" fill="hsl(var(--primary))" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4">
-                <Card className="bg-background border-muted">
+              <div className="grid grid-cols-1 gap-6">
+                <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Critical Path Analysis</CardTitle>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-blue-500" />
+                          Order Processing Timeline
+                        </CardTitle>
+                        <CardDescription>Process efficiency analysis & optimization</CardDescription>
+                      </div>
+                      <Select defaultValue="avg">
+                        <SelectTrigger className="h-8 text-xs w-[120px]">
+                          <SelectValue placeholder="View Mode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="avg">Average Time</SelectItem>
+                          <SelectItem value="max">Peak Times</SelectItem>
+                          <SelectItem value="min">Optimal Times</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Total Processing Time (Average)</span>
-                        <span className="font-medium">8.5 hours</span>
+                  <CardContent className="pb-2">
+                    <div className="flex items-center mb-2 text-xs gap-4">
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                        <span>Optimal</span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Bottleneck Stage</span>
-                        <span className="font-medium text-amber-500">Picking & Packing</span>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                        <span>Warning</span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Optimization Potential</span>
-                        <span className="font-medium text-green-500">32%</span>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        <span>Critical</span>
+                      </div>
+                      <div className="ml-auto flex items-center">
+                        <span className="font-medium text-xs">Total: 68.2h</span>
                       </div>
                     </div>
+                    
+                    <div className="space-y-1">
+                      {[
+                        { 
+                          stage: 'Order Verification', 
+                          hours: 1.2, 
+                          target: 1.0,
+                          status: 'warning' as 'optimal' | 'warning' | 'critical',
+                          processRate: 92,
+                          nodeType: 'start' as 'start' | 'process' | 'bottleneck' | 'external',
+                          dependencies: [],
+                          sla: 1.0,
+                          description: 'Validation of order details and fraud check'
+                        },
+                        { 
+                          stage: 'Payment Processing', 
+                          hours: 0.4, 
+                          target: 0.5,
+                          status: 'optimal' as 'optimal' | 'warning' | 'critical',
+                          processRate: 98,
+                          nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
+                          dependencies: ['Order Verification'],
+                          sla: 0.5,
+                          description: 'Payment gateway processing and verification'
+                        },
+                        { 
+                          stage: 'Inventory Allocation', 
+                          hours: 0.8, 
+                          target: 1.0,
+                          status: 'optimal' as 'optimal' | 'warning' | 'critical',
+                          processRate: 95,
+                          nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
+                          dependencies: ['Payment Processing'],
+                          sla: 1.0,
+                          description: 'Reserved inventory assignment from available stock'
+                        },
+                        { 
+                          stage: 'Picking & Packing', 
+                          hours: 1.5, 
+                          target: 1.0,
+                          status: 'critical' as 'optimal' | 'warning' | 'critical',
+                          processRate: 75,
+                          nodeType: 'bottleneck' as 'start' | 'process' | 'bottleneck' | 'external',
+                          dependencies: ['Inventory Allocation'],
+                          sla: 1.0,
+                          description: 'Physical collection and packaging of items'
+                        },
+                        { 
+                          stage: 'Shipping Preparation', 
+                          hours: 0.6, 
+                          target: 0.5,
+                          status: 'warning' as 'optimal' | 'warning' | 'critical',
+                          processRate: 88,
+                          nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
+                          dependencies: ['Picking & Packing'],
+                          sla: 0.5,
+                          description: 'Label generation and carrier assignment'
+                        },
+                        { 
+                          stage: 'Carrier Pickup', 
+                          hours: 5.5, 
+                          target: 4.0,
+                          status: 'critical' as 'optimal' | 'warning' | 'critical',
+                          processRate: 65,
+                          nodeType: 'external' as 'start' | 'process' | 'bottleneck' | 'external',
+                          dependencies: ['Shipping Preparation'],
+                          sla: 4.0,
+                          description: 'Awaiting carrier collection from facility'
+                        },
+                        { 
+                          stage: 'In Transit', 
+                          hours: 58.2, 
+                          target: 60.0,
+                          status: 'optimal' as 'optimal' | 'warning' | 'critical',
+                          processRate: 97,
+                          nodeType: 'external' as 'start' | 'process' | 'bottleneck' | 'external',
+                          dependencies: ['Carrier Pickup'],
+                          sla: 72.0,
+                          description: 'Package en route to delivery destination'
+                        }
+                      ].map((item, index) => {
+                        // Calculate various metrics for visualization
+                        const statusColors: Record<'optimal' | 'warning' | 'critical', string> = {
+                          optimal: 'bg-emerald-500',
+                          warning: 'bg-amber-500',
+                          critical: 'bg-red-500'
+                        };
+                        
+                        const nodeIcons: Record<'start' | 'process' | 'bottleneck' | 'external', React.ReactNode> = {
+                          start: <CircleCheck className="h-3.5 w-3.5 text-blue-500" />,
+                          process: <ArrowBigRight className="h-3.5 w-3.5 text-indigo-500" />,
+                          bottleneck: <AlertTriangle className="h-3.5 w-3.5 text-red-500" />,
+                          external: <Globe className="h-3.5 w-3.5 text-purple-500" />
+                        };
+                        
+                        // Calculate width for Gantt-style bar
+                        const maxInternalHours = 10;
+                        const maxWidth = item.stage === 'In Transit' || item.stage === 'Carrier Pickup'
+                          ? `${Math.min(98, (item.hours / 60) * 100)}%`
+                          : `${Math.min(98, (item.hours / maxInternalHours) * 100)}%`;
+                        
+                        // Calculate efficiency color
+                        const efficiency = (item.target / item.hours) * 100;
+                        const efficiencyColor = 
+                          efficiency >= 95 ? 'text-emerald-500' :
+                          efficiency >= 80 ? 'text-amber-500' : 'text-red-500';
+                          
+                        return (
+                          <div key={item.stage} className="relative group">
+                            <div className="flex items-center h-10 rounded-md bg-card/60 hover:bg-card/80 transition-colors px-2">
+                              {/* Process node indicator */}
+                              <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${item.nodeType === 'bottleneck' ? 'bg-red-100/50' : 'bg-blue-100/50'}`}>
+                                {nodeIcons[item.nodeType]}
+                              </div>
+                              
+                              {/* Stage name */}
+                              <div className="ml-2 w-40 overflow-hidden">
+                                <div className="text-xs font-medium truncate">{item.stage}</div>
+                                <div className="text-xs text-muted-foreground truncate">{item.description}</div>
+                              </div>
+                              
+                              {/* Timeline bar visualization */}
+                              <div className="flex-1 mx-2">
+                                <div className="h-2.5 w-full bg-muted/30 rounded-sm overflow-hidden flex relative">
+                                  {/* Actual time */}
+                                  <div 
+                                    className={`h-full ${statusColors[item.status]} flex items-center rounded-sm`} 
+                                    style={{ width: maxWidth }}
+                                  ></div>
+                                  
+                                  {/* Target marker */}
+                                  <div 
+                                    className="absolute h-full w-0.5 bg-white z-10" 
+                                    style={{ 
+                                      left: `${Math.min(98, (item.target / (item.stage === 'In Transit' || item.stage === 'Carrier Pickup' ? 60 : maxInternalHours)) * 100)}%`,
+                                      boxShadow: '0 0 3px rgba(255,255,255,0.8)'
+                                    }}
+                                  ></div>
+                                </div>
+                              </div>
+                              
+                              {/* Metrics */}
+                              <div className="flex items-center gap-2 text-xs w-24 justify-end">
+                                <div className="flex flex-col items-end">
+                                  <div className="font-medium">{item.hours}h</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    SLA: {item.sla}h
+                                  </div>
+                                </div>
+                                <div 
+                                  className={`w-8 h-5 rounded-sm flex items-center justify-center text-white text-xs font-medium ${statusColors[item.status]}`}
+                                >
+                                  {item.processRate}%
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Connector line */}
+                            {index < 6 && (
+                              <div className="absolute left-3 top-10 w-0.5 h-2 bg-muted-foreground/30"></div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </CardContent>
+                  <CardFooter className="px-6 py-2 border-t border-border/30 mt-auto flex justify-between items-center">
+                    <div className="flex items-center gap-1 text-xs">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-muted-foreground">Last updated: Today, 14:32</span>
+                    </div>
+                    <Button variant="outline" size="sm" className="h-8 text-xs">
+                      <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                      Recalculate
+                    </Button>
+                  </CardFooter>
                 </Card>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Processing Stage Analysis</CardTitle>
+                      <CardDescription>Bottleneck identification and optimization</CardDescription>
+                    </CardHeader>
+                    <CardContent className="overflow-auto max-h-[calc(100%-3rem)]">
+                      <div className="space-y-4">
+                        <div>
+                          <div className="text-sm font-medium mb-1 flex items-center">
+                            <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
+                            Bottleneck Identification
+                          </div>
+                          <div className="bg-muted/20 rounded-md p-3 text-xs">
+                            <p className="mb-2">The <span className="font-medium text-amber-500">Picking & Packing</span> stage has been identified as the primary bottleneck in the order processing pipeline.</p>
+                            <div className="flex items-center mt-2">
+                              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-amber-500 rounded-full" style={{ width: '67%' }}></div>
+                              </div>
+                              <span className="ml-2 text-xs font-medium">67%</span>
+                            </div>
+                            <p className="mt-2 text-muted-foreground">Contributes to 67% of internal processing delays</p>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="text-sm font-medium mb-1 flex items-center">
+                            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+                            Optimization Recommendations
+                          </div>
+                          <div className="bg-muted/20 rounded-md p-3 space-y-3">
+                            <div className="flex items-start text-xs">
+                              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center mr-2 mt-0.5">
+                                <span className="font-bold text-blue-500">1</span>
+                              </div>
+                              <div>
+                                <p className="font-medium">Parallel Processing for Picking & Packing</p>
+                                <p className="text-muted-foreground">Implement zone-based picking with multiple packers working simultaneously. Expected time reduction: 40%.</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start text-xs">
+                              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mr-2 mt-0.5">
+                                <span className="font-bold text-green-500">2</span>
+                              </div>
+                              <div>
+                                <p className="font-medium">Optimize Carrier Pickup Window</p>
+                                <p className="text-muted-foreground">Reduce window by 2.5 hours by scheduling fixed pickup times. Coordination required with shipping partners.</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start text-xs">
+                              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center mr-2 mt-0.5">
+                                <span className="font-bold text-amber-500">3</span>
+                              </div>
+                              <div>
+                                <p className="font-medium">Automate Inventory Allocation</p>
+                                <p className="text-muted-foreground">Implement predictive modeling to pre-allocate inventory based on order patterns. Reduces manual intervention by 85%.</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start text-xs">
+                              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center mr-2 mt-0.5">
+                                <span className="font-bold text-purple-500">4</span>
+                              </div>
+                              <div>
+                                <p className="font-medium">Streamline Order Verification</p>
+                                <p className="text-muted-foreground">Replace manual verification with digital signature and automated fraud detection. Potential savings: 0.8 hours per order.</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Process Efficiency Metrics</CardTitle>
+                      <CardDescription className="text-sm">Current performance against SLA targets</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="text-sm font-medium">Overall Process Efficiency</div>
+                            <div className="text-sm font-semibold">68%</div>
+                          </div>
+                          <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-500 rounded-full" style={{ width: '68%' }}></div>
+                          </div>
+                          <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                            <span>0%</span>
+                            <span>Target: 85%</span>
+                            <span>100%</span>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <div className="text-sm font-medium mb-2">Internal Processing</div>
+                            <div className="flex justify-between items-center text-base">
+                              <span className="text-sm">Actual</span>
+                              <span className="font-medium">4.5 hours</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm text-muted-foreground mt-1">
+                              <span>Target</span>
+                              <span>4.0 hours</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="text-sm font-medium mb-2">External Processing</div>
+                            <div className="flex justify-between items-center text-base">
+                              <span className="text-sm">Actual</span>
+                              <span className="font-medium">63.7 hours</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm text-muted-foreground mt-1">
+                              <span>Target</span>
+                              <span>64.0 hours</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="text-sm font-medium mb-3">Stage Efficiency Breakdown</div>
+                          <div className="space-y-2.5">
+                            {[
+                              { stage: 'Order Verification', efficiency: 83 },
+                              { stage: 'Payment Processing', efficiency: 125 },
+                              { stage: 'Inventory Allocation', efficiency: 125 },
+                              { stage: 'Picking & Packing', efficiency: 67 },
+                              { stage: 'Shipping Preparation', efficiency: 83 },
+                            ].map(item => (
+                              <div key={item.stage} className="flex items-center">
+                                <div className="w-40 text-sm truncate">{item.stage}</div>
+                                <div className="flex-1 mx-3">
+                                  <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
+                                    <div 
+                                      className={`h-full rounded-full ${
+                                        item.efficiency >= 100 ? 'bg-emerald-500' : 
+                                        item.efficiency >= 80 ? 'bg-amber-500' : 'bg-red-500'
+                                      }`} 
+                                      style={{ width: `${Math.min(100, item.efficiency)}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                                <div className="text-sm w-10 text-right font-medium">
+                                  {item.efficiency}%
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm font-medium">Total Processing Time</span>
+                      </div>
+                      <div className="mt-1 text-xl font-bold">8.5 <span className="text-sm font-normal">hours</span></div>
+                      <div className="text-xs text-muted-foreground">Average from order to shipping</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        <span className="text-sm font-medium">Bottleneck Stage</span>
+                      </div>
+                      <div className="mt-1 text-xl font-bold">Picking & Packing</div>
+                      <div className="text-xs text-muted-foreground">1.5 hours (18% of total time)</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                        <span className="text-sm font-medium">Optimization Potential</span>
+                      </div>
+                      <div className="mt-1 text-xl font-bold">32%</div>
+                      <div className="text-xs text-muted-foreground">Est. time savings with optimizations</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-4 w-4 text-purple-500" />
+                        <span className="text-sm font-medium">Process Efficiency</span>
+                      </div>
+                      <div className="mt-1 text-xl font-bold">68%</div>
+                      <div className="text-xs text-muted-foreground">Based on industry benchmarks</div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
             
@@ -1728,7 +2099,7 @@ export default function OrderManagement() {
 
       {/* Advanced Analytics Section */}
       <Card className="mb-6">
-        <CardHeader>
+          <CardHeader>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <CardTitle>Order Performance Analytics</CardTitle>
@@ -1753,7 +2124,7 @@ export default function OrderManagement() {
                 <div className="flex items-center cursor-pointer">
                   <Clipboard className="h-3.5 w-3.5 mr-1" />
                   Export Data
-                </div>
+              </div>
               </Button>
             </div>
           </div>
@@ -1854,8 +2225,8 @@ export default function OrderManagement() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Performance Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+          </CardHeader>
+          <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span>Delivery Efficiency</span>
@@ -2222,25 +2593,25 @@ export default function OrderManagement() {
                     <CardDescription>Geographic breakdown of order volume</CardDescription>
                   </CardHeader>
                   <CardContent className="px-2">
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={[
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
                               { name: 'Northeast', value: 42 },
                               { name: 'Southeast', value: 18 },
                               { name: 'Midwest', value: 15 },
                               { name: 'Southwest', value: 12 },
                               { name: 'West', value: 13 },
-                            ]}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          >
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
                             {[
                               { name: 'Northeast', value: 42 },
                               { name: 'Southeast', value: 18 },
@@ -2248,32 +2619,32 @@ export default function OrderManagement() {
                               { name: 'Southwest', value: 12 },
                               { name: 'West', value: 13 },
                             ].map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip 
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
                             formatter={(value) => [`${value}%`, 'Order Volume']}
-                            contentStyle={{ 
+                    contentStyle={{
                               background: 'hsl(var(--card))', 
                               borderColor: 'hsl(var(--border))' 
-                            }} 
-                          />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                          </div>
-                  </CardContent>
-                </Card>
-                
+                    }}
+                  />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
                 <Card>
-                  <CardHeader>
+        <CardHeader>
                     <CardTitle>Regional Growth Trends</CardTitle>
                     <CardDescription>YoY growth by geographical area</CardDescription>
-                  </CardHeader>
+        </CardHeader>
                   <CardContent className="px-2">
                     <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
                           data={[
                             { region: 'Northeast', growth: 8 },
                             { region: 'Southeast', growth: 12 },
@@ -2282,30 +2653,30 @@ export default function OrderManagement() {
                             { region: 'West', growth: 15 },
                           ]}
                           margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              >
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                           <XAxis dataKey="region" className="text-xs" />
-                          <YAxis 
-                            className="text-xs" 
+                <YAxis 
+                  className="text-xs" 
                             tickFormatter={(value) => `${value}%`}
-                          />
-                          <Tooltip
+                />
+                <Tooltip 
                             formatter={(value) => [`${value}%`, 'Growth Rate']}
-                            contentStyle={{ 
+                  contentStyle={{
                               background: 'hsl(var(--card))', 
                               borderColor: 'hsl(var(--border))' 
-                            }}
-                          />
-                          <Legend />
+                  }}
+                />
+                <Legend />
                           <Bar dataKey="growth" name="YoY Growth" fill="hsl(var(--primary))" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                            </div>
-                  </CardContent>
-                </Card>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
                           </div>
               
-              <Card>
+          <Card>
                 <CardHeader>
                   <CardTitle>Regional Performance Metrics</CardTitle>
                   <CardDescription>Detailed order and fulfillment statistics by region</CardDescription>
@@ -2319,7 +2690,7 @@ export default function OrderManagement() {
                       <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Fulfillment Rate</div>
                       <div className="py-2 px-4 border-r font-medium text-xs w-1/6">Delivery Time</div>
                       <div className="py-2 px-4 font-medium text-xs w-1/6">Return Rate</div>
-                        </div>
+                </div>
                   </div>
                   <div className="divide-y">
                     <div className="flex">
@@ -2329,7 +2700,7 @@ export default function OrderManagement() {
                       <div className="py-2 px-4 border-r text-xs w-1/6 text-green-500">98.4%</div>
                       <div className="py-2 px-4 border-r text-xs w-1/6">2.8 days</div>
                       <div className="py-2 px-4 text-xs w-1/6">3.2%</div>
-                    </div>
+                </div>
                     <div className="flex">
                       <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">Southeast</div>
                       <div className="py-2 px-4 border-r text-xs w-1/6">1,932</div>
@@ -2337,7 +2708,7 @@ export default function OrderManagement() {
                       <div className="py-2 px-4 border-r text-xs w-1/6 text-amber-500">92.1%</div>
                       <div className="py-2 px-4 border-r text-xs w-1/6">3.5 days</div>
                       <div className="py-2 px-4 text-xs w-1/6">4.1%</div>
-                    </div>
+              </div>
                     <div className="flex">
                       <div className="py-2 px-4 border-r text-xs w-1/6 font-medium">Midwest</div>
                       <div className="py-2 px-4 border-r text-xs w-1/6">1,614</div>
@@ -2409,7 +2780,7 @@ export default function OrderManagement() {
                   <CardHeader>
                     <CardTitle>Anomaly Distribution</CardTitle>
                     <CardDescription>Types of anomalies detected in the system</CardDescription>
-                  </CardHeader>
+            </CardHeader>
                   <CardContent className="px-2">
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
@@ -2451,7 +2822,7 @@ export default function OrderManagement() {
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
-                  </CardContent>
+            </CardContent>
                 </Card>
                 
                 <Card>
@@ -2488,12 +2859,12 @@ export default function OrderManagement() {
                           <Line type="monotone" dataKey="resolved" name="Resolved" stroke="#22c55e" strokeWidth={2} />
                         </LineChart>
                       </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
-              
-              <Card>
+                  </CardContent>
+          </Card>
+              </div>
+        
+          <Card>
                 <CardHeader>
                   <CardTitle>Active Anomalies</CardTitle>
                   <CardDescription>Current anomalies requiring attention</CardDescription>
@@ -2606,14 +2977,14 @@ export default function OrderManagement() {
               {/* System Performance Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                 <div className="space-y-4">
-                  <div>
+                <div>
                     <div className="flex justify-between items-center mb-1">
                       <div className="text-sm font-medium">Order API Response Time</div>
                       <div className="text-sm text-green-500 font-medium">178ms</div>
-                    </div>
+                </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div className="bg-green-500 h-full rounded-full" style={{ width: '23%' }}></div>
-                    </div>
+              </div>
                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
                       <div>Target: &lt;250ms</div>
                       <div>P95: 212ms</div>
@@ -2750,7 +3121,7 @@ export default function OrderManagement() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">System Resource Utilization</CardTitle>
                     <CardDescription>CPU, Memory and Network metrics over time</CardDescription>
-                  </CardHeader>
+            </CardHeader>
                   <CardContent className="px-2">
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
@@ -2777,7 +3148,7 @@ export default function OrderManagement() {
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
-                  </CardContent>
+            </CardContent>
                 </Card>
                 
                 <Card>
@@ -2814,19 +3185,19 @@ export default function OrderManagement() {
                           <Line yAxisId="right" type="monotone" dataKey="latency" name="Latency (ms)" stroke="#ef4444" strokeWidth={2} />
                         </BarChart>
                       </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
-              
+                  </CardContent>
+          </Card>
+              </div>
+        
               {/* System Logs Table */}
-              <Card>
-                <CardHeader className="pb-2">
+          <Card>
+            <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <div>
+                <div>
                       <CardTitle className="text-base">Technical Performance Logs</CardTitle>
                       <CardDescription>Recent system events and performance metrics</CardDescription>
-                    </div>
+                </div>
                     <Select defaultValue="realtime">
                       <SelectTrigger className="w-[140px] h-8">
                         <SelectValue placeholder="Update frequency" />
@@ -2838,8 +3209,8 @@ export default function OrderManagement() {
                         <SelectItem value="15min">15 minutes</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                </CardHeader>
+              </div>
+            </CardHeader>
                 <CardContent className="px-0">
                   <div className="border-b">
                     <div className="flex">
@@ -2848,7 +3219,7 @@ export default function OrderManagement() {
                       <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Metric</div>
                       <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Value</div>
                       <div className="py-2 px-4 font-medium text-xs w-1/5">Status</div>
-                    </div>
+              </div>
                   </div>
                   <div className="divide-y">
                     <div className="flex">
@@ -2888,8 +3259,8 @@ export default function OrderManagement() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            </TabsContent>
+          </Card>
+        </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
@@ -2900,7 +3271,7 @@ export default function OrderManagement() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Card>
+          <Card>
           <CardHeader>
             <CardTitle>Weekly Order Trends</CardTitle>
             <CardDescription>4-week comparison with year-over-year growth</CardDescription>
@@ -3017,17 +3388,17 @@ export default function OrderManagement() {
       <Card className="mb-6">
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-            <div>
+                <div>
               <CardTitle>Order Risk Management</CardTitle>
               <CardDescription>Monitor and address potential order issues</CardDescription>
-                      </div>
+                </div>
             <Button variant="outline" size="sm">
               <AlertTriangle className="h-4 w-4 mr-2" />
               View All Alerts
             </Button>
-                  </div>
-        </CardHeader>
-        <CardContent>
+              </div>
+            </CardHeader>
+            <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
@@ -3102,282 +3473,8 @@ export default function OrderManagement() {
               </TableRow>
             </TableBody>
           </Table>
-                </CardContent>
-              </Card>
-              
-      {/* Order Processing Flow Diagram */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-            <div>
-              <CardTitle>Order Processing Pipeline</CardTitle>
-              <CardDescription>Technical flow of orders through system components</CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              View Service Topology
-            </Button>
-          </div>
-                </CardHeader>
-                <CardContent>
-          <div className="overflow-x-auto">
-            <div className="min-w-[800px] py-4">
-              {/* Flow Diagram - This would use a proper flow diagram library in a real implementation */}
-              <div className="flex justify-between items-center">
-                {/* Web/Mobile Clients */}
-                <div className="flex flex-col items-center">
-                  <div className="w-24 h-20 border rounded bg-blue-50 flex flex-col items-center justify-center">
-                    <div className="text-xs font-medium text-center">Web / Mobile Clients</div>
-                    <div className="text-[10px] text-muted-foreground mt-1">42 req/sec</div>
-                    </div>
-                  <div className="text-[10px] text-green-500 mt-1">98.7% uptime</div>
-                    </div>
-                
-                {/* API Gateway */}
-                <div className="flex flex-col items-center">
-                  <div className="w-24 h-20 border rounded bg-purple-50 flex flex-col items-center justify-center">
-                    <div className="text-xs font-medium text-center">API Gateway</div>
-                    <div className="text-[10px] text-muted-foreground mt-1">178ms avg</div>
-                  </div>
-                  <div className="text-[10px] text-green-500 mt-1">99.9% uptime</div>
-                </div>
-                
-                {/* Order Service */}
-                <div className="flex flex-col items-center">
-                  <div className="w-24 h-20 border rounded bg-orange-50 flex flex-col items-center justify-center">
-                    <div className="text-xs font-medium text-center">Order Service</div>
-                    <div className="text-[10px] text-muted-foreground mt-1">356ms avg</div>
-                  </div>
-                  <div className="text-[10px] text-amber-500 mt-1">97.8% uptime</div>
-                </div>
-                
-                {/* Payment Service */}
-                <div className="flex flex-col items-center">
-                  <div className="w-24 h-20 border rounded bg-green-50 flex flex-col items-center justify-center">
-                    <div className="text-xs font-medium text-center">Payment Service</div>
-                    <div className="text-[10px] text-muted-foreground mt-1">422ms avg</div>
-                  </div>
-                  <div className="text-[10px] text-green-500 mt-1">99.2% uptime</div>
-                </div>
-                
-                {/* Inventory Service */}
-                <div className="flex flex-col items-center">
-                  <div className="w-24 h-20 border rounded bg-amber-50 flex flex-col items-center justify-center">
-                    <div className="text-xs font-medium text-center">Inventory Service</div>
-                    <div className="text-[10px] text-muted-foreground mt-1">245ms avg</div>
-                  </div>
-                  <div className="text-[10px] text-amber-500 mt-1">96.4% uptime</div>
-                </div>
-                
-                {/* Fulfillment Service */}
-                <div className="flex flex-col items-center">
-                  <div className="w-24 h-20 border rounded bg-blue-50 flex flex-col items-center justify-center">
-                    <div className="text-xs font-medium text-center">Fulfillment Service</div>
-                    <div className="text-[10px] text-muted-foreground mt-1">187ms avg</div>
-                  </div>
-                  <div className="text-[10px] text-green-500 mt-1">99.5% uptime</div>
-                </div>
-              </div>
-              
-              {/* Connector lines would be SVG paths in a real implementation */}
-              <div className="flex justify-between px-12 mt-6">
-                <div className="text-xs font-medium">Queue depths:</div>
-                <div className="flex gap-6">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-xs">Healthy (&lt;30)</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <span className="text-xs">Warning (30-100)</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-xs">Critical (&gt;100)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-4 p-3 bg-muted/30 rounded-md text-sm">
-            <div className="flex items-center text-amber-600 mb-2">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              <span className="font-medium">System Notifications</span>
-            </div>
-            <ul className="space-y-1 text-xs">
-              <li className="flex items-start">
-                <span className="text-amber-500 mr-2">⚠</span>
-                <span>Inventory Service experiencing higher than normal response times (245ms vs 180ms baseline)</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-amber-500 mr-2">⚠</span>
-                <span>Payment processing queue depth currently at 42 messages (threshold: 30)</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-2">ℹ</span>
-                <span>Scheduled maintenance for Order Service on 06/15 at 02:00 UTC (expected downtime: 15min)</span>
-              </li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Technical Data Drill-Down */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Order Processing Metrics</CardTitle>
-            <CardDescription>Detailed technical performance analysis</CardDescription>
-          </CardHeader>
-          <CardContent className="px-0">
-            <div className="border-b">
-              <div className="flex">
-                <div className="py-2 px-4 border-r font-medium text-xs w-1/3">Metric</div>
-                <div className="py-2 px-4 border-r font-medium text-xs w-1/3">Current</div>
-                <div className="py-2 px-4 font-medium text-xs w-1/3">Threshold</div>
-              </div>
-            </div>
-            <div className="divide-y">
-              <div className="flex">
-                <div className="py-2 px-4 border-r text-xs w-1/3">API requests/sec</div>
-                <div className="py-2 px-4 border-r text-xs w-1/3 text-green-500">42.8</div>
-                <div className="py-2 px-4 text-xs w-1/3 text-muted-foreground">&lt;100</div>
-              </div>
-              <div className="flex">
-                <div className="py-2 px-4 border-r text-xs w-1/3">DB transactions/sec</div>
-                <div className="py-2 px-4 border-r text-xs w-1/3 text-green-500">186.2</div>
-                <div className="py-2 px-4 text-xs w-1/3 text-muted-foreground">&lt;250</div>
-              </div>
-              <div className="flex">
-                <div className="py-2 px-4 border-r text-xs w-1/3">Order creation latency</div>
-                <div className="py-2 px-4 border-r text-xs w-1/3 text-green-500">287ms</div>
-                <div className="py-2 px-4 text-xs w-1/3 text-muted-foreground">&lt;500ms</div>
-              </div>
-              <div className="flex">
-                <div className="py-2 px-4 border-r text-xs w-1/3">Payment processing time</div>
-                <div className="py-2 px-4 border-r text-xs w-1/3 text-amber-500">1.24s</div>
-                <div className="py-2 px-4 text-xs w-1/3 text-muted-foreground">&lt;1s</div>
-              </div>
-              <div className="flex">
-                <div className="py-2 px-4 border-r text-xs w-1/3">Order validation errors</div>
-                <div className="py-2 px-4 border-r text-xs w-1/3 text-green-500">0.8%</div>
-                <div className="py-2 px-4 text-xs w-1/3 text-muted-foreground">&lt;2%</div>
-              </div>
-              <div className="flex">
-                <div className="py-2 px-4 border-r text-xs w-1/3">Cache miss rate</div>
-                <div className="py-2 px-4 border-r text-xs w-1/3 text-green-500">5.2%</div>
-                <div className="py-2 px-4 text-xs w-1/3 text-muted-foreground">&lt;10%</div>
-              </div>
-              <div className="flex">
-                <div className="py-2 px-4 border-r text-xs w-1/3">Avg queue wait time</div>
-                <div className="py-2 px-4 border-r text-xs w-1/3 text-green-500">78ms</div>
-                <div className="py-2 px-4 text-xs w-1/3 text-muted-foreground">&lt;200ms</div>
-              </div>
-              <div className="flex">
-                <div className="py-2 px-4 border-r text-xs w-1/3">System CPU utilization</div>
-                <div className="py-2 px-4 border-r text-xs w-1/3 text-amber-500">72%</div>
-                <div className="py-2 px-4 text-xs w-1/3 text-muted-foreground">&lt;70%</div>
-              </div>
-            </div>
-            <div className="p-3 flex justify-center">
-              <Button variant="ghost" size="sm" className="text-xs">
-                View all metrics
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>API Error Analysis</CardTitle>
-            <CardDescription>Distribution of error types across services</CardDescription>
-          </CardHeader>
-          <CardContent className="px-2">
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { service: 'Order API', '4xx': 42, '5xx': 7 },
-                    { service: 'Payment API', '4xx': 28, '5xx': 5 },
-                    { service: 'Inventory API', '4xx': 18, '5xx': 12 },
-                    { service: 'Shipping API', '4xx': 15, '5xx': 3 },
-                    { service: 'Customer API', '4xx': 10, '5xx': 1 },
-                  ]}
-                  layout="vertical"
-                  margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    type="number" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    type="category"
-                    dataKey="service" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                    width={100}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="4xx" name="Client Errors" stackId="a" fill="#f59e0b" />
-                  <Bar dataKey="5xx" name="Server Errors" stackId="a" fill="#ef4444" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            
-            <div className="border rounded-md mt-4">
-              <div className="flex items-center p-2 border-b bg-muted/20">
-                <div className="font-medium text-xs">Top Error Types (Last 24 hours)</div>
-              </div>
-              <div className="p-2 space-y-2">
-                <div className="flex justify-between">
-                  <div className="text-xs flex items-center">
-                    <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                    Payment Validation Failure
-                  </div>
-                  <div className="text-xs font-medium">38%</div>
-                </div>
-                <div className="flex justify-between">
-                  <div className="text-xs flex items-center">
-                    <span className="inline-block w-3 h-3 bg-amber-500 rounded-full mr-2"></span>
-                    Inventory Not Available
-                  </div>
-                  <div className="text-xs font-medium">24%</div>
-                </div>
-                <div className="flex justify-between">
-                  <div className="text-xs flex items-center">
-                    <span className="inline-block w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
-                    Shipping Address Invalid
-                  </div>
-                  <div className="text-xs font-medium">18%</div>
-                </div>
-                <div className="flex justify-between">
-                  <div className="text-xs flex items-center">
-                    <span className="inline-block w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
-                    API Timeout
-                  </div>
-                  <div className="text-xs font-medium">12%</div>
-                </div>
-                <div className="flex justify-between">
-                  <div className="text-xs flex items-center">
-                    <span className="inline-block w-3 h-3 bg-gray-500 rounded-full mr-2"></span>
-                    Other
-                  </div>
-                  <div className="text-xs font-medium">8%</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
     </div>
   );
 }

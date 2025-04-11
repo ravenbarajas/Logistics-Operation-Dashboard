@@ -7,27 +7,24 @@ import {
   CardTitle,
   CardFooter
 } from "@/components/ui/card";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,59 +33,69 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { 
-  ShoppingCart, 
-  Search, 
-  MoreHorizontal, 
-  TrendingUp, 
-  Truck, 
-  Clock, 
-  Package,
-  DollarSign,
-  Calendar as CalendarIcon,
-  Plus,
-  RefreshCw,
-  AlertTriangle,
-  Clipboard,
-  Filter,
-  CheckCircle2,
-  XCircle,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  FileText,
-  Pencil,
-  Trash2,
-  FileEdit,
-  BarChartBig,
-  SendHorizonal,
-  ArrowDown,
-  ArrowUp,
-  ArrowBigRight,
-  CalendarDays,
-  CircleCheck,
-  Globe,
-  PieChart,
   Activity,
-  ArrowUpDown
+  AlertTriangle, 
+  ArrowBigRight,
+  ArrowDown, 
+  ArrowRight, 
+  ArrowUp, 
+  ArrowUpDown, 
+  BarChartBig,
+  Calendar, 
+  CalendarDays,
+  CheckCircle, 
+  CheckCircle2,
+  CircleCheck,
+  ChevronDown, 
+  ChevronLeft, 
+  ChevronRight, 
+  ChevronsLeft, 
+  ChevronsRight, 
+  Clipboard,
+  Clock, 
+  DollarSign,
+  Download, 
+  FileDown, 
+  FileEdit, 
+  FileText, 
+  Filter, 
+  Globe, 
+  Info, 
+  Layers, 
+  List, 
+  Menu, 
+  MoreHorizontal, 
+  Package,
+  Pencil,
+  PieChart, 
+  Plus, 
+  RefreshCw, 
+  Search,
+  SendHorizonal,
+  Settings, 
+  ShoppingCart,
+  SlidersHorizontal, 
+  Timer, 
+  Trash2,
+  Truck,
+  TrendingUp,
+  UserPlus,
+  XCircle
 } from "lucide-react";
 import {
-  BarChart,
-  Bar,
   LineChart,
   Line,
+  BarChart,
+  Bar,
+  PieChart as RechartsPieChart,
+  Pie,
+  ResponsiveContainer,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  PieChart as RechartsPieChart,
-  Pie,
   Cell,
   AreaChart,
   Area,
@@ -103,11 +110,6 @@ import {
   ComposedChart,
   ReferenceLine
 } from 'recharts';
-import {
-  Tooltip as RechartsTooltip,
-  Legend as RechartsLegend,
-  BarChart as RechartsBarChart
-} from "recharts";
 import { OrderPerformanceMonitor } from "@/components/orders/OrderPerformanceMonitor";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -1623,6 +1625,90 @@ export default function OrderManagement() {
   );
   const totalRegionalPages = Math.ceil(filteredRegionalData.length / regionalPageSize);
 
+  // Anomalies table state
+  const [anomaliesData, setAnomaliesData] = useState<Anomaly[]>(anomaliesData);
+  const [filteredAnomalies, setFilteredAnomalies] = useState<Anomaly[]>(anomaliesData);
+  const [anomaliesSearchTerm, setAnomaliesSearchTerm] = useState("");
+  const [anomaliesSeverityFilter, setAnomaliesSeverityFilter] = useState("all");
+  const [anomaliesStatusFilter, setAnomaliesStatusFilter] = useState("all");
+  const [anomaliesTypeFilter, setAnomaliesTypeFilter] = useState("all");
+  const [anomaliesCurrentPage, setAnomaliesCurrentPage] = useState(1);
+  const [anomaliesPageSize, setAnomaliesPageSize] = useState(5);
+  const [anomaliesSortField, setAnomaliesSortField] = useState<keyof Anomaly>("id");
+  const [anomaliesSortDirection, setAnomaliesSortDirection] = useState<"asc" | "desc">("desc");
+
+  // Add useEffect for filtering anomalies data
+  useEffect(() => {
+    const filtered = anomaliesData.filter(item => {
+      // Apply search filter
+      const matchesSearch = anomaliesSearchTerm === "" || 
+        item.description.toLowerCase().includes(anomaliesSearchTerm.toLowerCase()) ||
+        item.id.toLowerCase().includes(anomaliesSearchTerm.toLowerCase()) ||
+        item.type.toLowerCase().includes(anomaliesSearchTerm.toLowerCase());
+      
+      // Apply severity filter
+      const matchesSeverity = anomaliesSeverityFilter === "all" || item.severity === anomaliesSeverityFilter;
+      
+      // Apply status filter
+      const matchesStatus = anomaliesStatusFilter === "all" || item.status === anomaliesStatusFilter;
+      
+      // Apply type filter
+      const matchesType = anomaliesTypeFilter === "all" || item.type === anomaliesTypeFilter;
+      
+      return matchesSearch && matchesSeverity && matchesStatus && matchesType;
+    });
+    
+    // Apply sorting
+    const sortedData = [...filtered].sort((a, b) => {
+      let aValue = a[anomaliesSortField];
+      let bValue = b[anomaliesSortField];
+      
+      // Special case for numeric sorting
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return anomaliesSortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // String sorting
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return anomaliesSortDirection === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      
+      return 0;
+    });
+    
+    setFilteredAnomaliesData(sortedData);
+    setAnomaliesCurrentPage(1); // Reset to first page when filters change
+  }, [anomaliesData, anomaliesSearchTerm, anomaliesSeverityFilter, anomaliesStatusFilter, anomaliesTypeFilter, anomaliesSortField, anomaliesSortDirection]);
+
+  // Pagination handlers for anomalies table
+  const handleAnomaliesPageChange = (page: number) => {
+    setAnomaliesCurrentPage(page);
+  };
+  
+  const handleAnomaliesPageSizeChange = (size: number) => {
+    setAnomaliesPageSize(size);
+    setAnomaliesCurrentPage(1);
+  };
+  
+  // Sort handler for anomalies table
+  const handleAnomaliesSort = (field: keyof Anomaly) => {
+    if (anomaliesSortField === field) {
+      setAnomaliesSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setAnomaliesSortField(field);
+      setAnomaliesSortDirection('asc');
+    }
+  };
+  
+  // Calculate pagination values for anomalies table
+  const paginatedAnomaliesData = filteredAnomaliesData.slice(
+    (anomaliesCurrentPage - 1) * anomaliesPageSize, 
+    anomaliesCurrentPage * anomaliesPageSize
+  );
+  const totalAnomaliesPages = Math.ceil(filteredAnomaliesData.length / anomaliesPageSize);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -1713,20 +1799,20 @@ export default function OrderManagement() {
             <div>
               <CardTitle>Order Analytics Dashboard</CardTitle>
               <CardDescription>Key metrics and performance indicators for orders</CardDescription>
-              </div>
+            </div>
             
             {/* Filtering options */}
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" className="h-8">
-                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                <Calendar className="h-3.5 w-3.5 mr-1" />
                 Last 7 Days
               </Button>
               <Button variant="outline" size="sm" className="h-8">
-                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                <Calendar className="h-3.5 w-3.5 mr-1" />
                 Last 30 Days
               </Button>
               <Button variant="outline" size="sm" className="h-8">
-                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                <Calendar className="h-3.5 w-3.5 mr-1" />
                 Last Quarter
               </Button>
               <Button variant="outline" size="sm" className="h-8" asChild>
@@ -3046,11 +3132,11 @@ export default function OrderManagement() {
             {/* Filtering options */}
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" className="h-8">
-                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                <Calendar className="h-3.5 w-3.5 mr-1" />
                 Last 7 Days
               </Button>
               <Button variant="outline" size="sm" className="h-8">
-                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                <Calendar className="h-3.5 w-3.5 mr-1" />
                 Last 30 Days
               </Button>
               <Button variant="outline" size="sm" className="h-8">
@@ -3927,7 +4013,7 @@ export default function OrderManagement() {
                                   {complianceSortField === 'id' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                  </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -3938,7 +4024,7 @@ export default function OrderManagement() {
                                   {complianceSortField === 'shippingMethod' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -3949,7 +4035,7 @@ export default function OrderManagement() {
                                   {complianceSortField === 'priority' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                               <th className="py-3 px-4 text-left font-medium">Target Time</th>
                               <th className="py-3 px-4 text-left font-medium">Actual Time</th>
@@ -3962,7 +4048,7 @@ export default function OrderManagement() {
                                   {complianceSortField === 'varianceValue' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -3973,7 +4059,7 @@ export default function OrderManagement() {
                                   {complianceSortField === 'compliance' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                             </tr>
                           </thead>
@@ -4039,7 +4125,7 @@ export default function OrderManagement() {
                             })}
                           </tbody>
                         </table>
-                    </div>
+                      </div>
                       
                       {/* Pagination */}
                       {totalCompliancePages > 1 && (
@@ -4047,7 +4133,7 @@ export default function OrderManagement() {
                           <div className="flex items-center justify-between py-4 px-6">
                             <div className="flex-1 text-sm text-muted-foreground">
                               Showing {Math.min((complianceCurrentPage - 1) * compliancePageSize + 1, filteredComplianceData.length)} to {Math.min(complianceCurrentPage * compliancePageSize, filteredComplianceData.length)} of {filteredComplianceData.length} items
-                  </div>
+                            </div>
                             
                             <div className="flex-1 flex justify-center">
                               <div className="flex items-center gap-1">
@@ -4182,7 +4268,7 @@ export default function OrderManagement() {
                     </div>
                   )}
                 </CardContent>
-                </Card>
+              </Card>
             </TabsContent>
             
             {/* Performance Analysis Tab */}
@@ -4361,7 +4447,7 @@ export default function OrderManagement() {
                       <p className="text-sm text-muted-foreground text-center mb-4">
                         Try adjusting your search filters to find what you're looking for.
                       </p>
-                </div>
+                    </div>
                   ) : (
                     <div>
                       <div className="overflow-auto">
@@ -4377,7 +4463,7 @@ export default function OrderManagement() {
                                   {regionalSortField === 'region' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                  </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -4388,7 +4474,7 @@ export default function OrderManagement() {
                                   {regionalSortField === 'orderVolume' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -4399,7 +4485,7 @@ export default function OrderManagement() {
                                   {regionalSortField === 'avgOrderValue' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-              </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -4410,7 +4496,7 @@ export default function OrderManagement() {
                                   {regionalSortField === 'fulfillmentRate' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -4421,7 +4507,7 @@ export default function OrderManagement() {
                                   {regionalSortField === 'deliveryTime' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -4432,7 +4518,7 @@ export default function OrderManagement() {
                                   {regionalSortField === 'returnRate' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -4443,7 +4529,7 @@ export default function OrderManagement() {
                                   {regionalSortField === 'yoyGrowth' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
@@ -4664,8 +4750,8 @@ export default function OrderManagement() {
                       )}
                     </div>
                   )}
-                  </CardContent>
-                </Card>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Anomalies Detection Tab */}
@@ -4874,41 +4960,68 @@ export default function OrderManagement() {
           <Card>
                 <CardHeader>
                   <CardTitle>Active Anomalies</CardTitle>
-                  <CardDescription>Detailed order and fulfillment statistics by region</CardDescription>
+                  <CardDescription>Current anomalies requiring attention</CardDescription>
                 
                   <div className="flex flex-wrap items-center gap-3 pt-4">
                     <div className="relative w-full md:w-auto flex-1 max-w-sm">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="text"
-                        placeholder="Search regions..."
-                        value={regionalSearchTerm}
-                        onChange={(e) => setRegionalSearchTerm(e.target.value)}
+                        placeholder="Search anomalies..."
+                        value={anomaliesSearchTerm}
+                        onChange={(e) => setAnomaliesSearchTerm(e.target.value)}
                         className="pl-8 w-full h-9"
                       />
                     </div>
                     
-                    <Select defaultValue={regionalStatusFilter} onValueChange={setRegionalStatusFilter}>
+                    <Select defaultValue={anomaliesSeverityFilter} onValueChange={setAnomaliesSeverityFilter}>
+                      <SelectTrigger className="w-[150px] h-9">
+                        <SelectValue placeholder="Filter by severity" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Severities</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select defaultValue={anomaliesStatusFilter} onValueChange={setAnomaliesStatusFilter}>
                       <SelectTrigger className="w-[150px] h-9">
                         <SelectValue placeholder="Filter by status" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="optimal">Optimal</SelectItem>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="warning">Warning</SelectItem>
-                        <SelectItem value="critical">Critical</SelectItem>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Investigating">Investigating</SelectItem>
+                        <SelectItem value="Resolved">Resolved</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select defaultValue={anomaliesTypeFilter} onValueChange={setAnomaliesTypeFilter}>
+                      <SelectTrigger className="w-[180px] h-9">
+                        <SelectValue placeholder="Filter by type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="Payment Failure">Payment Failure</SelectItem>
+                        <SelectItem value="Processing Delay">Processing Delay</SelectItem>
+                        <SelectItem value="Inventory Mismatch">Inventory Mismatch</SelectItem>
+                        <SelectItem value="Shipping Exception">Shipping Exception</SelectItem>
+                        <SelectItem value="API Error">API Error</SelectItem>
+                        <SelectItem value="Database Timeout">Database Timeout</SelectItem>
+                        <SelectItem value="Security Alert">Security Alert</SelectItem>
                       </SelectContent>
                     </Select>
                     
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
                       <Select
-                        value={regionalPageSize.toString()}
-                        onValueChange={(size) => handleRegionalPageSizeChange(Number(size))}
+                        value={anomaliesPageSize.toString()}
+                        onValueChange={(size) => handleAnomaliesPageSizeChange(Number(size))}
                       >
                         <SelectTrigger className="h-9 w-[70px]">
-                          <SelectValue placeholder={regionalPageSize.toString()} />
+                          <SelectValue placeholder={anomaliesPageSize.toString()} />
                         </SelectTrigger>
                         <SelectContent>
                           {[5, 10, 25, 50].map((size) => (
@@ -4920,21 +5033,21 @@ export default function OrderManagement() {
                       </Select>
                     </div>
                     
-                    <Button variant="outline" className="h-9 ml-auto" onClick={() => setRegionalData(regionalPerformanceData)}>
+                    <Button variant="outline" className="h-9 ml-auto" onClick={() => setAnomaliesData(anomalies)}>
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Refresh
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                  {filteredRegionalData.length === 0 ? (
+                  {filteredAnomaliesData.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 p-6">
-                      <Globe className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                      <h3 className="text-lg font-medium text-center mb-2">No regions found</h3>
+                      <AlertTriangle className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                      <h3 className="text-lg font-medium text-center mb-2">No anomalies found</h3>
                       <p className="text-sm text-muted-foreground text-center mb-4">
                         Try adjusting your search filters to find what you're looking for.
                       </p>
-                </div>
+                    </div>
                   ) : (
                     <div>
                       <div className="overflow-auto">
@@ -4943,175 +5056,184 @@ export default function OrderManagement() {
                             <tr>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('region')}
+                                onClick={() => handleAnomaliesSort('id')}
                               >
                                 <div className="flex items-center">
-                                  Region
-                                  {regionalSortField === 'region' && (
+                                  ID
+                                  {anomaliesSortField === 'id' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-              </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('orderVolume')}
+                                onClick={() => handleAnomaliesSort('description')}
                               >
                                 <div className="flex items-center">
-                                  Order Volume
-                                  {regionalSortField === 'orderVolume' && (
+                                  Description
+                                  {anomaliesSortField === 'description' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                      </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('avgOrderValue')}
+                                onClick={() => handleAnomaliesSort('type')}
                               >
                                 <div className="flex items-center">
-                                  Avg Order Value
-                                  {regionalSortField === 'avgOrderValue' && (
+                                  Type
+                                  {anomaliesSortField === 'type' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('fulfillmentRate')}
+                                onClick={() => handleAnomaliesSort('detectedAt')}
                               >
                                 <div className="flex items-center">
-                                  Fulfillment Rate
-                                  {regionalSortField === 'fulfillmentRate' && (
+                                  Detected
+                                  {anomaliesSortField === 'detectedAt' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                      </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('deliveryTime')}
+                                onClick={() => handleAnomaliesSort('severity')}
                               >
                                 <div className="flex items-center">
-                                  Delivery Time
-                                  {regionalSortField === 'deliveryTime' && (
+                                  Severity
+                                  {anomaliesSortField === 'severity' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('returnRate')}
+                                onClick={() => handleAnomaliesSort('affectedOrders')}
                               >
                                 <div className="flex items-center">
-                                  Return Rate
-                                  {regionalSortField === 'returnRate' && (
+                                  Affected Orders
+                                  {anomaliesSortField === 'affectedOrders' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                      </div>
+                                </div>
                               </th>
                               <th 
                                 className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('yoyGrowth')}
+                                onClick={() => handleAnomaliesSort('status')}
                               >
                                 <div className="flex items-center">
-                                  YoY Growth
-                                  {regionalSortField === 'yoyGrowth' && (
+                                  Status
+                                  {anomaliesSortField === 'status' && (
                                     <ArrowUpDown className="ml-2 h-4 w-4" />
                                   )}
-                    </div>
+                                </div>
                               </th>
-                              <th 
-                                className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('customerSatisfaction')}
-                              >
-                                <div className="flex items-center">
-                                  CSAT
-                                  {regionalSortField === 'customerSatisfaction' && (
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                  )}
-                      </div>
-                              </th>
-                              <th className="py-3 px-4 text-left font-medium">Status</th>
+                              <th className="py-3 px-4 text-left font-medium">Impact</th>
+                              <th className="py-3 px-4 text-right font-medium">Actions</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
-                            {paginatedRegionalData.map((item) => {
-                              const statusColor = 
-                                item.status === 'optimal' ? 'text-green-500' :
-                                item.status === 'good' ? 'text-blue-500' :
-                                item.status === 'warning' ? 'text-amber-500' :
-                                'text-red-500';
+                            {paginatedAnomaliesData.map((item) => {
+                              const severityColor = 
+                                item.severity === 'High' ? 'text-red-500' :
+                                item.severity === 'Medium' ? 'text-amber-500' :
+                                'text-blue-500';
+                              
+                              const severityBadgeColor = 
+                                item.severity === 'High' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                item.severity === 'Medium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                'bg-blue-500/10 text-blue-500 border-blue-500/20';
                               
                               const statusBadgeColor = 
-                                item.status === 'optimal' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                                item.status === 'good' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                item.status === 'warning' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                                'bg-red-500/10 text-red-500 border-red-500/20';
+                                item.status === 'Active' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                item.status === 'Investigating' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                'bg-green-500/10 text-green-500 border-green-500/20';
                               
                               return (
                                 <tr key={item.id} className="hover:bg-muted/50">
                                   <td className="py-3 px-4 text-sm font-medium">
-                                    {item.region}
+                                    {item.id}
                                   </td>
                                   <td className="py-3 px-4 text-sm">
-                                    {item.orderVolume.toLocaleString()}
+                                    {item.description}
                                   </td>
                                   <td className="py-3 px-4 text-sm">
-                                    ${item.avgOrderValue.toFixed(2)}
+                                    {item.type}
                                   </td>
                                   <td className="py-3 px-4 text-sm">
-                                    <span className={item.fulfillmentRate >= 95 ? 'text-green-500' : 
-                                      item.fulfillmentRate >= 90 ? 'text-blue-500' : 'text-amber-500'}>
-                                      {item.fulfillmentRate}%
-                                    </span>
+                                    {item.detectedAt}
                                   </td>
                                   <td className="py-3 px-4 text-sm">
-                                    {item.deliveryTime} days
+                                    <Badge className={severityBadgeColor}>
+                                      {item.severity}
+                                    </Badge>
                                   </td>
                                   <td className="py-3 px-4 text-sm">
-                                    <span className={item.returnRate <= 3 ? 'text-green-500' : 
-                                      item.returnRate <= 4 ? 'text-blue-500' : 'text-amber-500'}>
-                                      {item.returnRate}%
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    <span className={item.yoyGrowth >= 15 ? 'text-green-500' : 
-                                      item.yoyGrowth >= 10 ? 'text-blue-500' : 
-                                      item.yoyGrowth >= 5 ? 'text-amber-500' : 'text-red-500'}>
-                                      {item.yoyGrowth}%
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    <span className={item.customerSatisfaction >= 90 ? 'text-green-500' : 
-                                      item.customerSatisfaction >= 85 ? 'text-blue-500' : 'text-amber-500'}>
-                                      {item.customerSatisfaction}
-                                    </span>
+                                    {item.affectedOrders}
                                   </td>
                                   <td className="py-3 px-4 text-sm">
                                     <Badge className={statusBadgeColor}>
-                                      {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                                      {item.status}
                                     </Badge>
+                                  </td>
+                                  <td className="py-3 px-4 text-sm">
+                                    {item.impact}
+                                  </td>
+                                  <td className="py-3 px-4 text-right">
+                                    <div className="flex items-center justify-end space-x-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        title="View Details"
+                                      >
+                                        <FileText className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        title="Investigate"
+                                      >
+                                        <FileEdit className="h-4 w-4" />
+                                      </Button>
+                                      {item.status !== 'Resolved' && (
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="h-8 w-8 text-green-500 hover:text-green-500"
+                                          title="Mark as Resolved"
+                                        >
+                                          <CheckCircle2 className="h-4 w-4" />
+                                        </Button>
+                                      )}
+                                    </div>
                                   </td>
                                 </tr>
                               );
                             })}
                           </tbody>
                         </table>
-                    </div>
+                      </div>
                       
                       {/* Pagination */}
-                      {totalRegionalPages > 1 && (
+                      {totalAnomaliesPages > 1 && (
                         <div className="border-t">
                           <div className="flex items-center justify-between py-4 px-6">
                             <div className="flex-1 text-sm text-muted-foreground">
-                              Showing {Math.min((regionalCurrentPage - 1) * regionalPageSize + 1, filteredRegionalData.length)} to {Math.min(regionalCurrentPage * regionalPageSize, filteredRegionalData.length)} of {filteredRegionalData.length} regions
-                      </div>
+                              Showing {Math.min((anomaliesCurrentPage - 1) * anomaliesPageSize + 1, filteredAnomaliesData.length)} to {Math.min(anomaliesCurrentPage * anomaliesPageSize, filteredAnomaliesData.length)} of {filteredAnomaliesData.length} anomalies
+                            </div>
                             
                             <div className="flex-1 flex justify-center">
                               <div className="flex items-center gap-1">
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => handleRegionalPageChange(1)}
-                                  disabled={regionalCurrentPage === 1}
+                                  onClick={() => handleAnomaliesPageChange(1)}
+                                  disabled={anomaliesCurrentPage === 1}
                                   className="h-8 w-8"
                                   aria-label="First page"
                                 >
@@ -5120,25 +5242,25 @@ export default function OrderManagement() {
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => handleRegionalPageChange(regionalCurrentPage - 1)}
-                                  disabled={regionalCurrentPage === 1}
+                                  onClick={() => handleAnomaliesPageChange(anomaliesCurrentPage - 1)}
+                                  disabled={anomaliesCurrentPage === 1}
                                   className="h-8 w-8"
                                   aria-label="Previous page"
                                 >
                                   <ChevronLeft className="h-4 w-4" />
                                 </Button>
                                 
-                                {totalRegionalPages <= 5 ? (
+                                {totalAnomaliesPages <= 5 ? (
                                   // Show all pages if 5 or fewer
-                                  [...Array(totalRegionalPages)].map((_, i) => (
+                                  [...Array(totalAnomaliesPages)].map((_, i) => (
                                     <Button
-                                      key={`regional-page-${i+1}`}
-                                      variant={regionalCurrentPage === i+1 ? "default" : "outline"}
+                                      key={`anomalies-page-${i+1}`}
+                                      variant={anomaliesCurrentPage === i+1 ? "default" : "outline"}
                                       size="icon"
-                                      onClick={() => handleRegionalPageChange(i+1)}
+                                      onClick={() => handleAnomaliesPageChange(i+1)}
                                       className="h-8 w-8"
                                       aria-label={`Page ${i+1}`}
-                                      aria-current={regionalCurrentPage === i+1 ? "page" : undefined}
+                                      aria-current={anomaliesCurrentPage === i+1 ? "page" : undefined}
                                     >
                                       {i+1}
                                     </Button>
@@ -5147,63 +5269,63 @@ export default function OrderManagement() {
                                   // Show limited pages with ellipsis for better navigation
                                   <>
                                     <Button
-                                      variant={regionalCurrentPage === 1 ? "default" : "outline"}
+                                      variant={anomaliesCurrentPage === 1 ? "default" : "outline"}
                                       size="icon"
-                                      onClick={() => handleRegionalPageChange(1)}
+                                      onClick={() => handleAnomaliesPageChange(1)}
                                       className="h-8 w-8"
                                       aria-label="Page 1"
                                     >
                                       1
                                     </Button>
                                     
-                                    {regionalCurrentPage > 3 && <span className="mx-1">...</span>}
+                                    {anomaliesCurrentPage > 3 && <span className="mx-1">...</span>}
                                     
-                                    {regionalCurrentPage > 2 && (
+                                    {anomaliesCurrentPage > 2 && (
                                       <Button
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => handleRegionalPageChange(regionalCurrentPage - 1)}
+                                        onClick={() => handleAnomaliesPageChange(anomaliesCurrentPage - 1)}
                                         className="h-8 w-8"
-                                        aria-label={`Page ${regionalCurrentPage - 1}`}
+                                        aria-label={`Page ${anomaliesCurrentPage - 1}`}
                                       >
-                                        {regionalCurrentPage - 1}
+                                        {anomaliesCurrentPage - 1}
                                       </Button>
                                     )}
                                     
-                                    {regionalCurrentPage !== 1 && regionalCurrentPage !== totalRegionalPages && (
+                                    {anomaliesCurrentPage !== 1 && anomaliesCurrentPage !== totalAnomaliesPages && (
                                       <Button
                                         variant="default"
                                         size="icon"
                                         className="h-8 w-8"
-                                        aria-label={`Page ${regionalCurrentPage}`}
+                                        aria-label={`Page ${anomaliesCurrentPage}`}
                                         aria-current="page"
                                       >
-                                        {regionalCurrentPage}
+                                        {anomaliesCurrentPage}
                                       </Button>
                                     )}
                                     
-                                    {regionalCurrentPage < totalRegionalPages - 1 && (
+                                    {anomaliesCurrentPage < totalAnomaliesPages - 1 && (
                                       <Button
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => handleRegionalPageChange(regionalCurrentPage + 1)}
+                                        onClick={() => handleAnomaliesPageChange(anomaliesCurrentPage + 1)}
                                         className="h-8 w-8"
-                                        aria-label={`Page ${regionalCurrentPage + 1}`}
+                                        aria-label={`Page ${anomaliesCurrentPage + 1}`}
                                       >
-                                        {regionalCurrentPage + 1}
+                                        {anomaliesCurrentPage + 1}
                                       </Button>
                                     )}
                                     
-                                    {regionalCurrentPage < totalRegionalPages - 2 && <span className="mx-1">...</span>}
+                                    {anomaliesCurrentPage < totalAnomaliesPages - 2 && <span className="mx-1">...</span>}
                                     
                                     <Button
-                                      variant={regionalCurrentPage === totalRegionalPages ? "default" : "outline"}
+                                      variant={anomaliesCurrentPage === totalAnomaliesPages ? "default" : "outline"}
                                       size="icon"
-                                      onClick={() => handleRegionalPageChange(totalRegionalPages)}
+                                      onClick={() => handleAnomaliesPageChange(totalAnomaliesPages)}
                                       className="h-8 w-8"
-                                      aria-label={`Page ${totalRegionalPages}`}
+                                      aria-label={`Page ${totalAnomaliesPages}`}
                                     >
-                                      {totalRegionalPages}
+                                      {totalAnomaliesPages}
                                     </Button>
                                   </>
                                 )}
@@ -5228,8 +5350,8 @@ export default function OrderManagement() {
                                 >
                                   <ChevronsRight className="h-4 w-4" />
                                 </Button>
-                    </div>
-                  </div>
+                              </div>
+                            </div>
                             
                             <div className="flex-1"></div>
                           </div>

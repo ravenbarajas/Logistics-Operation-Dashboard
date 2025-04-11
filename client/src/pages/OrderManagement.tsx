@@ -112,6 +112,12 @@ import { OrderPerformanceMonitor } from "@/components/orders/OrderPerformanceMon
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+// Add the import for the new AnomalyDetection component
+import AnomalyDetection from '@/components/orders/AnomalyDetection';
+
+// Import the TechnicalPerformance component
+import TechnicalPerformance from '@/components/orders/TechnicalPerformanceLogs';
+
 // Define order type
 interface Order {
   id: string;
@@ -4704,7 +4710,6 @@ export default function OrderManagement() {
                   </CardContent>
                 </Card>
               </div>
-              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <Card>
                   <CardHeader>
@@ -4868,383 +4873,15 @@ export default function OrderManagement() {
                       </ResponsiveContainer>
               </div>
                   </CardContent>
-          </Card>
+                </Card>
               </div>
-        
-          <Card>
-                <CardHeader>
-                  <CardTitle>Active Anomalies</CardTitle>
-                  <CardDescription>Detailed order and fulfillment statistics by region</CardDescription>
-                
-                  <div className="flex flex-wrap items-center gap-3 pt-4">
-                    <div className="relative w-full md:w-auto flex-1 max-w-sm">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        placeholder="Search regions..."
-                        value={regionalSearchTerm}
-                        onChange={(e) => setRegionalSearchTerm(e.target.value)}
-                        className="pl-8 w-full h-9"
-                      />
-                    </div>
-                    
-                    <Select defaultValue={regionalStatusFilter} onValueChange={setRegionalStatusFilter}>
-                      <SelectTrigger className="w-[150px] h-9">
-                        <SelectValue placeholder="Filter by status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="optimal">Optimal</SelectItem>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="warning">Warning</SelectItem>
-                        <SelectItem value="critical">Critical</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
-                      <Select
-                        value={regionalPageSize.toString()}
-                        onValueChange={(size) => handleRegionalPageSizeChange(Number(size))}
-                      >
-                        <SelectTrigger className="h-9 w-[70px]">
-                          <SelectValue placeholder={regionalPageSize.toString()} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[5, 10, 25, 50].map((size) => (
-                            <SelectItem key={size} value={size.toString()}>
-                              {size}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <Button variant="outline" className="h-9 ml-auto" onClick={() => setRegionalData(regionalPerformanceData)}>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  {filteredRegionalData.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64 p-6">
-                      <Globe className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                      <h3 className="text-lg font-medium text-center mb-2">No regions found</h3>
-                      <p className="text-sm text-muted-foreground text-center mb-4">
-                        Try adjusting your search filters to find what you're looking for.
-                      </p>
-                </div>
-                  ) : (
-                    <div>
-                      <div className="overflow-auto">
-                        <table className="w-full">
-                          <thead className="bg-muted/50 text-sm">
-                            <tr>
-                              <th 
-                                className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('region')}
-                              >
-                                <div className="flex items-center">
-                                  Region
-                                  {regionalSortField === 'region' && (
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                  )}
-              </div>
-                              </th>
-                              <th 
-                                className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('orderVolume')}
-                              >
-                                <div className="flex items-center">
-                                  Order Volume
-                                  {regionalSortField === 'orderVolume' && (
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                  )}
-                      </div>
-                              </th>
-                              <th 
-                                className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('avgOrderValue')}
-                              >
-                                <div className="flex items-center">
-                                  Avg Order Value
-                                  {regionalSortField === 'avgOrderValue' && (
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                  )}
-                    </div>
-                              </th>
-                              <th 
-                                className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('fulfillmentRate')}
-                              >
-                                <div className="flex items-center">
-                                  Fulfillment Rate
-                                  {regionalSortField === 'fulfillmentRate' && (
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                  )}
-                      </div>
-                              </th>
-                              <th 
-                                className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('deliveryTime')}
-                              >
-                                <div className="flex items-center">
-                                  Delivery Time
-                                  {regionalSortField === 'deliveryTime' && (
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                  )}
-                    </div>
-                              </th>
-                              <th 
-                                className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('returnRate')}
-                              >
-                                <div className="flex items-center">
-                                  Return Rate
-                                  {regionalSortField === 'returnRate' && (
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                  )}
-                      </div>
-                              </th>
-                              <th 
-                                className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('yoyGrowth')}
-                              >
-                                <div className="flex items-center">
-                                  YoY Growth
-                                  {regionalSortField === 'yoyGrowth' && (
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                  )}
-                    </div>
-                              </th>
-                              <th 
-                                className="py-3 px-4 text-left font-medium cursor-pointer"
-                                onClick={() => handleRegionalSort('customerSatisfaction')}
-                              >
-                                <div className="flex items-center">
-                                  CSAT
-                                  {regionalSortField === 'customerSatisfaction' && (
-                                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                                  )}
-                      </div>
-                              </th>
-                              <th className="py-3 px-4 text-left font-medium">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y">
-                            {paginatedRegionalData.map((item) => {
-                              const statusColor = 
-                                item.status === 'optimal' ? 'text-green-500' :
-                                item.status === 'good' ? 'text-blue-500' :
-                                item.status === 'warning' ? 'text-amber-500' :
-                                'text-red-500';
-                              
-                              const statusBadgeColor = 
-                                item.status === 'optimal' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                                item.status === 'good' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                item.status === 'warning' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                                'bg-red-500/10 text-red-500 border-red-500/20';
-                              
-                              return (
-                                <tr key={item.id} className="hover:bg-muted/50">
-                                  <td className="py-3 px-4 text-sm font-medium">
-                                    {item.region}
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    {item.orderVolume.toLocaleString()}
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    ${item.avgOrderValue.toFixed(2)}
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    <span className={item.fulfillmentRate >= 95 ? 'text-green-500' : 
-                                      item.fulfillmentRate >= 90 ? 'text-blue-500' : 'text-amber-500'}>
-                                      {item.fulfillmentRate}%
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    {item.deliveryTime} days
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    <span className={item.returnRate <= 3 ? 'text-green-500' : 
-                                      item.returnRate <= 4 ? 'text-blue-500' : 'text-amber-500'}>
-                                      {item.returnRate}%
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    <span className={item.yoyGrowth >= 15 ? 'text-green-500' : 
-                                      item.yoyGrowth >= 10 ? 'text-blue-500' : 
-                                      item.yoyGrowth >= 5 ? 'text-amber-500' : 'text-red-500'}>
-                                      {item.yoyGrowth}%
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    <span className={item.customerSatisfaction >= 90 ? 'text-green-500' : 
-                                      item.customerSatisfaction >= 85 ? 'text-blue-500' : 'text-amber-500'}>
-                                      {item.customerSatisfaction}
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4 text-sm">
-                                    <Badge className={statusBadgeColor}>
-                                      {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                                    </Badge>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                    </div>
-                      
-                      {/* Pagination */}
-                      {totalRegionalPages > 1 && (
-                        <div className="border-t">
-                          <div className="flex items-center justify-between py-4 px-6">
-                            <div className="flex-1 text-sm text-muted-foreground">
-                              Showing {Math.min((regionalCurrentPage - 1) * regionalPageSize + 1, filteredRegionalData.length)} to {Math.min(regionalCurrentPage * regionalPageSize, filteredRegionalData.length)} of {filteredRegionalData.length} regions
-                      </div>
-                            
-                            <div className="flex-1 flex justify-center">
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => handleRegionalPageChange(1)}
-                                  disabled={regionalCurrentPage === 1}
-                                  className="h-8 w-8"
-                                  aria-label="First page"
-                                >
-                                  <ChevronsLeft className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => handleRegionalPageChange(regionalCurrentPage - 1)}
-                                  disabled={regionalCurrentPage === 1}
-                                  className="h-8 w-8"
-                                  aria-label="Previous page"
-                                >
-                                  <ChevronLeft className="h-4 w-4" />
-                                </Button>
-                                
-                                {totalRegionalPages <= 5 ? (
-                                  // Show all pages if 5 or fewer
-                                  [...Array(totalRegionalPages)].map((_, i) => (
-                                    <Button
-                                      key={`regional-page-${i+1}`}
-                                      variant={regionalCurrentPage === i+1 ? "default" : "outline"}
-                                      size="icon"
-                                      onClick={() => handleRegionalPageChange(i+1)}
-                                      className="h-8 w-8"
-                                      aria-label={`Page ${i+1}`}
-                                      aria-current={regionalCurrentPage === i+1 ? "page" : undefined}
-                                    >
-                                      {i+1}
-                                    </Button>
-                                  ))
-                                ) : (
-                                  // Show limited pages with ellipsis for better navigation
-                                  <>
-                                    <Button
-                                      variant={regionalCurrentPage === 1 ? "default" : "outline"}
-                                      size="icon"
-                                      onClick={() => handleRegionalPageChange(1)}
-                                      className="h-8 w-8"
-                                      aria-label="Page 1"
-                                    >
-                                      1
-                                    </Button>
-                                    
-                                    {regionalCurrentPage > 3 && <span className="mx-1">...</span>}
-                                    
-                                    {regionalCurrentPage > 2 && (
-                                      <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => handleRegionalPageChange(regionalCurrentPage - 1)}
-                                        className="h-8 w-8"
-                                        aria-label={`Page ${regionalCurrentPage - 1}`}
-                                      >
-                                        {regionalCurrentPage - 1}
-                                      </Button>
-                                    )}
-                                    
-                                    {regionalCurrentPage !== 1 && regionalCurrentPage !== totalRegionalPages && (
-                                      <Button
-                                        variant="default"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        aria-label={`Page ${regionalCurrentPage}`}
-                                        aria-current="page"
-                                      >
-                                        {regionalCurrentPage}
-                                      </Button>
-                                    )}
-                                    
-                                    {regionalCurrentPage < totalRegionalPages - 1 && (
-                                      <Button
-                                        variant="outline"
-                                        size="icon"
-                                        onClick={() => handleRegionalPageChange(regionalCurrentPage + 1)}
-                                        className="h-8 w-8"
-                                        aria-label={`Page ${regionalCurrentPage + 1}`}
-                                      >
-                                        {regionalCurrentPage + 1}
-                                      </Button>
-                                    )}
-                                    
-                                    {regionalCurrentPage < totalRegionalPages - 2 && <span className="mx-1">...</span>}
-                                    
-                                    <Button
-                                      variant={regionalCurrentPage === totalRegionalPages ? "default" : "outline"}
-                                      size="icon"
-                                      onClick={() => handleRegionalPageChange(totalRegionalPages)}
-                                      className="h-8 w-8"
-                                      aria-label={`Page ${totalRegionalPages}`}
-                                    >
-                                      {totalRegionalPages}
-                                    </Button>
-                                  </>
-                                )}
-                                
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => handleRegionalPageChange(regionalCurrentPage + 1)}
-                                  disabled={regionalCurrentPage === totalRegionalPages}
-                                  className="h-8 w-8"
-                                  aria-label="Next page"
-                                >
-                                  <ChevronRight className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => handleRegionalPageChange(totalRegionalPages)}
-                                  disabled={regionalCurrentPage === totalRegionalPages}
-                                  className="h-8 w-8"
-                                  aria-label="Last page"
-                                >
-                                  <ChevronsRight className="h-4 w-4" />
-                                </Button>
-                    </div>
-                  </div>
-                            
-                            <div className="flex-1"></div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <AnomalyDetection />
             </TabsContent>
-            
+
             {/* Technical Performance Tab */}
             <TabsContent value="technical" className="p-0">
-              {/* Technical Metrics Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+               {/* Technical Metrics Summary */}
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <Card className="bg-background shadow-none">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2">
@@ -5419,250 +5056,84 @@ export default function OrderManagement() {
                   </div>
                 </div>
               </div>
-              
               {/* Charts Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">System Resource Utilization</CardTitle>
-            </CardHeader>
-                  <CardContent className="px-2">
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                          data={[
-                            { time: '00:00', cpu: 42, memory: 35, network: 15 },
-                            { time: '04:00', cpu: 28, memory: 32, network: 13 },
-                            { time: '08:00', cpu: 55, memory: 40, network: 25 },
-                            { time: '12:00', cpu: 78, memory: 52, network: 38 },
-                            { time: '16:00', cpu: 82, memory: 58, network: 42 },
-                            { time: '20:00', cpu: 65, memory: 45, network: 32 },
-                            { time: '24:00', cpu: 45, memory: 38, network: 20 },
-                          ]}
-                          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis dataKey="time" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
-                          <YAxis className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
-                          <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
-                          <Legend />
-                          <Line type="monotone" dataKey="cpu" name="CPU %" stroke="#3b82f6" strokeWidth={2} />
-                          <Line type="monotone" dataKey="memory" name="Memory %" stroke="#10b981" strokeWidth={2} />
-                          <Line type="monotone" dataKey="network" name="Network Mb/s" stroke="#f59e0b" strokeWidth={2} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-            </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">API Request Distribution</CardTitle>
-                    <CardDescription>Endpoint performance metrics</CardDescription>
-                  </CardHeader>
-                  <CardContent className="px-2">
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={[
-                            { endpoint: '/orders/create', requests: 1250, latency: 145 },
-                            { endpoint: '/orders/update', requests: 830, latency: 132 },
-                            { endpoint: '/orders/status', requests: 2380, latency: 87 },
-                            { endpoint: '/orders/search', requests: 1890, latency: 220 },
-                            { endpoint: '/orders/metrics', requests: 560, latency: 175 },
-                          ]}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                          <XAxis 
-                            dataKey="endpoint" 
-                            className="text-xs" 
-                            tick={{fill: 'hsl(var(--foreground))'}}
-                            angle={-45}
-                            textAnchor="end"
-                          />
-                          <YAxis yAxisId="left" orientation="left" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
-                          <YAxis yAxisId="right" orientation="right" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
-                          <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
-                          <Legend />
-                          <Bar yAxisId="left" dataKey="requests" name="Request Count" fill="hsl(var(--primary))" />
-                          <Line yAxisId="right" type="monotone" dataKey="latency" name="Latency (ms)" stroke="#ef4444" strokeWidth={2} />
-                        </BarChart>
-                      </ResponsiveContainer>
-              </div>
-                  </CardContent>
-          </Card>
-              </div>
-        
-              {/* System Logs Table */}
-          <Card>
-            <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                <div>
-                      <CardTitle className="text-base">Technical Performance Logs</CardTitle>
-                      <CardDescription>Recent system events and performance metrics</CardDescription>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">System Resource Utilization</CardTitle>
+                    </CardHeader>
+                          <CardContent className="px-2">
+                            <div className="h-80">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                  data={[
+                                    { time: '00:00', cpu: 42, memory: 35, network: 15 },
+                                    { time: '04:00', cpu: 28, memory: 32, network: 13 },
+                                    { time: '08:00', cpu: 55, memory: 40, network: 25 },
+                                    { time: '12:00', cpu: 78, memory: 52, network: 38 },
+                                    { time: '16:00', cpu: 82, memory: 58, network: 42 },
+                                    { time: '20:00', cpu: 65, memory: 45, network: 32 },
+                                    { time: '24:00', cpu: 45, memory: 38, network: 20 },
+                                  ]}
+                                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                                >
+                                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                  <XAxis dataKey="time" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                                  <YAxis className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                                  <Legend />
+                                  <Line type="monotone" dataKey="cpu" name="CPU %" stroke="#3b82f6" strokeWidth={2} />
+                                  <Line type="monotone" dataKey="memory" name="Memory %" stroke="#10b981" strokeWidth={2} />
+                                  <Line type="monotone" dataKey="network" name="Network Mb/s" stroke="#f59e0b" strokeWidth={2} />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                    </CardContent>
+                  </Card>
+                        
+                  <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-base">API Request Distribution</CardTitle>
+                            <CardDescription>Endpoint performance metrics</CardDescription>
+                          </CardHeader>
+                          <CardContent className="px-2">
+                            <div className="h-80">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                  data={[
+                                    { endpoint: '/orders/create', requests: 1250, latency: 145 },
+                                    { endpoint: '/orders/update', requests: 830, latency: 132 },
+                                    { endpoint: '/orders/status', requests: 2380, latency: 87 },
+                                    { endpoint: '/orders/search', requests: 1890, latency: 220 },
+                                    { endpoint: '/orders/metrics', requests: 560, latency: 175 },
+                                  ]}
+                                  margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
+                                >
+                                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                                  <XAxis 
+                                    dataKey="endpoint" 
+                                    className="text-xs" 
+                                    tick={{fill: 'hsl(var(--foreground))'}}
+                                    angle={-45}
+                                    textAnchor="end"
+                                  />
+                                  <YAxis yAxisId="left" orientation="left" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                                  <YAxis yAxisId="right" orientation="right" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }} />
+                                  <Legend />
+                                  <Bar yAxisId="left" dataKey="requests" name="Request Count" fill="hsl(var(--primary))" />
+                                  <Line yAxisId="right" type="monotone" dataKey="latency" name="Latency (ms)" stroke="#ef4444" strokeWidth={2} />
+                                </BarChart>
+                              </ResponsiveContainer>
+                      </div>
+                          </CardContent>
+                  </Card>
                 </div>
-                    <Select defaultValue="realtime">
-                      <SelectTrigger className="w-[140px] h-8">
-                        <SelectValue placeholder="Update frequency" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="realtime">Real-time</SelectItem>
-                        <SelectItem value="1min">1 minute</SelectItem>
-                        <SelectItem value="5min">5 minutes</SelectItem>
-                        <SelectItem value="15min">15 minutes</SelectItem>
-                      </SelectContent>
-                    </Select>
-              </div>
-            </CardHeader>
-                <CardContent className="px-0">
-                  <div className="border-b">
-                    <div className="flex">
-                      <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Timestamp</div>
-                      <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Component</div>
-                      <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Metric</div>
-                      <div className="py-2 px-4 border-r font-medium text-xs w-1/5">Value</div>
-                      <div className="py-2 px-4 font-medium text-xs w-1/5">Status</div>
-              </div>
-                  </div>
-                  <div className="divide-y">
-                    <div className="flex">
-                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:42:18</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Order Processor</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Request Latency</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">132ms</div>
-                      <div className="py-2 px-4 text-xs w-1/5 text-green-500">Normal</div>
-                    </div>
-                    <div className="flex">
-                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:40:55</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Database</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Query Time</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">215ms</div>
-                      <div className="py-2 px-4 text-xs w-1/5 text-amber-500">Warning</div>
-                    </div>
-                    <div className="flex">
-                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:39:12</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Payment Gateway</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Response Time</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">1.2s</div>
-                      <div className="py-2 px-4 text-xs w-1/5 text-red-500">Critical</div>
-                    </div>
-                    <div className="flex">
-                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:38:45</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Inventory API</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Availability Check</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">87ms</div>
-                      <div className="py-2 px-4 text-xs w-1/5 text-green-500">Normal</div>
-                    </div>
-                    <div className="flex">
-                      <div className="py-2 px-4 border-r text-xs w-1/5">2024-04-22 10:37:22</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Shipping Calculator</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">Computation Time</div>
-                      <div className="py-2 px-4 border-r text-xs w-1/5">342ms</div>
-                      <div className="py-2 px-4 text-xs w-1/5 text-amber-500">Warning</div>
-                    </div>
-                  </div>
-                </CardContent>
-          </Card>
-        </TabsContent>
+              <TechnicalPerformance />
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* Order Issues and Alerts */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-                <div>
-              <CardTitle className="text-base flex items-center">
-                <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
-                Order Performance Issues
-              </CardTitle>
-              <CardDescription>Top areas requiring attention</CardDescription>
-                </div>
-            <Button variant="outline" size="sm">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              View All Alerts
-            </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Alert Type</TableHead>
-                <TableHead>Orders Affected</TableHead>
-                <TableHead>Risk Level</TableHead>
-                <TableHead>Impact</TableHead>
-                <TableHead>First Detected</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell>
-                  <div className="font-medium">Delayed Shipping</div>
-                  <div className="text-xs text-muted-foreground">Carrier delays in Midwest region</div>
-                </TableCell>
-                <TableCell>24 orders</TableCell>
-                <TableCell>
-                  <Badge variant="warning">Medium</Badge>
-                </TableCell>
-                <TableCell>1-2 day delay</TableCell>
-                <TableCell>8 hours ago</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm">Resolve</Button>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <div className="font-medium">Inventory Shortage</div>
-                  <div className="text-xs text-muted-foreground">SKU-78901 unavailable</div>
-                </TableCell>
-                <TableCell>7 orders</TableCell>
-                <TableCell>
-                  <Badge variant="destructive">High</Badge>
-                </TableCell>
-                <TableCell>Order fulfillment blocked</TableCell>
-                <TableCell>3 hours ago</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm">Resolve</Button>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <div className="font-medium">Payment Processing</div>
-                  <div className="text-xs text-muted-foreground">Gateway timeout errors</div>
-                </TableCell>
-                <TableCell>12 orders</TableCell>
-                <TableCell>
-                  <Badge variant="destructive">High</Badge>
-                </TableCell>
-                <TableCell>Order processing delayed</TableCell>
-                <TableCell>5 hours ago</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm">Resolve</Button>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <div className="font-medium">Address Validation</div>
-                  <div className="text-xs text-muted-foreground">Incomplete shipping information</div>
-                </TableCell>
-                <TableCell>3 orders</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">Low</Badge>
-                </TableCell>
-                <TableCell>Manual verification needed</TableCell>
-                <TableCell>1 day ago</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm">Resolve</Button>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-            </CardContent>
-          </Card>
     </div>
   );
 }

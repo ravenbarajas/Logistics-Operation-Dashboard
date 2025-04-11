@@ -596,35 +596,69 @@ export function OrderPerformanceMonitor({
                     <Scale className="h-5 w-5 mr-2 text-primary" />
                     Performance Metrics Details
                   </CardTitle>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-8 gap-1">
-                        <Filter className="h-4 w-4" />
-                        Filter
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setMetricFilter("all")}>
-                        All Metrics
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setMetricFilter("good")}>
-                        Good Status
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setMetricFilter("warning")}>
-                        Warning Status
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setMetricFilter("critical")}>
-                        Critical Status
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setMetricFilter("processing")}>
-                        Processing Metrics
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setMetricFilter("shipping")}>
-                        Shipping Metrics
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex gap-2 items-center">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8" 
+                      onClick={() => {
+                        const metricsDiv = document.querySelector('.metrics-scroll-container');
+                        if (metricsDiv) {
+                          console.log('Scrolling up', metricsDiv);
+                          metricsDiv.scrollBy({ top: -200, behavior: 'smooth' });
+                        } else {
+                          console.log('Scroll container not found');
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8" 
+                      onClick={() => {
+                        const metricsDiv = document.querySelector('.metrics-scroll-container');
+                        if (metricsDiv) {
+                          console.log('Scrolling down', metricsDiv);
+                          metricsDiv.scrollBy({ top: 200, behavior: 'smooth' });
+                        } else {
+                          console.log('Scroll container not found');
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-8 gap-1">
+                          <Filter className="h-4 w-4" />
+                          Filter
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setMetricFilter("all")}>
+                          All Metrics
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setMetricFilter("good")}>
+                          Good Status
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setMetricFilter("warning")}>
+                          Warning Status
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setMetricFilter("critical")}>
+                          Critical Status
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setMetricFilter("processing")}>
+                          Processing Metrics
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setMetricFilter("shipping")}>
+                          Shipping Metrics
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
                 <CardDescription>
                   {metricFilter === "all" 
@@ -633,32 +667,34 @@ export function OrderPerformanceMonitor({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4 max-h-64 overflow-auto pr-2">
+                <div id="metrics-container" className="space-y-4 relative">
                   {filteredMetrics.length > 0 ? (
-                    filteredMetrics.map((metric, index) => (
-                      <div 
-                        key={index} 
-                        className="flex flex-col space-y-2 pb-3 border-b border-border last:border-0 last:pb-0"
-                      >
-                        <div className="flex justify-between items-center">
-                          <div className="font-medium">{metric.name}</div>
-                          <Badge className={
-                            metric.status === 'good' ? 'bg-green-500' :
-                            metric.status === 'warning' ? 'bg-amber-500' :
-                            'bg-red-500'
-                          }>
-                            {metric.score}%
-                          </Badge>
+                    <div className="max-h-64 overflow-hidden pr-2 metrics-scroll-container">
+                      {filteredMetrics.map((metric, index) => (
+                        <div 
+                          key={index} 
+                          className="flex flex-col space-y-2 pb-3 border-b border-border last:border-0 last:pb-0"
+                        >
+                          <div className="flex justify-between items-center">
+                            <div className="font-medium">{metric.name}</div>
+                            <Badge className={
+                              metric.status === 'good' ? 'bg-green-500' :
+                              metric.status === 'warning' ? 'bg-amber-500' :
+                              'bg-red-500'
+                            }>
+                              {metric.score}%
+                            </Badge>
+                          </div>
+                          <Progress value={metric.score} className="h-2" />
+                          <div className="flex justify-between items-center text-xs text-muted-foreground">
+                            <span>Last checked: {metric.lastChecked.toLocaleDateString()}</span>
+                            {metric.nextCheck && (
+                              <span>Next check: {metric.nextCheck.toLocaleDateString()}</span>
+                            )}
+                          </div>
                         </div>
-                        <Progress value={metric.score} className="h-2" />
-                        <div className="flex justify-between items-center text-xs text-muted-foreground">
-                          <span>Last checked: {metric.lastChecked.toLocaleDateString()}</span>
-                          {metric.nextCheck && (
-                            <span>Next check: {metric.nextCheck.toLocaleDateString()}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   ) : (
                     <div className="text-center py-4 text-muted-foreground">
                       No metrics match the selected filter.

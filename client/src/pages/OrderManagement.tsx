@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Card, 
   CardContent, 
@@ -99,7 +99,9 @@ import {
   Scatter,
   ScatterChart,
   ZAxis,
-  ComposedChart
+  ComposedChart,
+  Reference,
+  ReferenceLine
 } from 'recharts';
 import {
   Tooltip as RechartsTooltip,
@@ -107,6 +109,8 @@ import {
   BarChart as RechartsBarChart
 } from "recharts";
 import { OrderPerformanceMonitor } from "@/components/orders/OrderPerformanceMonitor";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 // Define order type
 interface Order {
@@ -3107,48 +3111,18 @@ export default function OrderManagement() {
                     <CardDescription>Geographic breakdown of order volume</CardDescription>
                   </CardHeader>
                   <CardContent className="px-2">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[
-                              { name: 'Northeast', value: 42 },
-                              { name: 'Southeast', value: 18 },
-                              { name: 'Midwest', value: 15 },
-                              { name: 'Southwest', value: 12 },
-                              { name: 'West', value: 13 },
-                    ]}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                            {[
-                              { name: 'Northeast', value: 42 },
-                              { name: 'Southeast', value: 18 },
-                              { name: 'Midwest', value: 15 },
-                              { name: 'Southwest', value: 12 },
-                              { name: 'West', value: 13 },
-                            ].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                            formatter={(value) => [`${value}%`, 'Order Volume']}
-                    contentStyle={{
-                              background: 'hsl(var(--card))', 
-                              borderColor: 'hsl(var(--border))' 
-                    }}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+                    <OrderRegionalMap />
+                    <div className="grid grid-cols-5 gap-2 mt-4">
+                      {regionalOrderData.map((region) => (
+                        <div key={region.region} className="text-center">
+                          <div className="text-xs font-medium">{region.region}</div>
+                          <div className="text-sm font-bold">{region.orders.toLocaleString()}</div>
+                          <div className="text-xs text-muted-foreground">{region.percentage.toFixed(1)}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
 
                 <Card>
         <CardHeader>
@@ -3293,50 +3267,127 @@ export default function OrderManagement() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Anomaly Distribution</CardTitle>
-                    <CardDescription>Types of anomalies detected in the system</CardDescription>
-            </CardHeader>
+                    <CardDescription>Types and severity of detected anomalies with resolution metrics</CardDescription>
+                  </CardHeader>
                   <CardContent className="px-2">
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={[
-                              { name: 'Processing Delays', value: 35 },
-                              { name: 'Payment Failures', value: 25 },
-                              { name: 'Inventory Mismatches', value: 18 },
-                              { name: 'Shipping Exceptions', value: 15 },
-                              { name: 'API Errors', value: 7 },
-                            ]}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {[
-                              { name: 'Processing Delays', value: 35 },
-                              { name: 'Payment Failures', value: 25 },
-                              { name: 'Inventory Mismatches', value: 18 },
-                              { name: 'Shipping Exceptions', value: 15 },
-                              { name: 'API Errors', value: 7 },
-                            ].map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            formatter={(value) => [`${value}%`, 'Occurrence']}
-                            contentStyle={{ 
-                              background: 'hsl(var(--card))', 
-                              borderColor: 'hsl(var(--border))' 
-                            }} 
+                        <ComposedChart
+                          layout="vertical"
+                          data={[
+                            { type: 'Processing Delays', count: 35, severity: 7.5, resolution: 4.2, impact: 68 },
+                            { type: 'Payment Failures', count: 25, severity: 9.2, resolution: 8.5, impact: 92 },
+                            { type: 'Inventory Mismatches', count: 18, severity: 6.8, resolution: 3.8, impact: 75 },
+                            { type: 'Shipping Exceptions', count: 15, severity: 5.5, resolution: 5.2, impact: 58 },
+                            { type: 'API Errors', count: 7, severity: 8.7, resolution: 2.4, impact: 84 },
+                            { type: 'Database Timeouts', count: 4, severity: 9.0, resolution: 1.6, impact: 88 },
+                            { type: 'Security Alerts', count: 2, severity: 9.5, resolution: 0.8, impact: 95 },
+                          ]}
+                          margin={{ top: 20, right: 40, left: 120, bottom: 20 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis type="number" className="text-xs" tick={{fill: 'hsl(var(--foreground))'}} />
+                          <YAxis 
+                            dataKey="type" 
+                            type="category" 
+                            className="text-xs" 
+                            tick={{fill: 'hsl(var(--foreground))'}} 
+                            width={120}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              borderColor: 'hsl(var(--border))',
+                              color: 'hsl(var(--foreground))'
+                            }}
+                            formatter={(value, name) => {
+                              if (name === 'Severity') return [`${value}/10`, name];
+                              if (name === 'Count') return [value, 'Occurrences'];
+                              if (name === 'Resolution') return [`${value}h`, 'Avg. Resolution Time'];
+                              if (name === 'Impact') return [`${value}%`, 'Business Impact'];
+                              return [value, name];
+                            }}
                           />
                           <Legend />
-                        </PieChart>
+                          <Bar 
+                            dataKey="count" 
+                            name="Count" 
+                            fill="#3b82f6" 
+                            barSize={24}
+                            radius={[0, 4, 4, 0]}
+                          >
+                            {[
+                              { type: 'Processing Delays', count: 35, severity: 7.5, resolution: 4.2 },
+                              { type: 'Payment Failures', count: 25, severity: 9.2, resolution: 8.5 },
+                              { type: 'Inventory Mismatches', count: 18, severity: 6.8, resolution: 3.8 },
+                              { type: 'Shipping Exceptions', count: 15, severity: 5.5, resolution: 5.2 },
+                              { type: 'API Errors', count: 7, severity: 8.7, resolution: 2.4 },
+                              { type: 'Database Timeouts', count: 4, severity: 9.0, resolution: 1.6 },
+                              { type: 'Security Alerts', count: 2, severity: 9.5, resolution: 0.8 },
+                            ].map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={entry.severity > 8.5 ? '#ef4444' : entry.severity > 7 ? '#f97316' : '#3b82f6'} 
+                              />
+                            ))}
+                          </Bar>
+                          <Bar 
+                            dataKey="resolution" 
+                            name="Resolution Time (hours)" 
+                            fill="#8b5cf6" 
+                            barSize={12}
+                            radius={[0, 4, 4, 0]}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="severity"
+                            name="Severity"
+                            stroke="#f59e0b"
+                            strokeWidth={3}
+                            dot={{ r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 1 }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="impact"
+                            name="Business Impact %"
+                            stroke="#ef4444"
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                            dot={false}
+                          />
+                          <ReferenceLine 
+                            x={20} 
+                            stroke="#10b981" 
+                            strokeDasharray="3 3" 
+                            label={{ 
+                              value: "Attention Threshold", 
+                              position: "top", 
+                              fill: "#10b981", 
+                              fontSize: 11 
+                            }} 
+                          />
+                        </ComposedChart>
                       </ResponsiveContainer>
                     </div>
-            </CardContent>
+                    <div className="flex flex-wrap justify-between mt-2 text-xs text-muted-foreground">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
+                        <span>Critical (&gt;8.5)</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-orange-500 mr-1"></div>
+                        <span>High (7-8.5)</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 rounded-full bg-blue-500 mr-1"></div>
+                        <span>Medium (&lt;7)</span>
+                      </div>
+                      <div className="flex items-center ml-2">
+                        <AlertTriangle className="h-3 w-3 text-red-500 mr-1" />
+                        <span>3 Critical Severity Anomalies</span>
+                      </div>
+                    </div>
+                  </CardContent>
                 </Card>
                 
                 <Card>
@@ -3490,8 +3541,8 @@ export default function OrderManagement() {
               
               {/* System Performance Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-                <div className="space-y-4">
-                <div>
+                <div className="space-y-4 p-2">
+                  <div>
                     <div className="flex justify-between items-center mb-1">
                       <div className="text-sm font-medium">Order API Response Time</div>
                       <div className="text-sm text-green-500 font-medium">178ms</div>
@@ -3534,7 +3585,7 @@ export default function OrderManagement() {
                   </div>
                 </div>
                 
-                <div className="space-y-4">
+                <div className="space-y-4 p-2">
                   <div>
                     <div className="flex justify-between items-center mb-1">
                       <div className="text-sm font-medium">Cache Hit Ratio</div>
@@ -3634,7 +3685,6 @@ export default function OrderManagement() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">System Resource Utilization</CardTitle>
-                    <CardDescription>CPU, Memory and Network metrics over time</CardDescription>
             </CardHeader>
                   <CardContent className="px-2">
                     <div className="h-80">
@@ -3871,5 +3921,184 @@ export default function OrderManagement() {
             </CardContent>
           </Card>
     </div>
+  );
+}
+
+// Regional distribution data for the map
+const regionalOrderData = [
+  { region: "Northeast", orders: 4521, revenue: 985578, aov: 218, lat: 42.5, lng: -72, percentage: 42.1 },
+  { region: "Southeast", orders: 1932, revenue: 357420, aov: 185, lat: 33, lng: -84, percentage: 18.0 },
+  { region: "Midwest", orders: 1614, revenue: 330870, aov: 205, lat: 41.5, lng: -93, percentage: 15.0 },
+  { region: "Southwest", orders: 1291, revenue: 296930, aov: 230, lat: 32, lng: -106, percentage: 12.0 },
+  { region: "West", orders: 1398, revenue: 342510, aov: 245, lat: 37, lng: -122, percentage: 13.0 }
+];
+
+// The regional boundaries for overlay
+const regionBoundaries = {
+  Northeast: [
+    [47.4, -80.5],
+    [47.4, -66.9],
+    [37.2, -66.9],
+    [37.2, -80.5],
+  ],
+  Southeast: [
+    [37.2, -80.5],
+    [37.2, -76.0],
+    [24.5, -76.0],
+    [24.5, -96.0],
+    [30.5, -96.0],
+    [30.5, -87.6],
+    [35.0, -87.6],
+    [35.0, -80.5],
+  ],
+  Midwest: [
+    [49.4, -104.1],
+    [49.4, -80.5],
+    [37.2, -80.5],
+    [35.0, -87.6],
+    [35.0, -96.0],
+    [43.5, -96.0],
+    [43.5, -104.1],
+  ],
+  Southwest: [
+    [37.0, -96.0],
+    [30.5, -96.0],
+    [24.5, -96.0],
+    [24.5, -106.6],
+    [31.3, -114.8],
+    [37.0, -114.8],
+  ],
+  West: [
+    [49.4, -124.8],
+    [49.4, -104.1],
+    [43.5, -104.1],
+    [37.0, -114.8],
+    [31.3, -114.8],
+    [31.3, -124.8],
+  ]
+};
+
+function OrderRegionalMap() {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const leafletMap = useRef<L.Map | null>(null);
+  const markersRef = useRef<{[key: string]: L.Marker}>({});
+  const regionsRef = useRef<{[key: string]: L.Polygon}>({});
+
+  // Define colors for the regions
+  const regionColors = {
+    "Northeast": "#1e40af", // blue-800
+    "Southeast": "#3b82f6", // blue-500
+    "Midwest": "#60a5fa",   // blue-400
+    "Southwest": "#93c5fd", // blue-300
+    "West": "#3b82f6"       // blue-500
+  };
+
+  useEffect(() => {
+    // Initialize the map if it doesn't exist
+    if (!leafletMap.current && mapRef.current) {
+      // Create map centered on USA
+      leafletMap.current = L.map(mapRef.current).setView([39.8283, -98.5795], 4);
+
+      // Add the tile layer (OpenStreetMap)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(leafletMap.current);
+
+      // Update z-index for Leaflet containers
+      const leafletContainers = document.querySelectorAll('.leaflet-container');
+      leafletContainers.forEach(container => {
+        if (container instanceof HTMLElement) {
+          container.style.zIndex = '10';
+        }
+      });
+    }
+
+    // Clean up on component unmount
+    return () => {
+      if (leafletMap.current) {
+        leafletMap.current.remove();
+        leafletMap.current = null;
+      }
+    };
+  }, []);
+
+  // Add markers and polygons
+  useEffect(() => {
+    if (!leafletMap.current) return;
+    
+    const map = leafletMap.current;
+    
+    // Add region polygons
+    Object.entries(regionBoundaries).forEach(([region, coordinates]) => {
+      if (regionsRef.current[region]) {
+        map.removeLayer(regionsRef.current[region]);
+      }
+      
+      const polygonColor = regionColors[region as keyof typeof regionColors] || "#3b82f6";
+      
+      const polygon = L.polygon(coordinates as L.LatLngExpression[], {
+        color: polygonColor,
+        fillColor: polygonColor,
+        fillOpacity: 0.2,
+        weight: 2
+      }).addTo(map);
+      
+      regionsRef.current[region] = polygon;
+    });
+    
+    // Add markers for each region
+    regionalOrderData.forEach(regionData => {
+      const { region, orders, revenue, aov, lat, lng, percentage } = regionData;
+      
+      // Calculate marker size based on order volume
+      const markerSize = Math.max(30, Math.min(60, orders / 100));
+      const markerColor = regionColors[region as keyof typeof regionColors] || "#3b82f6";
+      
+      const markerIcon = L.divIcon({
+        className: 'custom-region-marker',
+        html: `
+          <div style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: ${markerColor};
+            color: white;
+            width: ${markerSize}px;
+            height: ${markerSize}px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.3);
+            font-weight: bold;
+            font-size: ${markerSize / 3}px;
+          ">${orders}</div>
+        `,
+        iconSize: [markerSize, markerSize],
+        iconAnchor: [markerSize/2, markerSize/2],
+      });
+      
+      if (markersRef.current[region]) {
+        map.removeLayer(markersRef.current[region]);
+      }
+      
+      const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(map);
+      
+      // Add popup with region info
+      marker.bindPopup(`
+        <div style="min-width: 150px;">
+          <strong>${region}</strong>
+          <div>Orders: ${orders.toLocaleString()}</div>
+          <div>Revenue: $${(revenue/1000).toFixed(1)}k</div>
+          <div>AOV: $${aov}</div>
+          <div>Share: ${percentage.toFixed(1)}%</div>
+        </div>
+      `);
+      
+      markersRef.current[region] = marker;
+    });
+    
+  }, []);
+
+  return (
+    <div ref={mapRef} style={{ height: "320px", width: "100%", zIndex: "10" }} className="rounded-md"></div>
   );
 }

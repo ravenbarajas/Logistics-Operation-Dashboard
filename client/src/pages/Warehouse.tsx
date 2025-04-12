@@ -550,11 +550,11 @@ export default function Warehouse() {
         </Card>
       </div>
       
-      <Tabs defaultValue="warehouses" className="space-y-6">
-        <TabsList className="mb-4">
+      {/* Warehouse Operations Section */}
+      <Tabs defaultValue="warehouses" className="mb-6 space-y-6">
+        <TabsList className="grid grid-cols-2 w-full md:w-auto">
           <TabsTrigger value="warehouses">Warehouses</TabsTrigger>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
-          <TabsTrigger value="operations">Operations</TabsTrigger>
         </TabsList>
         
         <TabsContent value="warehouses">
@@ -733,7 +733,7 @@ export default function Warehouse() {
             
             {/* Picking & Packing Tab */}
             <TabsContent value="picking" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-0 mb-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Picking Efficiency</CardTitle>
@@ -810,7 +810,7 @@ export default function Warehouse() {
                 </Card>
               </div>
               
-              <div className="px-4 pb-4">
+              <div className="pb-0">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Picking & Packing Performance</CardTitle>
@@ -862,7 +862,7 @@ export default function Warehouse() {
             
             {/* Space Utilization Tab */}
             <TabsContent value="space" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-0 mb-4">
                 <Card className="col-span-2">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Warehouse Space Utilization</CardTitle>
@@ -919,7 +919,7 @@ export default function Warehouse() {
                 </Card>
               </div>
               
-              <div className="px-4 pb-4">
+              <div className="pb-0">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Storage Area Heatmap</CardTitle>
@@ -973,7 +973,7 @@ export default function Warehouse() {
             
             {/* Workforce Tab */}
             <TabsContent value="workforce" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-0 mb-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Labor Efficiency</CardTitle>
@@ -1030,7 +1030,7 @@ export default function Warehouse() {
                 </Card>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0 mb-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Staff Productivity</CardTitle>
@@ -1093,7 +1093,7 @@ export default function Warehouse() {
                 </Card>
               </div>
               
-              <div className="px-4 pb-4">
+              <div className="pb-0">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Staff Performance Metrics</CardTitle>
@@ -1181,7 +1181,7 @@ export default function Warehouse() {
             
             {/* Safety & Compliance Tab */}
             <TabsContent value="safety" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-0 mb-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Safety Score</CardTitle>
@@ -1237,7 +1237,7 @@ export default function Warehouse() {
                 </Card>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0 mb-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Incident Types</CardTitle>
@@ -1306,7 +1306,7 @@ export default function Warehouse() {
                 </Card>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Compliance Audit Results</CardTitle>
@@ -1483,7 +1483,7 @@ export default function Warehouse() {
             
             {/* Operational KPIs Tab */}
             <TabsContent value="kpis" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-0 mb-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Order Fulfillment Rate</CardTitle>
@@ -1541,7 +1541,7 @@ export default function Warehouse() {
                 </Card>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">KPI Performance Trends</CardTitle>
@@ -1621,7 +1621,7 @@ export default function Warehouse() {
             
             {/* Cost Analysis Tab */}
             <TabsContent value="costs" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0 mb-4">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Cost Breakdown</CardTitle>
@@ -1682,7 +1682,7 @@ export default function Warehouse() {
                 </Card>
               </div>
               
-              <div className="px-4 pb-4">
+              <div className="pb-0">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Monthly Cost Breakdown</CardTitle>
@@ -1741,7 +1741,7 @@ export default function Warehouse() {
             
             {/* Trend Analysis Tab */}
             <TabsContent value="trends" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Inventory Turnover Trends</CardTitle>
@@ -1814,7 +1814,7 @@ export default function Warehouse() {
             
             {/* Custom Reports Tab */}
             <TabsContent value="reports" className="p-0">
-              <div className="p-4">
+              <div className="p-0">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">Report Builder</CardTitle>

@@ -123,12 +123,6 @@ import TechnicalPerformance from '@/components/orders/TechnicalPerformanceLogs';
 // Add import for OrderDetailsModal component
 import { OrderDetailsModal } from "@/components/orders/OrderDetailsModal";
 
-// Add import for OrderDetailsWrapper component
-import { OrderDetailsWrapper } from "@/components/orders/OrderDetailsWrapper";
-
-// Import the OrderFinancialAnalytics component
-import { OrderFinancialAnalytics } from "@/components/orders/OrderFinancialAnalytics";
-
 // Define order type
 interface Order {
   id: string;
@@ -1233,7 +1227,7 @@ export default function OrderManagement() {
                       <th className="py-3 px-4 text-left font-medium">Status</th>
                       <th className="py-3 px-4 text-left font-medium">Payment</th>
                       <th className="py-3 px-4 text-left font-medium">Shipping</th>
-                      <th className="py-3 px-4 text-center font-medium w-[140px]">Actions</th>
+                      <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -1288,7 +1282,7 @@ export default function OrderManagement() {
                   </Badge>
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <div className="flex justify-center">
+                            <div className="flex justify-end">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" className="h-8 w-8 p-0">
@@ -1686,65 +1680,6 @@ export default function OrderManagement() {
     }
   };
 
-  // Sample data for Returns and Refunds
-  const returnsRefundsData = [
-    { month: 'Jan', returns: 42, refunds: 38, returnRate: 3.2, refundAmount: 4250 },
-    { month: 'Feb', returns: 38, refunds: 34, returnRate: 2.9, refundAmount: 3980 },
-    { month: 'Mar', returns: 45, refunds: 40, returnRate: 3.4, refundAmount: 4760 },
-    { month: 'Apr', returns: 37, refunds: 35, returnRate: 2.8, refundAmount: 4120 },
-    { month: 'May', returns: 41, refunds: 39, returnRate: 3.1, refundAmount: 4350 },
-    { month: 'Jun', returns: 49, refunds: 45, returnRate: 3.7, refundAmount: 5240 },
-    { month: 'Jul', returns: 44, refunds: 41, returnRate: 3.3, refundAmount: 4780 },
-    { month: 'Aug', returns: 35, refunds: 32, returnRate: 2.6, refundAmount: 3850 },
-  ];
-  
-  // Sample data for Profitability Analysis
-  const profitabilityData = [
-    { month: 'Jan', revenue: 128500, costs: 96375, profit: 32125, margin: 25.0 },
-    { month: 'Feb', revenue: 135200, costs: 99048, profit: 36152, margin: 26.7 },
-    { month: 'Mar', revenue: 142800, costs: 107100, profit: 35700, margin: 25.0 },
-    { month: 'Apr', revenue: 138600, costs: 101178, profit: 37422, margin: 27.0 },
-    { month: 'May', revenue: 152400, costs: 114300, profit: 38100, margin: 25.0 },
-    { month: 'Jun', revenue: 165800, costs: 121082, profit: 44718, margin: 27.0 },
-    { month: 'Jul', revenue: 172500, costs: 127650, profit: 44850, margin: 26.0 },
-    { month: 'Aug', revenue: 168900, costs: 123297, profit: 45603, margin: 27.0 },
-  ];
-  
-  // Sample data for Profit Trends
-  const profitTrendsData = [
-    { category: 'Electronics', sales: 42500, costs: 31875, profit: 10625, margin: 25.0 },
-    { category: 'Clothing', sales: 36800, costs: 25760, profit: 11040, margin: 30.0 },
-    { category: 'Home Goods', sales: 29500, costs: 21535, profit: 7965, margin: 27.0 },
-    { category: 'Sports Equip', sales: 18700, costs: 14586, profit: 4114, margin: 22.0 },
-    { category: 'Beauty', sales: 22400, costs: 15680, profit: 6720, margin: 30.0 },
-    { category: 'Books', sales: 15300, costs: 9945, profit: 5355, margin: 35.0 },
-    { category: 'Toys', sales: 19800, costs: 14850, profit: 4950, margin: 25.0 },
-    { category: 'Grocery', sales: 31200, costs: 26520, profit: 4680, margin: 15.0 },
-  ];
-  
-  // Sample data for Discount Analysis
-  const discountAnalysisData = [
-    { discountLevel: 'None (0%)', orderCount: 345, avgOrderValue: 215, revenue: 74175, profitMargin: 29 },
-    { discountLevel: 'Small (5-10%)', orderCount: 560, avgOrderValue: 185, revenue: 103600, profitMargin: 25 },
-    { discountLevel: 'Medium (11-20%)', orderCount: 420, avgOrderValue: 155, revenue: 65100, profitMargin: 22 },
-    { discountLevel: 'Large (21-30%)', orderCount: 280, avgOrderValue: 135, revenue: 37800, profitMargin: 18 },
-    { discountLevel: 'Promo (31-50%)', orderCount: 195, avgOrderValue: 120, revenue: 23400, profitMargin: 14 },
-  ];
-  
-  // Sample data for Fulfillment Costs
-  const fulfillmentCostsData = [
-    { month: 'Jan', picking: 12500, packaging: 8200, shipping: 18750, laborOther: 9800, total: 49250 },
-    { month: 'Feb', picking: 13100, packaging: 8500, shipping: 19200, laborOther: 10100, total: 50900 },
-    { month: 'Mar', picking: 13800, packaging: 9100, shipping: 20100, laborOther: 10500, total: 53500 },
-    { month: 'Apr', picking: 13500, packaging: 8800, shipping: 19800, laborOther: 10300, total: 52400 },
-    { month: 'May', picking: 14200, packaging: 9300, shipping: 21000, laborOther: 10900, total: 55400 },
-    { month: 'Jun', picking: 15100, packaging: 9800, shipping: 22300, laborOther: 11500, total: 58700 },
-    { month: 'Jul', picking: 15600, packaging: 10200, shipping: 23100, laborOther: 11800, total: 60700 },
-    { month: 'Aug', picking: 15400, packaging: 10000, shipping: 22800, laborOther: 11700, total: 59900 },
-  ];
-  
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -1828,12 +1763,12 @@ export default function OrderManagement() {
 
       <div className="mb-6"></div>
 
-      {/* Order Status Analytics Section */}
+      {/* Order Analytics Section */}
       <Card className="mb-6">
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <CardTitle>Order Status Analytics</CardTitle>
+              <CardTitle>Order Analytics Dashboard</CardTitle>
               <CardDescription>Key metrics and performance indicators for orders</CardDescription>
             </div>
             
@@ -3156,7 +3091,7 @@ export default function OrderManagement() {
         </CardContent>
       </Card>
 
-      {/* Order Performance Analytics Section */}
+      {/* Advanced Analytics Section */}
       <Card className="mb-6">
           <CardHeader>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -5175,37 +5110,23 @@ export default function OrderManagement() {
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* Order Financial Analytics Section */}
-      <Card>
-        <CardContent className="p-0">
-          <OrderFinancialAnalytics />
-        </CardContent>
-      </Card>
       
-      {/* Order Details Modal */}
-      {selectedOrder && (
-        <OrderDetailsModal
-          isOpen={isOrderDetailsModalOpen}
-          onClose={() => {
-            setIsOrderDetailsModalOpen(false);
-            setSelectedOrder(null);
-          }}
-          order={selectedOrder}
-        />
-      )}
-      
-      {/* Add OrderDetailsWrapper just before the closing div */}
-      <OrderDetailsWrapper
-        isOpen={isOrderDetailsModalOpen}
-        onClose={() => {
-          setIsOrderDetailsModalOpen(false);
-          setSelectedOrder(null);
-        }}
-        order={selectedOrder}
-        onUpdateStatus={handleUpdateOrderStatus}
-        onDeleteOrder={handleDeleteOrder}
-      />
+      <div className="space-y-8 pb-10">
+        {/* Existing content */}
+        
+        {/* Order Details Modal */}
+        {selectedOrder && (
+          <OrderDetailsModal
+            isOpen={isOrderDetailsModalOpen}
+            onClose={() => {
+              setIsOrderDetailsModalOpen(false);
+              setSelectedOrder(null);
+            }}
+            order={selectedOrder}
+          />
+        )}
+        
+      </div>
     </div>
   );
 }

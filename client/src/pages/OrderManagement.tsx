@@ -1817,6 +1817,7 @@ export default function OrderManagement() {
         </Card>
       </div>
       )}
+      
       {/* Enhanced Order Table */}
       {renderEnhancedOrderTable()}
       

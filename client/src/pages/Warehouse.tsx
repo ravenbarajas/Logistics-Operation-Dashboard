@@ -188,7 +188,7 @@ interface Warehouse {
 
 export default function Warehouse() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -500,7 +500,7 @@ export default function Warehouse() {
 
   // Add inventory pagination and selection state
   const [inventoryPage, setInventoryPage] = useState(1);
-  const [inventoryPageSize, setInventoryPageSize] = useState(10);
+  const [inventoryPageSize, setInventoryPageSize] = useState(5);
   const [inventorySearchTerm, setInventorySearchTerm] = useState("");
   const [selectedInventoryItems, setSelectedInventoryItems] = useState<string[]>([]);
   const [inventoryCategoryFilter, setInventoryCategoryFilter] = useState("all");
@@ -566,7 +566,7 @@ export default function Warehouse() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">
-            Warehouse Management / {getCurrentPageName()}
+            Warehouse Management
           </h1>
           <div className="flex items-center mt-2 text-sm text-muted-foreground">
             <span>Current section: </span>
@@ -576,10 +576,6 @@ export default function Warehouse() {
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          <Button onClick={() => setIsModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Warehouse
-          </Button>
           <Button variant="outline" onClick={() => fetchData()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -589,57 +585,224 @@ export default function Warehouse() {
       
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">Total Inventory Value</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold">${totalInventoryValue.toLocaleString()}</div>
-            <div className="flex items-center">
-              <ArrowUp className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">+5.2% from last month</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">Space Utilization</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold">{avgUtilization.toFixed(1)}%</div>
-            <div className="flex items-center">
-              <ArrowUp className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">+1.8% from last month</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">Total Inventory Items</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold">{totalInventoryItems.toLocaleString()}</div>
-            <div className="flex items-center">
-              <ArrowUp className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">+24 new items this month</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">Order Fulfillment Rate</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6">
-            <div className="text-2xl font-bold">{fulfillmentRate}%</div>
-            <div className="flex items-center">
-              <ArrowDown className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">-0.3% from last week</p>
-            </div>
-          </CardContent>
-        </Card>
+        {activeTab === "warehouses" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Total Warehouses</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{totalWarehouses}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+2 since last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Capacity Utilization</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{avgUtilization.toFixed(1)}%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+3.2% from last month</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Active Warehouses</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{warehouseList.filter(w => w.status === 'active').length}</div>
+                <div className="flex items-center">
+                  <div className="text-xs text-muted-foreground">{Math.round((warehouseList.filter(w => w.status === 'active').length / totalWarehouses) * 100)}% of total</div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Average Capacity</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{totalWarehouses > 0 ? Math.round(totalCapacity / totalWarehouses).toLocaleString() : 0}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+5% from last year</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : activeTab === "inventory" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Total Inventory Items</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{totalInventoryItems}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+24 since last month</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Total Units</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{totalInventoryUnits.toLocaleString()}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+328 units this month</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Inventory Value</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">${totalInventoryValue.toLocaleString()}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+3.7% from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Average Value/Item</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">
+                  ${totalInventoryItems > 0 ? Math.round(totalInventoryValue / totalInventoryItems).toLocaleString() : 0}
+                </div>
+                <div className="flex items-center">
+                  <ArrowDown className="h-4 w-4 mr-1 text-amber-500" />
+                  <p className="text-xs text-amber-500">-1.2% from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : activeTab === "storage" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Total Storage Locations</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">1,248</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+88 since last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Space Utilization</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">82.3%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-amber-500" />
+                  <p className="text-xs text-amber-500">+2.1% from last month</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Empty Locations</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">221</div>
+                <div className="flex items-center">
+                  <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">-14 since last month</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Picking Efficiency</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">94.7%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+1.3% from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Order Fulfillment Rate</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">94.8%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+2.3% from last period</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Inventory Turnover</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">9.2x</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+0.8x from last year</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Picking Accuracy</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">99.2%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+0.3% from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Cost Per Order</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">$4.48</div>
+                <div className="flex items-center">
+                  <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">-$0.17 from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
       
       {/* Warehouse Operations Section */}
@@ -653,24 +816,21 @@ export default function Warehouse() {
             <Boxes className="h-5 w-5 mr-2 text-primary" />
             Inventory
           </TabsTrigger>
-          <TabsTrigger value="analytics">
-            <Activity className="h-5 w-5 mr-2 text-primary" />
-            Analytics
-          </TabsTrigger>
           <TabsTrigger value="storage">
             <LayoutGrid className="h-5 w-5 mr-2 text-primary" />
             Storage
+          </TabsTrigger>
+          <TabsTrigger value="analytics">
+            <Activity className="h-5 w-5 mr-2 text-primary" />
+            Analytics
           </TabsTrigger>
         </TabsList>
         
         <TabsContent value="warehouses">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between bg-background border-b">
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
               <div>
-                <CardTitle className="flex items-center text-xl">
-                  <WarehouseIcon className="h-5 w-5 mr-2 text-primary" />
-                  Warehouse
-                </CardTitle>
+                <CardTitle>Warehouse</CardTitle>
                 <CardDescription>Manage your warehouses and storage facilities</CardDescription>
               </div>
               <Button onClick={handleAddWarehouse}>
@@ -679,7 +839,7 @@ export default function Warehouse() {
               </Button>
             </CardHeader>
             
-            <div className="p-4 bg-background border-b">
+            <div className="p-6 bg-background py-0 mb-6">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="relative w-full md:w-auto flex-1 max-w-sm">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -1042,22 +1202,19 @@ export default function Warehouse() {
         </TabsContent>
                 
         <TabsContent value="inventory">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between bg-background border-b">
+            <Card>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
               <div>
-                <CardTitle className="flex items-center text-xl">
-                  <Boxes className="h-5 w-5 mr-2 text-primary" />
-                  Inventory Items
-                </CardTitle>
+                <CardTitle>Inventory Items</CardTitle>
                 <CardDescription>Track and manage all inventory across warehouses</CardDescription>
               </div>
               <Button onClick={handleAddInventoryItem}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Item
               </Button>
-            </CardHeader>
+              </CardHeader>
             
-            <div className="p-4 bg-background border-b">
+            <div className="p-6 bg-background py-0 mb-6 ">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="relative w-full md:w-auto flex-1 max-w-sm">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -1115,10 +1272,10 @@ export default function Warehouse() {
             {selectedInventoryItems.length > 0 && (
               <div className="p-3 bg-muted/30 border-b">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center">
+                <div className="flex items-center">
                     <Badge variant="secondary" className="mr-2">{selectedInventoryItems.length}</Badge>
                     <span className="text-sm font-medium">items selected</span>
-                  </div>
+                </div>
                   <div className="flex flex-wrap gap-2">
                     <Select defaultValue="" onValueChange={(value) => value && handleBatchInventoryOperation(value)}>
                       <SelectTrigger className="h-8 w-[180px]">
@@ -1202,10 +1359,10 @@ export default function Warehouse() {
                               </div>
                             </td>
                             <td className="py-2 px-4">
-                              <div className="flex items-center">
+                <div className="flex items-center">
                                 <WarehouseIcon className="h-4 w-4 mr-2 text-muted-foreground" />
                                 {getWarehouseName(item.warehouseId || 0)}
-                              </div>
+                </div>
                             </td>
                             <td className="py-2 px-4 text-center">
                               <div className="flex flex-col items-center">
@@ -1398,120 +1555,60 @@ export default function Warehouse() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
         </TabsContent>
         
         <TabsContent value="analytics">
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <CardTitle>Warehouse Analytics</CardTitle>
-                  <CardDescription>Comprehensive data analysis and reporting for warehouse operations</CardDescription>
-                </div>
+          <Card>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>Warehouse Analytics</CardTitle>
+                <CardDescription>Comprehensive data analysis and reporting for warehouse operations</CardDescription>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                <Select defaultValue="quarter">
+                  <SelectTrigger className="h-9 w-[180px]">
+                    <SelectValue placeholder="Time Period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="month">Last Month</SelectItem>
+                    <SelectItem value="quarter">Last Quarter</SelectItem>
+                    <SelectItem value="year">Last Year</SelectItem>
+                    <SelectItem value="custom">Custom Range</SelectItem>
+                  </SelectContent>
+                </Select>
                 
-                <div className="flex flex-wrap gap-2">
-                  <Select defaultValue="quarter">
-                    <SelectTrigger className="h-9 w-[180px]">
-                      <SelectValue placeholder="Time Period" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="month">Last Month</SelectItem>
-                      <SelectItem value="quarter">Last Quarter</SelectItem>
-                      <SelectItem value="year">Last Year</SelectItem>
-                      <SelectItem value="custom">Custom Range</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Button variant="outline" size="sm" className="h-9">
-                    <FileSpreadsheet className="h-4 w-4 mr-2" />
-                    Export Data
-                  </Button>
-                </div>
+                <Button variant="outline" size="sm" className="h-9">
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export Data
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <Tabs defaultValue="kpis" className="w-full p-4">
-                <TabsList className="w-full grid grid-cols-4 mb-4">
+              <Tabs defaultValue="kpis" className="w-full p-6 py-0 mb-6">
+                <TabsList className="w-full grid grid-cols-4 mb-6">
                   <TabsTrigger value="kpis">
                     <Activity className="h-4 w-4 mr-2" />
                     Operational KPIs
-                  </TabsTrigger>
+          </TabsTrigger>
                   <TabsTrigger value="costs">
                     <DollarSign className="h-4 w-4 mr-2" />
                     Cost Analysis
-                  </TabsTrigger>
+          </TabsTrigger>
                   <TabsTrigger value="trends">
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Trend Analysis
-                  </TabsTrigger>
+          </TabsTrigger>
                   <TabsTrigger value="reports">
                     <FileText className="h-4 w-4 mr-2" />
                     Custom Reports
-                  </TabsTrigger>
-                </TabsList>
-                
+          </TabsTrigger>
+        </TabsList>
+        
                 {/* Operational KPIs Tab */}
-                <TabsContent value="kpis" className="p-0">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-0 mb-4">
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Order Fulfillment Rate</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">94.8%</div>
-                        <Progress value={94.8} className="h-2 mt-2" />
-                        <div className="flex items-center mt-2">
-                          <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
-                          <p className="text-xs text-green-500">2.3% from last period</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Inventory Accuracy</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">97.6%</div>
-                        <Progress value={97.6} className="h-2 mt-2" />
-                        <div className="flex items-center mt-2">
-                          <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
-                          <p className="text-xs text-green-500">0.8% from last period</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Picking Accuracy</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">99.2%</div>
-                        <Progress value={99.2} className="h-2 mt-2" />
-                        <div className="flex items-center mt-2">
-                          <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
-                          <p className="text-xs text-green-500">0.3% from last period</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">On-Time Shipping</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">92.5%</div>
-                        <Progress value={92.5} className="h-2 mt-2" />
-                        <div className="flex items-center mt-2">
-                          <ArrowDown className="h-4 w-4 mr-1 text-red-500" />
-                          <p className="text-xs text-red-500">1.2% from last period</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  
+                <TabsContent value="kpis" className="p-0">       
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0">
                     <Card>
                       <CardHeader className="pb-2">
@@ -1927,14 +2024,11 @@ export default function Warehouse() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="storage">
+        <TabsContent value="storage">   
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between bg-background border-b">
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
               <div>
-                <CardTitle className="flex items-center text-xl">
-                  <LayoutGrid className="h-5 w-5 mr-2 text-primary" />
-                  Storage Management
-                </CardTitle>
+                <CardTitle>Storage Management</CardTitle>
                 <CardDescription>Manage storage locations, zones, and bin assignments</CardDescription>
               </div>
               <Button onClick={() => console.log("Add storage area")}>
@@ -1943,7 +2037,7 @@ export default function Warehouse() {
               </Button>
             </CardHeader>
             
-            <div className="p-4 bg-background border-b">
+            <div className="p-6 py-0 bg-background">
               <div className="flex flex-wrap items-center gap-3">
                 <div className="relative w-full md:w-auto flex-1 max-w-sm">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -1971,7 +2065,7 @@ export default function Warehouse() {
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
                 </Button>
-              </div>
+                </div>
             </div>
             
             <CardContent className="p-6">
@@ -2005,7 +2099,7 @@ export default function Warehouse() {
                     <div className="text-xs text-muted-foreground">17.7% of total capacity</div>
                   </CardContent>
                 </Card>
-              </div>
+            </div>
               
               <div className="rounded-md border mb-6">
                 <div className="bg-muted/50 px-4 py-3 flex justify-between items-center">
@@ -2013,13 +2107,13 @@ export default function Warehouse() {
                   <Select defaultValue="warehouse1">
                     <SelectTrigger className="w-[180px] h-8">
                       <SelectValue placeholder="Select warehouse" />
-                    </SelectTrigger>
-                    <SelectContent>
+                </SelectTrigger>
+                <SelectContent>
                       <SelectItem value="warehouse1">Main Warehouse</SelectItem>
                       <SelectItem value="warehouse2">Distribution Center</SelectItem>
                       <SelectItem value="warehouse3">Fulfillment Center</SelectItem>
-                    </SelectContent>
-                  </Select>
+                </SelectContent>
+              </Select>
                 </div>
                 
                 <div className="p-6 flex justify-center">
@@ -2097,7 +2191,7 @@ export default function Warehouse() {
                           <div className="flex items-center justify-end space-x-2">
                             <Button variant="ghost" size="sm" className="h-8 w-8">
                               <FileText className="h-4 w-4" />
-                            </Button>
+              </Button>
                             <Button variant="ghost" size="sm" className="h-8 w-8">
                               <Pencil className="h-4 w-4" />
                             </Button>

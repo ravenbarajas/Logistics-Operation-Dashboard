@@ -87,6 +87,9 @@ function Router() {
               <Route path="/customers" component={Customers} />
               <Route path="/suppliers" component={Suppliers} />
               <Route path="/warehouse" component={Warehouse} />
+              <Route path="/warehouse/inventory" component={Warehouse} />
+              <Route path="/warehouse/analytics" component={Warehouse} />
+              <Route path="/warehouse/storage" component={Warehouse} />
               <Route path="/orders" component={OrderManagement} />
               <Route path="/routes" component={RouteOptimization} />
               <Route path="/reports" component={Reports} />

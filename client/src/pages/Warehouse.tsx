@@ -145,6 +145,7 @@ import {
 
 // Import EnhancedTable
 import { EnhancedTable } from "@/components/table/EnhancedTable";
+import { useLocation } from "wouter";
 
 // Inventory by category
 const inventoryByCategory = [
@@ -199,6 +200,24 @@ export default function Warehouse() {
   const [inventoryItems, setInventoryItems] = useState<Inventory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Get current location
+  const [location, setLocation] = useLocation();
+  
+  // Determine the default active tab based on the URL
+  const getDefaultTab = () => {
+    if (location.includes("/warehouse/inventory")) {
+      return "inventory";
+    } else if (location.includes("/warehouse/analytics")) {
+      return "analytics";
+    } else if (location.includes("/warehouse/storage")) {
+      return "storage";
+    }
+    return "warehouses";
+  };
+  
+  // Tab state
+  const [activeTab, setActiveTab] = useState(getDefaultTab());
   
   // Added for multiple selection functionality
   const [selectedWarehouses, setSelectedWarehouses] = useState<string[]>([]);
@@ -263,6 +282,17 @@ export default function Warehouse() {
   // Summary stats for the dashboard
   const totalInventoryValue = 1250000; // Example fixed value
   const fulfillmentRate = 94.8; // Example value
+  
+  // Get the current page name for the heading
+  const getCurrentPageName = () => {
+    switch (activeTab) {
+      case "warehouses": return "Warehouse";
+      case "inventory": return "Inventory";
+      case "storage": return "Storage";
+      case "analytics": return "Analytics";
+      default: return "Warehouse";
+    }
+  };
 
   // Add utility functions for pagination
   const totalPages = Math.max(1, Math.ceil(filteredWarehouses.length / pageSize));
@@ -510,10 +540,41 @@ export default function Warehouse() {
     setSelectedInventoryItems([]);
   };
 
+  // Add handler for tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    
+    // Update URL based on selected tab
+    if (value === "warehouses") {
+      setLocation("/warehouse");
+    } else if (value === "inventory") {
+      setLocation("/warehouse/inventory");
+    } else if (value === "analytics") {
+      setLocation("/warehouse/analytics");
+    } else if (value === "storage") {
+      setLocation("/warehouse/storage");
+    }
+  };
+
+  // Update active tab when location changes
+  useEffect(() => {
+    setActiveTab(getDefaultTab());
+  }, [location]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Warehouse Management</h1>
+        <div>
+          <h1 className="text-3xl font-bold">
+            Warehouse Management / {getCurrentPageName()}
+          </h1>
+          <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            <span>Current section: </span>
+            <Badge className="ml-2">
+              {getCurrentPageName()}
+            </Badge>
+          </div>
+        </div>
         <div className="flex gap-2 items-center">
           <Button onClick={() => setIsModalOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -582,15 +643,23 @@ export default function Warehouse() {
       </div>
       
       {/* Warehouse Operations Section */}
-      <Tabs defaultValue="warehouses" className="mb-6 space-y-6">
-        <TabsList className="grid grid-cols-2 w-full md:w-auto">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6 space-y-6">
+        <TabsList className="grid grid-cols-4 w-full md:w-auto">
           <TabsTrigger value="warehouses">
             <WarehouseIcon className="h-5 w-5 mr-2 text-primary" />
-            Warehouses
+            Warehouse
           </TabsTrigger>
           <TabsTrigger value="inventory">
             <Boxes className="h-5 w-5 mr-2 text-primary" />
             Inventory
+          </TabsTrigger>
+          <TabsTrigger value="analytics">
+            <Activity className="h-5 w-5 mr-2 text-primary" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="storage">
+            <LayoutGrid className="h-5 w-5 mr-2 text-primary" />
+            Storage
           </TabsTrigger>
         </TabsList>
         
@@ -600,7 +669,7 @@ export default function Warehouse() {
               <div>
                 <CardTitle className="flex items-center text-xl">
                   <WarehouseIcon className="h-5 w-5 mr-2 text-primary" />
-                  Warehouses
+                  Warehouse
                 </CardTitle>
                 <CardDescription>Manage your warehouses and storage facilities</CardDescription>
               </div>
@@ -1332,531 +1401,717 @@ export default function Warehouse() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
-      
-      {/* Warehouse Analytics Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <CardTitle>Warehouse Analytics</CardTitle>
-              <CardDescription>Comprehensive data analysis and reporting for warehouse operations</CardDescription>
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <Select defaultValue="quarter">
-                <SelectTrigger className="h-9 w-[180px]">
-                  <SelectValue placeholder="Time Period" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="month">Last Month</SelectItem>
-                  <SelectItem value="quarter">Last Quarter</SelectItem>
-                  <SelectItem value="year">Last Year</SelectItem>
-                  <SelectItem value="custom">Custom Range</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Button variant="outline" size="sm" className="h-9">
-                <FileSpreadsheet className="h-4 w-4 mr-2" />
-                Export Data
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Tabs defaultValue="kpis" className="w-full p-4">
-            <TabsList className="w-full grid grid-cols-4 mb-4">
-              <TabsTrigger value="kpis">
-                <Activity className="h-4 w-4 mr-2" />
-                Operational KPIs
-              </TabsTrigger>
-              <TabsTrigger value="costs">
-                <DollarSign className="h-4 w-4 mr-2" />
-                Cost Analysis
-              </TabsTrigger>
-              <TabsTrigger value="trends">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Trend Analysis
-              </TabsTrigger>
-              <TabsTrigger value="reports">
-                <FileText className="h-4 w-4 mr-2" />
-                Custom Reports
-              </TabsTrigger>
-            </TabsList>
-            
-            {/* Operational KPIs Tab */}
-            <TabsContent value="kpis" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-0 mb-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Order Fulfillment Rate</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">94.8%</div>
-                    <Progress value={94.8} className="h-2 mt-2" />
-                    <div className="flex items-center mt-2">
-                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
-                      <p className="text-xs text-green-500">2.3% from last period</p>
-                    </div>
-                  </CardContent>
-                </Card>
+        
+        <TabsContent value="analytics">
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <CardTitle>Warehouse Analytics</CardTitle>
+                  <CardDescription>Comprehensive data analysis and reporting for warehouse operations</CardDescription>
+                </div>
                 
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Inventory Accuracy</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">97.6%</div>
-                    <Progress value={97.6} className="h-2 mt-2" />
-                    <div className="flex items-center mt-2">
-                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
-                      <p className="text-xs text-green-500">0.8% from last period</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Picking Accuracy</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">99.2%</div>
-                    <Progress value={99.2} className="h-2 mt-2" />
-                    <div className="flex items-center mt-2">
-                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
-                      <p className="text-xs text-green-500">0.3% from last period</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">On-Time Shipping</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">92.5%</div>
-                    <Progress value={92.5} className="h-2 mt-2" />
-                    <div className="flex items-center mt-2">
-                      <ArrowDown className="h-4 w-4 mr-1 text-red-500" />
-                      <p className="text-xs text-red-500">1.2% from last period</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">KPI Performance Trends</CardTitle>
-                    <CardDescription>Tracking key metrics over time</CardDescription>
-                  </CardHeader>
-                  <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={[
-                          { month: 'Jan', fulfillment: 91.2, accuracy: 96.5, picking: 98.8, shipping: 93.5 },
-                          { month: 'Feb', fulfillment: 92.0, accuracy: 96.8, picking: 98.9, shipping: 94.0 },
-                          { month: 'Mar', fulfillment: 92.5, accuracy: 97.0, picking: 99.0, shipping: 93.8 },
-                          { month: 'Apr', fulfillment: 93.1, accuracy: 97.2, picking: 99.1, shipping: 93.5 },
-                          { month: 'May', fulfillment: 93.8, accuracy: 97.4, picking: 99.0, shipping: 94.2 },
-                          { month: 'Jun', fulfillment: 94.5, accuracy: 97.5, picking: 99.2, shipping: 94.8 },
-                          { month: 'Jul', fulfillment: 94.8, accuracy: 97.6, picking: 99.2, shipping: 92.5 },
-                        ]}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis dataKey="month" />
-                        <YAxis domain={[90, 100]} />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="fulfillment" name="Order Fulfillment" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="accuracy" name="Inventory Accuracy" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="picking" name="Picking Accuracy" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="shipping" name="On-Time Shipping" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Warehouse KPI Scorecard</CardTitle>
-                    <CardDescription>Performance summary across all metrics</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {[
-                        { name: "Order Fulfillment Rate", value: 94.8, target: 95, status: "good" },
-                        { name: "Inventory Accuracy", value: 97.6, target: 98, status: "good" },
-                        { name: "Picking Accuracy", value: 99.2, target: 99, status: "good" },
-                        { name: "On-Time Shipping", value: 92.5, target: 95, status: "warning" },
-                        { name: "Space Utilization", value: 82.5, target: 85, status: "good" },
-                        { name: "Labor Efficiency", value: 88.4, target: 90, status: "warning" },
-                        { name: "Equipment Utilization", value: 76.2, target: 80, status: "warning" },
-                        { name: "Inventory Turnover", value: 9.2, target: 8, status: "good" },
-                        { name: "Perfect Order Rate", value: 91.5, target: 95, status: "warning" },
-                      ].map((kpi, index) => (
-                        <div key={index} className="flex items-center">
-                          <div className="w-1/3">
-                            <p className="text-sm font-medium">{kpi.name}</p>
-                          </div>
-                          <div className="w-1/3">
-                            <Progress 
-                              value={(kpi.value / kpi.target) * 100 > 100 ? 100 : (kpi.value / kpi.target) * 100} 
-                              className="h-2" 
-                            />
-                          </div>
-                          <div className="w-1/3 flex justify-between items-center pl-4">
-                            <p className={`text-sm font-bold ${
-                              kpi.status === "good" ? "text-green-500" : 
-                              kpi.status === "warning" ? "text-amber-500" : 
-                              "text-red-500"
-                            }`}>{kpi.value}{kpi.name === "Inventory Turnover" ? "x" : "%"}</p>
-                            <p className="text-xs text-muted-foreground">Target: {kpi.target}{kpi.name === "Inventory Turnover" ? "x" : "%"}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            {/* Cost Analysis Tab */}
-            <TabsContent value="costs" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0 mb-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Cost Breakdown</CardTitle>
-                    <CardDescription>Warehouse operational costs by category</CardDescription>
-                  </CardHeader>
-                  <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={[
-                            { name: "Labor", value: 45, fill: "#3b82f6" },
-                            { name: "Facilities", value: 25, fill: "#10b981" },
-                            { name: "Equipment", value: 15, fill: "#f59e0b" },
-                            { name: "Technology", value: 8, fill: "#8b5cf6" },
-                            { name: "Utilities", value: 7, fill: "#ec4899" }
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        />
-                        <Tooltip formatter={(value) => [`${value}%`, 'Percentage of Total Cost']} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Cost Per Order</CardTitle>
-                    <CardDescription>Monthly cost per order processed</CardDescription>
-                  </CardHeader>
-                  <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={[
-                          { month: 'Jan', cost: 4.85, industry: 5.20 },
-                          { month: 'Feb', cost: 4.92, industry: 5.18 },
-                          { month: 'Mar', cost: 4.78, industry: 5.15 },
-                          { month: 'Apr', cost: 4.65, industry: 5.12 },
-                          { month: 'May', cost: 4.58, industry: 5.10 },
-                          { month: 'Jun', cost: 4.52, industry: 5.08 },
-                          { month: 'Jul', cost: 4.48, industry: 5.05 },
-                        ]}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip formatter={(value) => [`$${value}`, 'Cost per Order']} />
-                        <Legend />
-                        <Line type="monotone" dataKey="cost" name="Our Cost" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="industry" name="Industry Avg" stroke="#94a3b8" strokeDasharray="5 5" strokeWidth={2} dot={{ r: 4 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <div className="pb-0">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Monthly Cost Breakdown</CardTitle>
-                    <CardDescription>Detailed cost analysis by category and month</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Month</TableHead>
-                            <TableHead>Labor</TableHead>
-                            <TableHead>Facilities</TableHead>
-                            <TableHead>Equipment</TableHead>
-                            <TableHead>Technology</TableHead>
-                            <TableHead>Utilities</TableHead>
-                            <TableHead>Total</TableHead>
-                            <TableHead>Orders</TableHead>
-                            <TableHead>Cost/Order</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {[
-                            { month: "Jan", labor: 125800, facilities: 68400, equipment: 42500, technology: 22800, utilities: 18500, orders: 57500 },
-                            { month: "Feb", labor: 128900, facilities: 68400, equipment: 43200, technology: 22800, utilities: 19600, orders: 57300 },
-                            { month: "Mar", labor: 127500, facilities: 68400, equipment: 41800, technology: 23500, utilities: 19200, orders: 58900 },
-                            { month: "Apr", labor: 124200, facilities: 68400, equipment: 40500, technology: 23500, utilities: 18100, orders: 59200 },
-                            { month: "May", labor: 126800, facilities: 68400, equipment: 41200, technology: 23500, utilities: 17800, orders: 60600 },
-                            { month: "Jun", labor: 129500, facilities: 68400, equipment: 42800, technology: 23500, utilities: 17500, orders: 62300 },
-                            { month: "Jul", labor: 132200, facilities: 68400, equipment: 43600, technology: 23500, utilities: 17900, orders: 63800 },
-                          ].map((data, index) => {
-                            const total = data.labor + data.facilities + data.equipment + data.technology + data.utilities;
-                            const costPerOrder = (total / data.orders).toFixed(2);
-                            
-                            return (
-                              <TableRow key={index}>
-                                <TableCell className="font-medium">{data.month}</TableCell>
-                                <TableCell>${(data.labor / 1000).toFixed(1)}K</TableCell>
-                                <TableCell>${(data.facilities / 1000).toFixed(1)}K</TableCell>
-                                <TableCell>${(data.equipment / 1000).toFixed(1)}K</TableCell>
-                                <TableCell>${(data.technology / 1000).toFixed(1)}K</TableCell>
-                                <TableCell>${(data.utilities / 1000).toFixed(1)}K</TableCell>
-                                <TableCell className="font-bold">${(total / 1000).toFixed(1)}K</TableCell>
-                                <TableCell>{(data.orders / 1000).toFixed(1)}K</TableCell>
-                                <TableCell className="font-bold">${costPerOrder}</TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            {/* Trend Analysis Tab */}
-            <TabsContent value="trends" className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Inventory Turnover Trends</CardTitle>
-                    <CardDescription>Quarterly inventory turns by category</CardDescription>
-                  </CardHeader>
-                  <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={[
-                          { quarter: 'Q3 2022', electronics: 8.2, clothing: 6.8, food: 12.5, furniture: 4.2, automotive: 5.5 },
-                          { quarter: 'Q4 2022', electronics: 9.1, clothing: 7.5, food: 13.2, furniture: 4.0, automotive: 5.8 },
-                          { quarter: 'Q1 2023', electronics: 8.5, clothing: 6.9, food: 12.8, furniture: 3.8, automotive: 5.6 },
-                          { quarter: 'Q2 2023', electronics: 9.5, clothing: 7.2, food: 13.5, furniture: 4.3, automotive: 6.1 },
-                        ]}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis dataKey="quarter" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="electronics" name="Electronics" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="clothing" name="Clothing" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="food" name="Food" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="furniture" name="Furniture" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="automotive" name="Automotive" stroke="#ec4899" strokeWidth={2} dot={{ r: 4 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Seasonal Demand Patterns</CardTitle>
-                    <CardDescription>Monthly order volume by year</CardDescription>
-                  </CardHeader>
-                  <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={[
-                          { month: 'Jan', y2023: 57500, y2022: 51200, y2021: 45800 },
-                          { month: 'Feb', y2023: 57300, y2022: 52500, y2021: 46200 },
-                          { month: 'Mar', y2023: 58900, y2022: 54100, y2021: 47500 },
-                          { month: 'Apr', y2023: 59200, y2022: 53800, y2021: 48100 },
-                          { month: 'May', y2023: 60600, y2022: 55200, y2021: 49800 },
-                          { month: 'Jun', y2023: 62300, y2022: 56800, y2021: 51200 },
-                          { month: 'Jul', y2023: 63800, y2022: 58500, y2021: 52800 },
-                          { month: 'Aug', y2023: null, y2022: 59200, y2021: 53500 },
-                          { month: 'Sep', y2023: null, y2022: 62800, y2021: 56200 },
-                          { month: 'Oct', y2023: null, y2022: 68500, y2021: 61800 },
-                          { month: 'Nov', y2023: null, y2022: 78200, y2021: 72500 },
-                          { month: 'Dec', y2023: null, y2022: 85400, y2021: 78900 },
-                        ]}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="y2023" name="2023" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="y2022" name="2022" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-                        <Line type="monotone" dataKey="y2021" name="2021" stroke="#94a3b8" strokeWidth={2} dot={{ r: 4 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            {/* Custom Reports Tab */}
-            <TabsContent value="reports" className="p-0">
-              <div className="p-0">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">Report Builder</CardTitle>
-                    <CardDescription>Create custom warehouse reports</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Report Type</label>
-                        <Select defaultValue="inventory">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select report type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="inventory">Inventory</SelectItem>
-                            <SelectItem value="operations">Operations</SelectItem>
-                            <SelectItem value="financial">Financial</SelectItem>
-                            <SelectItem value="productivity">Productivity</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Date Range</label>
-                        <Select defaultValue="quarter">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select date range" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="week">Last Week</SelectItem>
-                            <SelectItem value="month">Last Month</SelectItem>
-                            <SelectItem value="quarter">Last Quarter</SelectItem>
-                            <SelectItem value="year">Last Year</SelectItem>
-                            <SelectItem value="custom">Custom Range</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Format</label>
-                        <Select defaultValue="xlsx">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select format" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pdf">PDF</SelectItem>
-                            <SelectItem value="xlsx">Excel</SelectItem>
-                            <SelectItem value="csv">CSV</SelectItem>
-                            <SelectItem value="html">HTML</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <div className="border rounded-md p-4 mb-4">
-                      <h4 className="text-sm font-medium mb-2">Report Sections</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {[
-                          "Inventory Summary", "Stock Levels", "Inventory Value", "Turnover Rate",
-                          "Order Fulfillment", "Picking Efficiency", "Space Utilization", "Labor Productivity"
-                        ].map((section, index) => (
-                          <div key={index} className="flex items-center space-x-2">
-                            <Checkbox id={`section-${index}`} checked={index < 5} />
-                            <label htmlFor={`section-${index}`} className="text-sm">
-                              {section}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end space-x-2">
-                      <Button variant="outline">Preview</Button>
-                      <Button>Generate Report</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <div className="mt-4">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Recent Reports</CardTitle>
-                      <CardDescription>Previously generated reports</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="rounded-md border">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Report Name</TableHead>
-                              <TableHead>Type</TableHead>
-                              <TableHead>Date Range</TableHead>
-                              <TableHead>Created</TableHead>
-                              <TableHead>Format</TableHead>
-                              <TableHead>Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {[
-                              { name: "Q2 Inventory Summary", type: "Inventory", range: "Apr-Jun 2023", created: "Jul 05, 2023", format: "XLSX" },
-                              { name: "June Operations Report", type: "Operations", range: "Jun 2023", created: "Jul 03, 2023", format: "PDF" },
-                              { name: "Inventory Value Analysis", type: "Financial", range: "Q2 2023", created: "Jul 02, 2023", format: "XLSX" },
-                              { name: "Labor Productivity", type: "Productivity", range: "Jan-Jun 2023", created: "Jun 30, 2023", format: "PDF" },
-                              { name: "Stock Level Alert Report", type: "Inventory", range: "Last 30 days", created: "Jun 25, 2023", format: "CSV" },
-                            ].map((report, index) => (
-                              <TableRow key={index}>
-                                <TableCell className="font-medium">{report.name}</TableCell>
-                                <TableCell>{report.type}</TableCell>
-                                <TableCell>{report.range}</TableCell>
-                                <TableCell>{report.created}</TableCell>
-                                <TableCell>
-                                  <Badge variant="outline">{report.format}</Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex space-x-2">
-                                    <Button variant="ghost" size="sm" className="h-8 px-2">
-                                      <Download className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="h-8 px-2">
-                                      <Copy className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="h-8 px-2">
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="flex flex-wrap gap-2">
+                  <Select defaultValue="quarter">
+                    <SelectTrigger className="h-9 w-[180px]">
+                      <SelectValue placeholder="Time Period" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="month">Last Month</SelectItem>
+                      <SelectItem value="quarter">Last Quarter</SelectItem>
+                      <SelectItem value="year">Last Year</SelectItem>
+                      <SelectItem value="custom">Custom Range</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Button variant="outline" size="sm" className="h-9">
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    Export Data
+                  </Button>
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Tabs defaultValue="kpis" className="w-full p-4">
+                <TabsList className="w-full grid grid-cols-4 mb-4">
+                  <TabsTrigger value="kpis">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Operational KPIs
+                  </TabsTrigger>
+                  <TabsTrigger value="costs">
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Cost Analysis
+                  </TabsTrigger>
+                  <TabsTrigger value="trends">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Trend Analysis
+                  </TabsTrigger>
+                  <TabsTrigger value="reports">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Custom Reports
+                  </TabsTrigger>
+                </TabsList>
+                
+                {/* Operational KPIs Tab */}
+                <TabsContent value="kpis" className="p-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-0 mb-4">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium">Order Fulfillment Rate</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">94.8%</div>
+                        <Progress value={94.8} className="h-2 mt-2" />
+                        <div className="flex items-center mt-2">
+                          <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                          <p className="text-xs text-green-500">2.3% from last period</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium">Inventory Accuracy</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">97.6%</div>
+                        <Progress value={97.6} className="h-2 mt-2" />
+                        <div className="flex items-center mt-2">
+                          <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                          <p className="text-xs text-green-500">0.8% from last period</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium">Picking Accuracy</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">99.2%</div>
+                        <Progress value={99.2} className="h-2 mt-2" />
+                        <div className="flex items-center mt-2">
+                          <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                          <p className="text-xs text-green-500">0.3% from last period</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium">On-Time Shipping</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">92.5%</div>
+                        <Progress value={92.5} className="h-2 mt-2" />
+                        <div className="flex items-center mt-2">
+                          <ArrowDown className="h-4 w-4 mr-1 text-red-500" />
+                          <p className="text-xs text-red-500">1.2% from last period</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">KPI Performance Trends</CardTitle>
+                        <CardDescription>Tracking key metrics over time</CardDescription>
+                      </CardHeader>
+                      <CardContent className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={[
+                              { month: 'Jan', fulfillment: 91.2, accuracy: 96.5, picking: 98.8, shipping: 93.5 },
+                              { month: 'Feb', fulfillment: 92.0, accuracy: 96.8, picking: 98.9, shipping: 94.0 },
+                              { month: 'Mar', fulfillment: 92.5, accuracy: 97.0, picking: 99.0, shipping: 93.8 },
+                              { month: 'Apr', fulfillment: 93.1, accuracy: 97.2, picking: 99.1, shipping: 93.5 },
+                              { month: 'May', fulfillment: 93.8, accuracy: 97.4, picking: 99.0, shipping: 94.2 },
+                              { month: 'Jun', fulfillment: 94.5, accuracy: 97.5, picking: 99.2, shipping: 94.8 },
+                              { month: 'Jul', fulfillment: 94.8, accuracy: 97.6, picking: 99.2, shipping: 92.5 },
+                            ]}
+                            margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="month" />
+                            <YAxis domain={[90, 100]} />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="fulfillment" name="Order Fulfillment" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="accuracy" name="Inventory Accuracy" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="picking" name="Picking Accuracy" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="shipping" name="On-Time Shipping" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Warehouse KPI Scorecard</CardTitle>
+                        <CardDescription>Performance summary across all metrics</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {[
+                            { name: "Order Fulfillment Rate", value: 94.8, target: 95, status: "good" },
+                            { name: "Inventory Accuracy", value: 97.6, target: 98, status: "good" },
+                            { name: "Picking Accuracy", value: 99.2, target: 99, status: "good" },
+                            { name: "On-Time Shipping", value: 92.5, target: 95, status: "warning" },
+                            { name: "Space Utilization", value: 82.5, target: 85, status: "good" },
+                            { name: "Labor Efficiency", value: 88.4, target: 90, status: "warning" },
+                            { name: "Equipment Utilization", value: 76.2, target: 80, status: "warning" },
+                            { name: "Inventory Turnover", value: 9.2, target: 8, status: "good" },
+                            { name: "Perfect Order Rate", value: 91.5, target: 95, status: "warning" },
+                          ].map((kpi, index) => (
+                            <div key={index} className="flex items-center">
+                              <div className="w-1/3">
+                                <p className="text-sm font-medium">{kpi.name}</p>
+                              </div>
+                              <div className="w-1/3">
+                                <Progress 
+                                  value={(kpi.value / kpi.target) * 100 > 100 ? 100 : (kpi.value / kpi.target) * 100} 
+                                  className="h-2" 
+                                />
+                              </div>
+                              <div className="w-1/3 flex justify-between items-center pl-4">
+                                <p className={`text-sm font-bold ${
+                                  kpi.status === "good" ? "text-green-500" : 
+                                  kpi.status === "warning" ? "text-amber-500" : 
+                                  "text-red-500"
+                                }`}>{kpi.value}{kpi.name === "Inventory Turnover" ? "x" : "%"}</p>
+                                <p className="text-xs text-muted-foreground">Target: {kpi.target}{kpi.name === "Inventory Turnover" ? "x" : "%"}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+                
+                {/* Cost Analysis Tab */}
+                <TabsContent value="costs" className="p-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0 mb-4">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Cost Breakdown</CardTitle>
+                        <CardDescription>Warehouse operational costs by category</CardDescription>
+                      </CardHeader>
+                      <CardContent className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={[
+                                { name: "Labor", value: 45, fill: "#3b82f6" },
+                                { name: "Facilities", value: 25, fill: "#10b981" },
+                                { name: "Equipment", value: 15, fill: "#f59e0b" },
+                                { name: "Technology", value: 8, fill: "#8b5cf6" },
+                                { name: "Utilities", value: 7, fill: "#ec4899" }
+                              ]}
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={80}
+                              dataKey="value"
+                              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            />
+                            <Tooltip formatter={(value) => [`${value}%`, 'Percentage of Total Cost']} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Cost Per Order</CardTitle>
+                        <CardDescription>Monthly cost per order processed</CardDescription>
+                      </CardHeader>
+                      <CardContent className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={[
+                              { month: 'Jan', cost: 4.85, industry: 5.20 },
+                              { month: 'Feb', cost: 4.92, industry: 5.18 },
+                              { month: 'Mar', cost: 4.78, industry: 5.15 },
+                              { month: 'Apr', cost: 4.65, industry: 5.12 },
+                              { month: 'May', cost: 4.58, industry: 5.10 },
+                              { month: 'Jun', cost: 4.52, industry: 5.08 },
+                              { month: 'Jul', cost: 4.48, industry: 5.05 },
+                            ]}
+                            margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip formatter={(value) => [`$${value}`, 'Cost per Order']} />
+                            <Legend />
+                            <Line type="monotone" dataKey="cost" name="Our Cost" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="industry" name="Industry Avg" stroke="#94a3b8" strokeDasharray="5 5" strokeWidth={2} dot={{ r: 4 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  <div className="pb-0">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Monthly Cost Breakdown</CardTitle>
+                        <CardDescription>Detailed cost analysis by category and month</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="rounded-md border">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Month</TableHead>
+                                <TableHead>Labor</TableHead>
+                                <TableHead>Facilities</TableHead>
+                                <TableHead>Equipment</TableHead>
+                                <TableHead>Technology</TableHead>
+                                <TableHead>Utilities</TableHead>
+                                <TableHead>Total</TableHead>
+                                <TableHead>Orders</TableHead>
+                                <TableHead>Cost/Order</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {[
+                                { month: "Jan", labor: 125800, facilities: 68400, equipment: 42500, technology: 22800, utilities: 18500, orders: 57500 },
+                                { month: "Feb", labor: 128900, facilities: 68400, equipment: 43200, technology: 22800, utilities: 19600, orders: 57300 },
+                                { month: "Mar", labor: 127500, facilities: 68400, equipment: 41800, technology: 23500, utilities: 19200, orders: 58900 },
+                                { month: "Apr", labor: 124200, facilities: 68400, equipment: 40500, technology: 23500, utilities: 18100, orders: 59200 },
+                                { month: "May", labor: 126800, facilities: 68400, equipment: 41200, technology: 23500, utilities: 17800, orders: 60600 },
+                                { month: "Jun", labor: 129500, facilities: 68400, equipment: 42800, technology: 23500, utilities: 17500, orders: 62300 },
+                                { month: "Jul", labor: 132200, facilities: 68400, equipment: 43600, technology: 23500, utilities: 17900, orders: 63800 },
+                              ].map((data, index) => {
+                                const total = data.labor + data.facilities + data.equipment + data.technology + data.utilities;
+                                const costPerOrder = (total / data.orders).toFixed(2);
+                                
+                                return (
+                                  <TableRow key={index}>
+                                    <TableCell className="font-medium">{data.month}</TableCell>
+                                    <TableCell>${(data.labor / 1000).toFixed(1)}K</TableCell>
+                                    <TableCell>${(data.facilities / 1000).toFixed(1)}K</TableCell>
+                                    <TableCell>${(data.equipment / 1000).toFixed(1)}K</TableCell>
+                                    <TableCell>${(data.technology / 1000).toFixed(1)}K</TableCell>
+                                    <TableCell>${(data.utilities / 1000).toFixed(1)}K</TableCell>
+                                    <TableCell className="font-bold">${(total / 1000).toFixed(1)}K</TableCell>
+                                    <TableCell>{(data.orders / 1000).toFixed(1)}K</TableCell>
+                                    <TableCell className="font-bold">${costPerOrder}</TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+                
+                {/* Trend Analysis Tab */}
+                <TabsContent value="trends" className="p-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-0">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Inventory Turnover Trends</CardTitle>
+                        <CardDescription>Quarterly inventory turns by category</CardDescription>
+                      </CardHeader>
+                      <CardContent className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={[
+                              { quarter: 'Q3 2022', electronics: 8.2, clothing: 6.8, food: 12.5, furniture: 4.2, automotive: 5.5 },
+                              { quarter: 'Q4 2022', electronics: 9.1, clothing: 7.5, food: 13.2, furniture: 4.0, automotive: 5.8 },
+                              { quarter: 'Q1 2023', electronics: 8.5, clothing: 6.9, food: 12.8, furniture: 3.8, automotive: 5.6 },
+                              { quarter: 'Q2 2023', electronics: 9.5, clothing: 7.2, food: 13.5, furniture: 4.3, automotive: 6.1 },
+                            ]}
+                            margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="quarter" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="electronics" name="Electronics" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="clothing" name="Clothing" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="food" name="Food" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="furniture" name="Furniture" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="automotive" name="Automotive" stroke="#ec4899" strokeWidth={2} dot={{ r: 4 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Seasonal Demand Patterns</CardTitle>
+                        <CardDescription>Monthly order volume by year</CardDescription>
+                      </CardHeader>
+                      <CardContent className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={[
+                              { month: 'Jan', y2023: 57500, y2022: 51200, y2021: 45800 },
+                              { month: 'Feb', y2023: 57300, y2022: 52500, y2021: 46200 },
+                              { month: 'Mar', y2023: 58900, y2022: 54100, y2021: 47500 },
+                              { month: 'Apr', y2023: 59200, y2022: 53800, y2021: 48100 },
+                              { month: 'May', y2023: 60600, y2022: 55200, y2021: 49800 },
+                              { month: 'Jun', y2023: 62300, y2022: 56800, y2021: 51200 },
+                              { month: 'Jul', y2023: 63800, y2022: 58500, y2021: 52800 },
+                              { month: 'Aug', y2023: null, y2022: 59200, y2021: 53500 },
+                              { month: 'Sep', y2023: null, y2022: 62800, y2021: 56200 },
+                              { month: 'Oct', y2023: null, y2022: 68500, y2021: 61800 },
+                              { month: 'Nov', y2023: null, y2022: 78200, y2021: 72500 },
+                              { month: 'Dec', y2023: null, y2022: 85400, y2021: 78900 },
+                            ]}
+                            margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line type="monotone" dataKey="y2023" name="2023" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="y2022" name="2022" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
+                            <Line type="monotone" dataKey="y2021" name="2021" stroke="#94a3b8" strokeWidth={2} dot={{ r: 4 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+                
+                {/* Custom Reports Tab */}
+                <TabsContent value="reports" className="p-0">
+                  <div className="p-0">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Report Builder</CardTitle>
+                        <CardDescription>Create custom warehouse reports</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Report Type</label>
+                            <Select defaultValue="inventory">
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select report type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="inventory">Inventory</SelectItem>
+                                <SelectItem value="operations">Operations</SelectItem>
+                                <SelectItem value="financial">Financial</SelectItem>
+                                <SelectItem value="productivity">Productivity</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Date Range</label>
+                            <Select defaultValue="quarter">
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select date range" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="week">Last Week</SelectItem>
+                                <SelectItem value="month">Last Month</SelectItem>
+                                <SelectItem value="quarter">Last Quarter</SelectItem>
+                                <SelectItem value="year">Last Year</SelectItem>
+                                <SelectItem value="custom">Custom Range</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Format</label>
+                            <Select defaultValue="xlsx">
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select format" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pdf">PDF</SelectItem>
+                                <SelectItem value="xlsx">Excel</SelectItem>
+                                <SelectItem value="csv">CSV</SelectItem>
+                                <SelectItem value="html">HTML</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <div className="border rounded-md p-4 mb-4">
+                          <h4 className="text-sm font-medium mb-2">Report Sections</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                              "Inventory Summary", "Stock Levels", "Inventory Value", "Turnover Rate",
+                              "Order Fulfillment", "Picking Efficiency", "Space Utilization", "Labor Productivity"
+                            ].map((section, index) => (
+                              <div key={index} className="flex items-center space-x-2">
+                                <Checkbox id={`section-${index}`} checked={index < 5} />
+                                <label htmlFor={`section-${index}`} className="text-sm">
+                                  {section}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="outline">Preview</Button>
+                          <Button>Generate Report</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <div className="mt-4">
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base">Recent Reports</CardTitle>
+                          <CardDescription>Previously generated reports</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="rounded-md border">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Report Name</TableHead>
+                                  <TableHead>Type</TableHead>
+                                  <TableHead>Date Range</TableHead>
+                                  <TableHead>Created</TableHead>
+                                  <TableHead>Format</TableHead>
+                                  <TableHead>Actions</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {[
+                                  { name: "Q2 Inventory Summary", type: "Inventory", range: "Apr-Jun 2023", created: "Jul 05, 2023", format: "XLSX" },
+                                  { name: "June Operations Report", type: "Operations", range: "Jun 2023", created: "Jul 03, 2023", format: "PDF" },
+                                  { name: "Inventory Value Analysis", type: "Financial", range: "Q2 2023", created: "Jul 02, 2023", format: "XLSX" },
+                                  { name: "Labor Productivity", type: "Productivity", range: "Jan-Jun 2023", created: "Jun 30, 2023", format: "PDF" },
+                                  { name: "Stock Level Alert Report", type: "Inventory", range: "Last 30 days", created: "Jun 25, 2023", format: "CSV" },
+                                ].map((report, index) => (
+                                  <TableRow key={index}>
+                                    <TableCell className="font-medium">{report.name}</TableCell>
+                                    <TableCell>{report.type}</TableCell>
+                                    <TableCell>{report.range}</TableCell>
+                                    <TableCell>{report.created}</TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline">{report.format}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex space-x-2">
+                                        <Button variant="ghost" size="sm" className="h-8 px-2">
+                                          <Download className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="sm" className="h-8 px-2">
+                                          <Copy className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="sm" className="h-8 px-2">
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="storage">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between bg-background border-b">
+              <div>
+                <CardTitle className="flex items-center text-xl">
+                  <LayoutGrid className="h-5 w-5 mr-2 text-primary" />
+                  Storage Management
+                </CardTitle>
+                <CardDescription>Manage storage locations, zones, and bin assignments</CardDescription>
+              </div>
+              <Button onClick={() => console.log("Add storage area")}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Storage Area
+              </Button>
+            </CardHeader>
+            
+            <div className="p-4 bg-background border-b">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search storage locations..."
+                    className="pl-8 w-full h-9"
+                  />
+                </div>
+                
+                <Select defaultValue="all">
+                  <SelectTrigger className="w-[150px] h-9">
+                    <SelectValue placeholder="Storage type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="pallet">Pallet Racking</SelectItem>
+                    <SelectItem value="shelving">Shelving</SelectItem>
+                    <SelectItem value="bins">Bin Storage</SelectItem>
+                    <SelectItem value="bulk">Bulk Storage</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Button variant="outline" className="h-9 ml-auto">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+            
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Total Storage Locations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">1,248</div>
+                    <div className="text-xs text-muted-foreground">Across all warehouse facilities</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Space Utilization</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">82.3%</div>
+                    <Progress value={82.3} className="h-2 mt-2" />
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Empty Locations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">221</div>
+                    <div className="text-xs text-muted-foreground">17.7% of total capacity</div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="rounded-md border mb-6">
+                <div className="bg-muted/50 px-4 py-3 flex justify-between items-center">
+                  <h3 className="font-medium">Storage Area Map</h3>
+                  <Select defaultValue="warehouse1">
+                    <SelectTrigger className="w-[180px] h-8">
+                      <SelectValue placeholder="Select warehouse" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="warehouse1">Main Warehouse</SelectItem>
+                      <SelectItem value="warehouse2">Distribution Center</SelectItem>
+                      <SelectItem value="warehouse3">Fulfillment Center</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="p-6 flex justify-center">
+                  <div className="grid grid-cols-10 gap-2 max-w-3xl">
+                    {[...Array(100)].map((_, index) => {
+                      // Generate some pattern for demo
+                      const isFilled = Math.random() > 0.2;
+                      const isHighPriority = Math.random() > 0.8;
+                      const colorClass = isHighPriority ? "bg-red-100 border-red-300" : 
+                                          isFilled ? "bg-blue-100 border-blue-300" : "bg-gray-100 border-gray-300";
+                      
+                      return (
+                        <div 
+                          key={index} 
+                          className={`h-12 border rounded flex items-center justify-center text-xs font-medium cursor-pointer hover:opacity-80 ${colorClass}`}
+                        >
+                          {String.fromCharCode(65 + Math.floor(index / 10))}{index % 10 + 1}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                <div className="px-6 pb-4 flex justify-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
+                    <span className="text-sm">Empty</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
+                    <span className="text-sm">Occupied</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
+                    <span className="text-sm">High Priority</span>
+                  </div>
+                </div>
+              </div>
+              
+              <h3 className="font-medium mb-4">Storage Zone Breakdown</h3>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Zone ID</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Storage Type</TableHead>
+                      <TableHead>Total Locations</TableHead>
+                      <TableHead>Available</TableHead>
+                      <TableHead>Utilization</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[
+                      { id: "A", name: "Raw Materials", type: "Pallet Racking", total: 240, available: 42, utilization: 82.5 },
+                      { id: "B", name: "Finished Goods", type: "Pallet Racking", total: 320, available: 58, utilization: 81.9 },
+                      { id: "C", name: "Small Parts", type: "Shelving", total: 180, available: 23, utilization: 87.2 },
+                      { id: "D", name: "Assembly Components", type: "Bin Storage", total: 425, available: 76, utilization: 82.1 },
+                      { id: "E", name: "Shipping Supplies", type: "Bulk Storage", total: 83, available: 22, utilization: 73.5 },
+                    ].map((zone) => (
+                      <TableRow key={zone.id}>
+                        <TableCell className="font-medium">{zone.id}</TableCell>
+                        <TableCell>{zone.name}</TableCell>
+                        <TableCell>{zone.type}</TableCell>
+                        <TableCell>{zone.total}</TableCell>
+                        <TableCell>{zone.available}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Progress value={zone.utilization} className="h-2 w-24" />
+                            <span className="text-sm">{zone.utilization}%</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end space-x-2">
+                            <Button variant="ghost" size="sm" className="h-8 w-8">
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
       
       {/* Modals */}
       <WarehouseModal

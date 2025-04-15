@@ -447,7 +447,7 @@ export default function Warehouse() {
       cell: (item: Inventory) => (
         <div className="flex items-center">
           <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-          {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'N/A'}
+          {item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : 'N/A'}
         </div>
       )
     }
@@ -467,6 +467,48 @@ export default function Warehouse() {
       variant: "destructive" as const
     }
   ];
+
+  // Add inventory pagination and selection state
+  const [inventoryPage, setInventoryPage] = useState(1);
+  const [inventoryPageSize, setInventoryPageSize] = useState(10);
+  const [inventorySearchTerm, setInventorySearchTerm] = useState("");
+  const [selectedInventoryItems, setSelectedInventoryItems] = useState<string[]>([]);
+  const [inventoryCategoryFilter, setInventoryCategoryFilter] = useState("all");
+
+  // Calculate inventory pagination
+  const inventoryTotalPages = Math.max(1, Math.ceil(filteredInventory.length / inventoryPageSize));
+  const inventoryLastIndex = inventoryPage * inventoryPageSize;
+  const inventoryFirstIndex = inventoryLastIndex - inventoryPageSize;
+  const paginatedInventory = filteredInventory.slice(inventoryFirstIndex, inventoryLastIndex);
+
+  // Add inventory page change handler
+  const handleInventoryPageChange = (page: number) => {
+    setInventoryPage(page);
+  };
+
+  // Add inventory page size change handler
+  const handleInventoryPageSizeChange = (size: number) => {
+    setInventoryPageSize(size);
+    setInventoryPage(1);
+  };
+
+  // Add inventory selection handler
+  const handleToggleInventorySelection = (itemId: string) => {
+    setSelectedInventoryItems(prev => {
+      if (prev.includes(itemId)) {
+        return prev.filter(id => id !== itemId);
+      } else {
+        return [...prev, itemId];
+      }
+    });
+  };
+
+  // Add batch operations for inventory
+  const handleBatchInventoryOperation = (operation: string) => {
+    console.log(`Performing ${operation} on ${selectedInventoryItems.length} inventory items`);
+    // Clear selection after batch operation
+    setSelectedInventoryItems([]);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -619,8 +661,8 @@ export default function Warehouse() {
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
                 </Button>
-              </div>
-            </div>
+                </div>
+          </div>
             
             {/* Batch Operations */}
             {selectedWarehouses.length > 0 && (
@@ -629,27 +671,27 @@ export default function Warehouse() {
                   <div className="flex items-center">
                     <Badge variant="secondary" className="mr-2">{selectedWarehouses.length}</Badge>
                     <span className="text-sm font-medium">warehouses selected</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
+            </div>
+            <div className="flex flex-wrap gap-2">
                     <Select defaultValue="" onValueChange={(value) => value && handleBatchStatusChange(value)}>
                       <SelectTrigger className="h-8 w-[180px]">
                         <SelectValue placeholder="Change Status" />
-                      </SelectTrigger>
-                      <SelectContent>
+                </SelectTrigger>
+                <SelectContent>
                         <SelectItem value="active">Set Active</SelectItem>
                         <SelectItem value="maintenance">Set Maintenance</SelectItem>
                         <SelectItem value="inactive">Set Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
+                </SelectContent>
+              </Select>
                     <Button variant="outline" size="sm" className="h-8" onClick={() => setSelectedWarehouses([])}>
                       Clear Selection
-                    </Button>
-                  </div>
-                </div>
+              </Button>
+            </div>
+          </div>
               </div>
             )}
             
-            <CardContent className="p-0">
+        <CardContent className="p-0">
               {filteredWarehouses.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64 p-6">
                   <WarehouseIcon className="h-12 w-12 text-muted-foreground/30 mb-4" />
@@ -790,6 +832,367 @@ export default function Warehouse() {
                     <div className="flex items-center justify-between py-4 px-6">
                       <div className="flex-1 text-sm text-muted-foreground">
                         Showing {Math.min((currentPage - 1) * pageSize + 1, filteredWarehouses.length)} to {Math.min(currentPage * pageSize, filteredWarehouses.length)} of {filteredWarehouses.length} {filteredWarehouses.length === 1 ? 'warehouse' : 'warehouses'}
+                </div>
+                  
+                  <div className="flex-1 flex justify-center">
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8"
+                        aria-label="First page"
+                      >
+                        <ChevronsLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8"
+                        aria-label="Previous page"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      
+                      {totalPages <= 5 ? (
+                        // Show all pages if 5 or fewer
+                        [...Array(totalPages)].map((_, i) => (
+                          <Button
+                            key={`page-${i+1}`}
+                            variant={currentPage === i+1 ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => handlePageChange(i+1)}
+                            className="h-8 w-8"
+                            aria-label={`Page ${i+1}`}
+                            aria-current={currentPage === i+1 ? "page" : undefined}
+                          >
+                            {i+1}
+                          </Button>
+                        ))
+                      ) : (
+                        // Show limited pages with ellipsis
+                        <>
+                          <Button
+                            variant={currentPage === 1 ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => handlePageChange(1)}
+                            className="h-8 w-8"
+                            aria-label="Page 1"
+                          >
+                            1
+                          </Button>
+                          
+                          {currentPage > 3 && <span className="mx-1">...</span>}
+                          
+                          {currentPage > 2 && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              className="h-8 w-8"
+                              aria-label={`Page ${currentPage - 1}`}
+                            >
+                              {currentPage - 1}
+                            </Button>
+                          )}
+                          
+                          {currentPage !== 1 && currentPage !== totalPages && (
+                            <Button
+                              variant="default"
+                              size="icon"
+                              onClick={() => handlePageChange(currentPage)}
+                              className="h-8 w-8"
+                              aria-label={`Page ${currentPage}`}
+                              aria-current="page"
+                            >
+                              {currentPage}
+                            </Button>
+                          )}
+                          
+                          {currentPage < totalPages - 1 && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              className="h-8 w-8"
+                              aria-label={`Page ${currentPage + 1}`}
+                            >
+                              {currentPage + 1}
+                            </Button>
+                          )}
+                          
+                          {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                          
+                          <Button
+                            variant={currentPage === totalPages ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => handlePageChange(totalPages)}
+                            className="h-8 w-8"
+                            aria-label={`Page ${totalPages}`}
+                          >
+                            {totalPages}
+                          </Button>
+                        </>
+                      )}
+                      
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8"
+                        aria-label="Next page"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8"
+                        aria-label="Last page"
+                      >
+                        <ChevronsRight className="h-4 w-4" />
+                      </Button>
+                </div>
+                </div>
+                  
+                  <div className="flex-1 flex justify-end">
+                    
+          </div>
+                      </div>
+                      </div>
+                      </div>
+              )}
+                  </CardContent>
+                </Card>
+        </TabsContent>
+                
+        <TabsContent value="inventory">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between bg-background border-b">
+              <div>
+                <CardTitle className="flex items-center text-xl">
+                  <Boxes className="h-5 w-5 mr-2 text-primary" />
+                  Inventory Items
+                </CardTitle>
+                <CardDescription>Track and manage all inventory across warehouses</CardDescription>
+              </div>
+              <Button onClick={handleAddInventoryItem}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Item
+              </Button>
+            </CardHeader>
+            
+            <div className="p-4 bg-background border-b">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search inventory..."
+                    value={inventorySearchTerm}
+                    onChange={(e) => {
+                      setInventorySearchTerm(e.target.value);
+                      setInventoryPage(1);
+                    }}
+                    className="pl-8 w-full h-9"
+                  />
+                </div>
+                
+                <Select defaultValue={inventoryCategoryFilter} onValueChange={setInventoryCategoryFilter}>
+                  <SelectTrigger className="w-[150px] h-9">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="raw">Raw Materials</SelectItem>
+                    <SelectItem value="finished">Finished Goods</SelectItem>
+                    <SelectItem value="packaging">Packaging</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
+                  <Select
+                    value={inventoryPageSize.toString()}
+                    onValueChange={(size) => handleInventoryPageSizeChange(Number(size))}
+                  >
+                    <SelectTrigger className="h-9 w-[70px]">
+                      <SelectValue placeholder={inventoryPageSize.toString()} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[5, 10, 25, 50].map((size) => (
+                        <SelectItem key={size} value={size.toString()}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button variant="outline" className="h-9 ml-auto" onClick={fetchData}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+            
+            {/* Batch Operations */}
+            {selectedInventoryItems.length > 0 && (
+              <div className="p-3 bg-muted/30 border-b">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center">
+                    <Badge variant="secondary" className="mr-2">{selectedInventoryItems.length}</Badge>
+                    <span className="text-sm font-medium">items selected</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Select defaultValue="" onValueChange={(value) => value && handleBatchInventoryOperation(value)}>
+                      <SelectTrigger className="h-8 w-[180px]">
+                        <SelectValue placeholder="Batch Action" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="move">Move to Warehouse</SelectItem>
+                        <SelectItem value="restock">Request Restock</SelectItem>
+                        <SelectItem value="delete">Delete Selected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm" className="h-8" onClick={() => setSelectedInventoryItems([])}>
+                      Clear Selection
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <CardContent className="p-0">
+              {filteredInventory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 p-6">
+                  <Package2 className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                  <h3 className="text-lg font-medium text-center mb-2">No inventory items found</h3>
+                  <p className="text-sm text-muted-foreground text-center mb-4">
+                    {inventorySearchTerm || inventoryCategoryFilter !== "all" 
+                      ? "Try adjusting your search filters to find what you're looking for." 
+                      : "Get started by adding your first inventory item."}
+                  </p>
+                  {!inventorySearchTerm && inventoryCategoryFilter === "all" && (
+                    <Button onClick={handleAddInventoryItem}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Inventory Item
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <div className="overflow-auto">
+                    <table className="w-full">
+                      <thead className="bg-muted/50 text-sm">
+                        <tr>
+                          <th className="py-3 px-4 text-left font-medium w-[40px]">
+                            <input
+                              type="checkbox"
+                              checked={selectedInventoryItems.length === paginatedInventory.length && paginatedInventory.length > 0}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedInventoryItems(paginatedInventory.map(item => item.id.toString()));
+                                } else {
+                                  setSelectedInventoryItems([]);
+                                }
+                              }}
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </th>
+                          <th className="py-3 px-4 text-left font-medium w-[60px]">ID</th>
+                          <th className="py-3 px-4 text-left font-medium">Item</th>
+                          <th className="py-3 px-4 text-left font-medium">Warehouse</th>
+                          <th className="py-3 px-4 text-center font-medium">Quantity</th>
+                          <th className="py-3 px-4 text-left font-medium">Last Updated</th>
+                          <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {paginatedInventory.map((item) => (
+                          <tr key={item.id}>
+                            <td className="py-2 px-4">
+                              <input
+                                type="checkbox"
+                                checked={selectedInventoryItems.includes(item.id.toString())}
+                                onChange={() => handleToggleInventorySelection(item.id.toString())}
+                                className="h-4 w-4 rounded border-gray-300"
+                              />
+                            </td>
+                            <td className="py-2 px-4 text-sm">{item.id}</td>
+                            <td className="py-2 px-4">
+                              <div className="font-medium flex items-center">
+                                <Package2 className="h-4 w-4 mr-2 text-primary" />
+                                {item.itemName}
+                              </div>
+                            </td>
+                            <td className="py-2 px-4">
+                              <div className="flex items-center">
+                                <WarehouseIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                                {getWarehouseName(item.warehouseId || 0)}
+                              </div>
+                            </td>
+                            <td className="py-2 px-4 text-center">
+                              <div className="flex flex-col items-center">
+                                <div className="font-medium">{item.quantity}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {item.unit || 'units'}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-2 px-4 text-sm">
+                              <div className="flex items-center">
+                                <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                                {item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : 'N/A'}
+                              </div>
+                            </td>
+                            <td className="py-2 px-4 text-right">
+                              <div className="flex items-center justify-end space-x-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => console.log('View details for', item.itemName)} 
+                                  className="h-8 w-8"
+                                  title="View Details"
+                                >
+                                  <FileText className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => handleEditInventoryItem(item)} 
+                                  className="h-8 w-8"
+                                  title="Edit Item"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => handleDeleteInventoryItem(item)} 
+                                  className="h-8 w-8 text-destructive hover:text-destructive"
+                                  title="Delete Item"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="border-t">
+                    <div className="flex items-center justify-between py-4 px-6">
+                      <div className="flex-1 text-sm text-muted-foreground">
+                        Showing {Math.min((inventoryPage - 1) * inventoryPageSize + 1, filteredInventory.length)} to {Math.min(inventoryPage * inventoryPageSize, filteredInventory.length)} of {filteredInventory.length} {filteredInventory.length === 1 ? 'item' : 'items'}
                       </div>
                       
                       <div className="flex-1 flex justify-center">
@@ -797,8 +1200,8 @@ export default function Warehouse() {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => handlePageChange(1)}
-                            disabled={currentPage === 1}
+                            onClick={() => handleInventoryPageChange(1)}
+                            disabled={inventoryPage === 1}
                             className="h-8 w-8"
                             aria-label="First page"
                           >
@@ -807,25 +1210,25 @@ export default function Warehouse() {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
+                            onClick={() => handleInventoryPageChange(inventoryPage - 1)}
+                            disabled={inventoryPage === 1}
                             className="h-8 w-8"
                             aria-label="Previous page"
                           >
                             <ChevronLeft className="h-4 w-4" />
                           </Button>
                           
-                          {totalPages <= 5 ? (
+                          {inventoryTotalPages <= 5 ? (
                             // Show all pages if 5 or fewer
-                            [...Array(totalPages)].map((_, i) => (
+                            [...Array(inventoryTotalPages)].map((_, i) => (
                               <Button
-                                key={`page-${i+1}`}
-                                variant={currentPage === i+1 ? "default" : "outline"}
+                                key={`inv-page-${i+1}`}
+                                variant={inventoryPage === i+1 ? "default" : "outline"}
                                 size="icon"
-                                onClick={() => handlePageChange(i+1)}
+                                onClick={() => handleInventoryPageChange(i+1)}
                                 className="h-8 w-8"
                                 aria-label={`Page ${i+1}`}
-                                aria-current={currentPage === i+1 ? "page" : undefined}
+                                aria-current={inventoryPage === i+1 ? "page" : undefined}
                               >
                                 {i+1}
                               </Button>
@@ -834,64 +1237,64 @@ export default function Warehouse() {
                             // Show limited pages with ellipsis
                             <>
                               <Button
-                                variant={currentPage === 1 ? "default" : "outline"}
+                                variant={inventoryPage === 1 ? "default" : "outline"}
                                 size="icon"
-                                onClick={() => handlePageChange(1)}
+                                onClick={() => handleInventoryPageChange(1)}
                                 className="h-8 w-8"
                                 aria-label="Page 1"
                               >
                                 1
                               </Button>
                               
-                              {currentPage > 3 && <span className="mx-1">...</span>}
+                              {inventoryPage > 3 && <span className="mx-1">...</span>}
                               
-                              {currentPage > 2 && (
+                              {inventoryPage > 2 && (
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => handlePageChange(currentPage - 1)}
+                                  onClick={() => handleInventoryPageChange(inventoryPage - 1)}
                                   className="h-8 w-8"
-                                  aria-label={`Page ${currentPage - 1}`}
+                                  aria-label={`Page ${inventoryPage - 1}`}
                                 >
-                                  {currentPage - 1}
+                                  {inventoryPage - 1}
                                 </Button>
                               )}
                               
-                              {currentPage !== 1 && currentPage !== totalPages && (
+                              {inventoryPage !== 1 && inventoryPage !== inventoryTotalPages && (
                                 <Button
                                   variant="default"
                                   size="icon"
-                                  onClick={() => handlePageChange(currentPage)}
+                                  onClick={() => handleInventoryPageChange(inventoryPage)}
                                   className="h-8 w-8"
-                                  aria-label={`Page ${currentPage}`}
+                                  aria-label={`Page ${inventoryPage}`}
                                   aria-current="page"
                                 >
-                                  {currentPage}
+                                  {inventoryPage}
                                 </Button>
                               )}
                               
-                              {currentPage < totalPages - 1 && (
+                              {inventoryPage < inventoryTotalPages - 1 && (
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => handlePageChange(currentPage + 1)}
+                                  onClick={() => handleInventoryPageChange(inventoryPage + 1)}
                                   className="h-8 w-8"
-                                  aria-label={`Page ${currentPage + 1}`}
+                                  aria-label={`Page ${inventoryPage + 1}`}
                                 >
-                                  {currentPage + 1}
+                                  {inventoryPage + 1}
                                 </Button>
                               )}
                               
-                              {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                              {inventoryPage < inventoryTotalPages - 2 && <span className="mx-1">...</span>}
                               
                               <Button
-                                variant={currentPage === totalPages ? "default" : "outline"}
+                                variant={inventoryPage === inventoryTotalPages ? "default" : "outline"}
                                 size="icon"
-                                onClick={() => handlePageChange(totalPages)}
+                                onClick={() => handleInventoryPageChange(inventoryTotalPages)}
                                 className="h-8 w-8"
-                                aria-label={`Page ${totalPages}`}
+                                aria-label={`Page ${inventoryTotalPages}`}
                               >
-                                {totalPages}
+                                {inventoryTotalPages}
                               </Button>
                             </>
                           )}
@@ -899,8 +1302,8 @@ export default function Warehouse() {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
+                            onClick={() => handleInventoryPageChange(inventoryPage + 1)}
+                            disabled={inventoryPage === inventoryTotalPages}
                             className="h-8 w-8"
                             aria-label="Next page"
                           >
@@ -909,8 +1312,8 @@ export default function Warehouse() {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => handlePageChange(totalPages)}
-                            disabled={currentPage === totalPages}
+                            onClick={() => handleInventoryPageChange(inventoryTotalPages)}
+                            disabled={inventoryPage === inventoryTotalPages}
                             className="h-8 w-8"
                             aria-label="Last page"
                           >
@@ -926,35 +1329,6 @@ export default function Warehouse() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="inventory">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center">
-                  <Boxes className="h-5 w-5 mr-2 text-primary" />
-                  Inventory Items
-                </CardTitle>
-                <CardDescription>Track and manage all inventory across warehouses</CardDescription>
-              </div>
-              <Button onClick={handleAddInventoryItem}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Item
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {/* Keep the EnhancedTable for inventory items since it already works well */}
-              <EnhancedTable
-                data={filteredInventory}
-                columns={inventoryColumns}
-                actions={inventoryActions}
-                searchKey="itemName"
-                searchPlaceholder="Search inventory items..."
-                emptyMessage={loading ? "Loading inventory..." : error ? error : searchTerm ? "No items match your search." : "No inventory items found."}
-              />
             </CardContent>
           </Card>
         </TabsContent>

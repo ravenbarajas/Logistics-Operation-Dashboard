@@ -13,14 +13,37 @@ import {
   Calendar,
   UserRound,
   Settings,
+  ChevronDown,
+  Package,
+  Boxes,
+  Activity,
+  BarChart3,
 } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 type SidebarProps = {
   isMobile?: boolean;
   onClose?: () => void;
 };
 
-const navItems = [
+type NavItemChild = {
+  title: string;
+  href: string;
+};
+
+type NavItem = {
+  title: string;
+  icon: React.ReactNode;
+  href?: string;
+  children?: NavItemChild[];
+};
+
+const navItems: NavItem[] = [
   {
     title: "Dashboard",
     icon: <LayoutDashboard className="mr-2 h-4 w-4" />,
@@ -52,9 +75,26 @@ const navItems = [
     href: "/orders",
   },
   {
-    title: "Warehouse",
+    title: "Warehouse Management",
     icon: <LayoutGrid className="mr-2 h-4 w-4" />,
-    href: "/warehouse",
+    children: [
+      {
+        title: "Dashboard",
+        href: "/warehouse",
+      },
+      {
+        title: "Inventory",
+        href: "/warehouse/inventory",
+      },
+      {
+        title: "Storage",
+        href: "/warehouse/storage",
+      },
+      {
+        title: "Analytics",
+        href: "/warehouse/analytics",
+      },
+    ],
   },
   {
     title: "Suppliers",
@@ -92,21 +132,61 @@ export default function Sidebar({ isMobile, onClose }: SidebarProps) {
       
       <nav className="flex-1 overflow-y-auto">
         <ul className="p-2">
-          {navItems.map((item) => (
-            <li key={item.href} className="mb-1">
-              <Link
-                href={item.href}
-                onClick={isMobile && onClose ? onClose : undefined}
-                className={cn(
-                  "flex items-center px-4 py-2 text-sm font-medium rounded-md",
-                  location === item.href
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                )}
-              >
-                {item.icon}
-                {item.title}
-              </Link>
+          {navItems.map((item, index) => (
+            <li key={item.href || index} className="mb-1">
+              {item.children ? (
+                <Accordion type="single" collapsible className="border-none shadow-none">
+                  <AccordionItem value={`item-${index}`} className="border-none">
+                    <AccordionTrigger 
+                      className={cn(
+                        "flex items-center px-4 py-2 text-sm font-medium rounded-md hover:bg-muted no-underline",
+                        "data-[state=open]:text-primary data-[state=open]:bg-muted/40",
+                        "dark:text-white dark:hover:bg-muted/20 dark:data-[state=open]:bg-muted/30",
+                        item.children.some(child => location === child.href) 
+                          ? "text-primary font-medium dark:text-primary-foreground" 
+                          : ""
+                      )}
+                    >
+                      {item.icon}
+                      {item.title}
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-1 pb-0 px-0">
+                      <ul className="pl-6 space-y-1">
+                        {item.children.map((child) => (
+                          <li key={child.href}>
+                            <Link
+                              href={child.href}
+                              onClick={isMobile && onClose ? onClose : undefined}
+                              className={cn(
+                                "flex items-center px-4 py-2 text-sm rounded-md",
+                                location === child.href
+                                  ? "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
+                                  : "hover:bg-muted dark:hover:bg-muted/20 dark:text-foreground"
+                              )}
+                            >
+                              {child.title}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              ) : (
+                <Link
+                  href={item.href!}
+                  onClick={isMobile && onClose ? onClose : undefined}
+                  className={cn(
+                    "flex items-center px-4 py-2 text-sm font-medium rounded-md",
+                    location === item.href
+                      ? "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
+                      : "hover:bg-muted dark:hover:bg-muted/20 dark:text-foreground"
+                  )}
+                >
+                  {item.icon}
+                  {item.title}
+                </Link>
+              )}
             </li>
           ))}
         </ul>

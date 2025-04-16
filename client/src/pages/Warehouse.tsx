@@ -2069,38 +2069,6 @@ export default function Warehouse() {
             </div>
             
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Total Storage Locations</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">1,248</div>
-                    <div className="text-xs text-muted-foreground">Across all warehouse facilities</div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Space Utilization</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">82.3%</div>
-                    <Progress value={82.3} className="h-2 mt-2" />
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Empty Locations</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">221</div>
-                    <div className="text-xs text-muted-foreground">17.7% of total capacity</div>
-                  </CardContent>
-                </Card>
-            </div>
-              
               <div className="rounded-md border mb-6">
                 <div className="bg-muted/50 px-4 py-3 flex justify-between items-center">
                   <h3 className="font-medium">Storage Area Map</h3>
@@ -2117,13 +2085,15 @@ export default function Warehouse() {
                 </div>
                 
                 <div className="p-6 flex justify-center">
-                  <div className="grid grid-cols-10 gap-2 max-w-3xl">
-                    {[...Array(100)].map((_, index) => {
+                  <div className="grid grid-cols-12 gap-2 min-w-3xl">
+                    {[...Array(120)].map((_, index) => {
                       // Generate some pattern for demo
-                      const isFilled = Math.random() > 0.2;
-                      const isHighPriority = Math.random() > 0.8;
-                      const colorClass = isHighPriority ? "bg-red-100 border-red-300" : 
-                                          isFilled ? "bg-blue-100 border-blue-300" : "bg-gray-100 border-gray-300";
+                      const utilization = Math.random() * 200;
+                      const colorClass = 
+                        utilization > 98 ? "bg-primary/90 text-primary-foreground" : 
+                        utilization > 95 ? "bg-green-500/20 border border-green-500/30 text-foreground" : 
+                        utilization > 90 ? "bg-amber-500/20 border border-amber-500/30 text-foreground" : 
+                        "bg-destructive/20 border border-destructive/30 text-foreground";
                       
                       return (
                         <div 
@@ -2139,16 +2109,20 @@ export default function Warehouse() {
                 
                 <div className="px-6 pb-4 flex justify-center gap-6">
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
-                    <span className="text-sm">Empty</span>
+                    <div className="w-4 h-4 bg-primary/90 rounded"></div>
+                    <span className="text-sm">Optimally Utilized (&gt;98%)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
-                    <span className="text-sm">Occupied</span>
+                    <div className="w-4 h-4 bg-green-500/20 border border-green-500/30 rounded"></div>
+                    <span className="text-sm">Well Utilized (&gt;95%)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
-                    <span className="text-sm">High Priority</span>
+                    <div className="w-4 h-4 bg-amber-500/20 border border-amber-500/30 rounded"></div>
+                    <span className="text-sm">Moderate Utilization (&gt;90%)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-destructive/20 border border-destructive/30 rounded"></div>
+                    <span className="text-sm">Under Utilized (&lt;90%)</span>
                   </div>
                 </div>
               </div>

@@ -44,7 +44,9 @@ import {
   CalendarIcon,
   Plus,
   RefreshCw,
-  CheckCircle
+  CheckCircle,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react";
 import {
   BarChart,
@@ -508,6 +510,7 @@ export default function Suppliers() {
   const [deliveryDateFilter, setDeliveryDateFilter] = useState("all");
   const [ratingFilter, setRatingFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("all");
   
   // Calculate supplier statistics
   const totalSuppliers = suppliers.length;
@@ -525,6 +528,17 @@ export default function Suppliers() {
     categories[s.category] = (categories[s.category] || 0) + 1;
   });
   
+  // Get the current page name for the heading
+  const getCurrentPageName = () => {
+    switch (activeTab) {
+      case "all": return "All Suppliers";
+      case "active": return "Active Suppliers";
+      case "review": return "Suppliers Under Review";
+      case "inactive": return "Inactive Suppliers";
+      default: return "All Suppliers";
+    }
+  };
+  
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -534,6 +548,11 @@ export default function Suppliers() {
   const handleAddSupplier = () => {
     setSelectedSupplier(undefined);
     setIsModalOpen(true);
+  };
+  
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
   };
   
   // Handle successful supplier operation
@@ -747,136 +766,246 @@ export default function Suppliers() {
   };
 
   return (
-    <div className="container px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Supplier Management</h1>
-        <div className="flex gap-2">
-          <Button onClick={handleAddSupplier}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Supplier
-          </Button>
+        <div>
+          <h1 className="text-3xl font-bold">
+            Supplier Management
+          </h1>
+          <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            <span>Current section: </span>
+            <Badge className="ml-2">
+              {getCurrentPageName()}
+            </Badge>
+          </div>
+        </div>
+        <div className="flex gap-2 items-center">
           <Button variant="outline" onClick={() => setSuppliers(supplierData)}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
+          <Button onClick={handleAddSupplier}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Supplier
+          </Button>
         </div>
       </div>
       
-      {/* Supplier Summary Cards */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Suppliers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalSuppliers}</div>
-            <div className="flex items-center">
-              <Factory className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Registered suppliers</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Active Suppliers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">{activeSuppliers}</div>
-            <div className="flex items-center">
-              <CheckCircle className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">{Math.round((activeSuppliers / totalSuppliers) * 100)}% of total suppliers</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Avg. On-Time Delivery</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-500">{avgOnTimeRate.toFixed(1)}%</div>
-            <div className="flex items-center">
-              <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Average delivery performance</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Supplier Rating</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-500">{avgRating.toFixed(1)}/5</div>
-            <div className="flex items-center">
-              <Star className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Average quality rating</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <Factory className="h-6 w-6 text-primary" />
-              </div>
-              <span className="text-muted-foreground text-sm">Total</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{activeSuppliers}</h3>
-              <p className="text-muted-foreground text-sm">Active Suppliers</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
-                <Package className="h-6 w-6 text-green-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Last 30 Days</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">432</h3>
-              <p className="text-muted-foreground text-sm">Deliveries Received</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-amber-500/10 rounded-full flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-amber-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Average</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{avgOnTimeRate.toFixed(1)}%</h3>
-              <p className="text-muted-foreground text-sm">On-Time Delivery</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center">
-                <Star className="h-6 w-6 text-blue-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Average</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">{avgRating.toFixed(1)}</h3>
-              <p className="text-muted-foreground text-sm">Supplier Rating</p>
-            </div>
-          </CardContent>
-        </Card>
+        {activeTab === "all" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Total Suppliers</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{totalSuppliers}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+3 since last month</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Average Rating</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{avgRating.toFixed(1)}/5</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+0.2 from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">On-Time Delivery</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{avgOnTimeRate.toFixed(1)}%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+1.5% from last year</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Active Suppliers</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{activeSuppliers}</div>
+                <div className="flex items-center">
+                  <div className="text-xs text-muted-foreground">{Math.round((activeSuppliers / totalSuppliers) * 100)}% of total</div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : activeTab === "active" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Active Suppliers</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{activeSuppliers}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+2 since last month</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Average Rating</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{(suppliers.filter(s => s.status === 'active').reduce((sum, s) => sum + s.rating, 0) / activeSuppliers).toFixed(1)}/5</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+0.3 from inactive suppliers</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">On-Time Delivery</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{(suppliers.filter(s => s.status === 'active').reduce((sum, s) => sum + s.onTimeRate, 0) / activeSuppliers).toFixed(1)}%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+2.1% from overall average</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Active Categories</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{Object.keys(suppliers.filter(s => s.status === 'active').reduce((acc, s) => ({...acc, [s.category]: true}), {})).length}</div>
+                <div className="flex items-center">
+                  <div className="text-xs text-muted-foreground">Across all product lines</div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : activeTab === "review" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Under Review</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{reviewSuppliers}</div>
+                <div className="flex items-center">
+                  <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">-1 since last month</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Avg Review Duration</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">14 days</div>
+                <div className="flex items-center">
+                  <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">-2 days from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Review Approval Rate</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">78.5%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+3.2% from last year</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Top Review Reason</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">Quality</div>
+                <div className="flex items-center">
+                  <div className="text-xs text-muted-foreground">42% of reviews</div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Inactive Suppliers</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{inactiveSuppliers}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-amber-500" />
+                  <p className="text-xs text-amber-500">+1 since last month</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Reactivation Rate</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">24.6%</div>
+                <div className="flex items-center">
+                  <ArrowDown className="h-4 w-4 mr-1 text-amber-500" />
+                  <p className="text-xs text-amber-500">-2.3% from last year</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Avg Inactive Period</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">126 days</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-amber-500" />
+                  <p className="text-xs text-amber-500">+12 days from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Top Inactive Reason</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">Pricing</div>
+                <div className="flex items-center">
+                  <div className="text-xs text-muted-foreground">38% of cases</div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -1012,26 +1141,156 @@ export default function Suppliers() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="all" className="mb-6">
-        <TabsList className="mb-4">
-          <TabsTrigger value="all">All Suppliers ({totalSuppliers})</TabsTrigger>
-          <TabsTrigger value="active">Active ({activeSuppliers})</TabsTrigger>
-          <TabsTrigger value="review">Under Review ({reviewSuppliers})</TabsTrigger>
-          <TabsTrigger value="inactive">Inactive ({inactiveSuppliers})</TabsTrigger>
+      {/* Analytics Overview Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <Card className="col-span-1 lg:col-span-2">
+          <CardHeader className="p-6">
+            <CardTitle>Supplier Performance Overview</CardTitle>
+            <CardDescription>Monthly metrics for all supplier categories</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={categoryPerformance}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="category" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      borderColor: 'hsl(var(--border))',
+                      color: 'hsl(var(--foreground))'
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="onTime" name="On-Time Delivery" fill="hsl(var(--primary))" />
+                  <Bar dataKey="quality" name="Quality Score" fill="#82ca9d" />
+                  <Bar dataKey="pricing" name="Price Competitiveness" fill="#ffc658" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="p-6">
+            <CardTitle>Top Supplier Performance</CardTitle>
+            <CardDescription>Comparing top and average metrics</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart 
+                  cx="50%" 
+                  cy="50%" 
+                  outerRadius="80%" 
+                  data={[
+                    { subject: 'Quality', A: 95, B: 82 },
+                    { subject: 'On-Time', A: 98, B: 90 },
+                    { subject: 'Price', A: 85, B: 80 },
+                    { subject: 'Communication', A: 92, B: 84 },
+                    { subject: 'Flexibility', A: 88, B: 75 }
+                  ]}
+                >
+                  <PolarGrid className="stroke-muted" />
+                  <PolarAngleAxis 
+                    dataKey="subject" 
+                    className="text-xs" 
+                    tick={{fill: 'hsl(var(--foreground))'}}
+                  />
+                  <PolarRadiusAxis 
+                    className="text-xs" 
+                    tick={{fill: 'hsl(var(--foreground))'}}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
+                      borderColor: 'hsl(var(--border))',
+                      color: 'hsl(var(--foreground))'
+                    }}
+                  />
+                  <Radar
+                    name="Top Supplier"
+                    dataKey="A"
+                    stroke="hsl(var(--primary))"
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0.6}
+                  />
+                  <Radar
+                    name="Average Supplier"
+                    dataKey="B"
+                    stroke="hsl(var(--secondary))"
+                    fill="hsl(var(--secondary))"
+                    fillOpacity={0.6}
+                  />
+                  <Legend />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Supplier Operations Section */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6 space-y-6">
+        <TabsList className="grid grid-cols-4 w-full md:w-auto">
+          <TabsTrigger value="all">
+            <Factory className="h-5 w-5 mr-2 text-primary" />
+            All Suppliers
+          </TabsTrigger>
+          <TabsTrigger value="active">
+            <CheckCircle className="h-5 w-5 mr-2 text-primary" />
+            Active
+          </TabsTrigger>
+          <TabsTrigger value="review">
+            <Clock className="h-5 w-5 mr-2 text-primary" />
+            Under Review
+          </TabsTrigger>
+          <TabsTrigger value="inactive">
+            <Package className="h-5 w-5 mr-2 text-primary" />
+            Inactive
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="all">
           <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                  <CardTitle>All Suppliers</CardTitle>
-                  <CardDescription>Manage all your supplier relationships</CardDescription>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>All Suppliers</CardTitle>
+                <CardDescription>Manage all your supplier relationships</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search suppliers..."
+                    className="pl-8 w-full md:w-[300px]"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
                 </div>
-                <RenderFilters />
+                <Button variant="outline" onClick={handleAddSupplier}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Supplier
+                </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            
+            <div className="p-6 bg-background py-0 mb-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <RenderFilters />
+                <Button variant="outline" className="h-9 ml-auto" onClick={() => setSuppliers(supplierData)}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+            
+            <CardContent className="p-6">
               {renderSupplierTable(getFilteredSuppliers())}
             </CardContent>
             <CardFooter className="border-t py-4 px-6">
@@ -1044,16 +1303,40 @@ export default function Suppliers() {
         
         <TabsContent value="active">
           <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                  <CardTitle>Active Suppliers</CardTitle>
-                  <CardDescription>Currently active supplier accounts</CardDescription>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>Active Suppliers</CardTitle>
+                <CardDescription>Currently active supplier accounts</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search active suppliers..."
+                    className="pl-8 w-full md:w-[300px]"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
                 </div>
-                <RenderFilters />
+                <Button variant="outline" onClick={handleAddSupplier}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Supplier
+                </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            
+            <div className="p-6 bg-background py-0 mb-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <RenderFilters />
+                <Button variant="outline" className="h-9 ml-auto" onClick={() => setSuppliers(supplierData)}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+            
+            <CardContent className="p-6">
               {renderSupplierTable(getFilteredSuppliers('active'))}
             </CardContent>
             <CardFooter className="border-t py-4 px-6">
@@ -1066,16 +1349,40 @@ export default function Suppliers() {
         
         <TabsContent value="review">
           <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                  <CardTitle>Under Review</CardTitle>
-                  <CardDescription>Suppliers currently under evaluation</CardDescription>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>Under Review</CardTitle>
+                <CardDescription>Suppliers currently under evaluation</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search suppliers under review..."
+                    className="pl-8 w-full md:w-[300px]"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
                 </div>
-                <RenderFilters />
+                <Button variant="outline" onClick={handleAddSupplier}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Supplier
+                </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            
+            <div className="p-6 bg-background py-0 mb-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <RenderFilters />
+                <Button variant="outline" className="h-9 ml-auto" onClick={() => setSuppliers(supplierData)}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+            
+            <CardContent className="p-6">
               {renderSupplierTable(getFilteredSuppliers('review'))}
             </CardContent>
             <CardFooter className="border-t py-4 px-6">
@@ -1088,16 +1395,40 @@ export default function Suppliers() {
         
         <TabsContent value="inactive">
           <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                  <CardTitle>Inactive Suppliers</CardTitle>
-                  <CardDescription>Suppliers with inactive accounts</CardDescription>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>Inactive Suppliers</CardTitle>
+                <CardDescription>Suppliers with inactive accounts</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search inactive suppliers..."
+                    className="pl-8 w-full md:w-[300px]"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
                 </div>
-                <RenderFilters />
+                <Button variant="outline" onClick={handleAddSupplier}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Supplier
+                </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            
+            <div className="p-6 bg-background py-0 mb-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <RenderFilters />
+                <Button variant="outline" className="h-9 ml-auto" onClick={() => setSuppliers(supplierData)}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+            
+            <CardContent className="p-6">
               {renderSupplierTable(getFilteredSuppliers('inactive'))}
             </CardContent>
             <CardFooter className="border-t py-4 px-6">
@@ -1110,14 +1441,12 @@ export default function Suppliers() {
       </Tabs>
       
       {/* Supplier Modal */}
-      {isModalOpen && (
-        <SupplierModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          supplier={selectedSupplier}
-          onSuccess={handleSupplierSuccess}
-        />
-      )}
+      <SupplierModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        supplier={selectedSupplier}
+        onSuccess={handleSupplierSuccess}
+      />
     </div>
   );
 }

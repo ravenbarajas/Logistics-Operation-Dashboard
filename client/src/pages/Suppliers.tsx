@@ -1105,7 +1105,7 @@ export default function Suppliers() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Performance by Category</CardTitle>
-          <CardDescription>Supplier performance metrics by category</CardDescription>
+          <CardDescription>Supplier performance metrics by category and other things</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-80">

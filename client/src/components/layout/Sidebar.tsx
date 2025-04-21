@@ -99,7 +99,28 @@ const navItems: NavItem[] = [
   {
     title: "Suppliers",
     icon: <Users className="mr-2 h-4 w-4" />,
-    href: "/suppliers",
+    children: [
+      {
+        title: "Overview",
+        href: "/suppliers",
+      },
+      {
+        title: "Performance",
+        href: "/suppliers/performance",
+      },
+      {
+        title: "Directory",
+        href: "/suppliers/directory",
+      },
+      {
+        title: "Purchase Orders",
+        href: "/suppliers/orders",
+      },
+      {
+        title: "Quality Analysis",
+        href: "/suppliers/quality",
+      },
+    ],
   },
   {
     title: "Reports",

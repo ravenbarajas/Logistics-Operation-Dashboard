@@ -97,13 +97,9 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    title: "Suppliers",
+    title: "Supplier Management",
     icon: <Users className="mr-2 h-4 w-4" />,
     children: [
-      {
-        title: "Overview",
-        href: "/suppliers",
-      },
       {
         title: "Performance",
         href: "/suppliers/performance",
@@ -160,7 +156,7 @@ export default function Sidebar({ isMobile, onClose }: SidebarProps) {
                   <AccordionItem value={`item-${index}`} className="border-none">
                     <AccordionTrigger 
                       className={cn(
-                        "flex items-center px-4 py-2 text-sm font-medium rounded-md hover:bg-muted no-underline",
+                        "flex justify-between items-center px-4 py-2 text-sm font-medium rounded-md hover:bg-muted no-underline",
                         "data-[state=open]:text-primary data-[state=open]:bg-muted/40",
                         "dark:text-white dark:hover:bg-muted/20 dark:data-[state=open]:bg-muted/30",
                         item.children.some(child => location === child.href) 
@@ -168,8 +164,10 @@ export default function Sidebar({ isMobile, onClose }: SidebarProps) {
                           : ""
                       )}
                     >
-                      {item.icon}
-                      {item.title}
+                      <div className="flex items-center">
+                        {item.icon}
+                        <span className="text-left">{item.title}</span>
+                      </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-1 pb-0 px-0">
                       <ul className="pl-6 space-y-1">

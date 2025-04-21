@@ -85,7 +85,12 @@ function Router() {
               <Route path="/vehicles" component={Vehicles} />
               <Route path="/shipments" component={Shipments} />
               <Route path="/customers" component={Customers} />
-              <Route path="/suppliers" component={Suppliers} />
+              <Route path="/suppliers">
+                {() => {
+                  window.location.pathname = "/suppliers/performance";
+                  return null;
+                }}
+              </Route>
               <Route path="/suppliers/performance" component={Suppliers} />
               <Route path="/suppliers/directory" component={Suppliers} />
               <Route path="/suppliers/orders" component={Suppliers} />

@@ -143,7 +143,24 @@ const navItems: NavItem[] = [
   {
     title: "Customers",
     icon: <UserRound className="mr-2 h-4 w-4" />,
-    href: "/customers",
+    children: [
+      {
+        title: "Customer Summary",
+        href: "/customers/summary",
+      },
+      {
+        title: "Customer Directory",
+        href: "/customers/directory",
+      },
+      {
+        title: "Customer Segmentation",
+        href: "/customers/segmentation",
+      },
+      {
+        title: "Customer Satisfaction",
+        href: "/customers/satisfaction",
+      },
+    ],
   },
   {
     title: "Settings",

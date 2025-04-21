@@ -48,15 +48,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon, User, UserCheck, DollarSign } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon, User, UserCheck, DollarSign, ArrowUp, ArrowDown, ChevronRight } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart as RechartsLineChart, Line } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import { ShoppingBag } from 'lucide-react';
 import { LineChart } from '@/components/ui/line-chart';
 import { CustomerModal } from "@/components/customers/CustomerModal";
 import { Customer } from "@/services/customerService";
 import { customerService } from "@/services/customerService";
+import { CustomerSummary } from "@/services/customerService";
 import { Plus, RefreshCw } from "lucide-react";
+import { useLocation } from "wouter";
+
+// Define a UI-specific customer interface that matches the component's needs
+interface UICustomer {
+  id: number;
+  name: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  location: string;
+  status: string;
+  orders: number;
+  lastOrder: string;
+  totalSpent: string;
+}
 
 // Enhanced customer data with more statuses and variety
 const customersData = [
@@ -266,7 +282,7 @@ const orderVolumeData = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 export default function Customers() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<UICustomer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -274,6 +290,39 @@ export default function Customers() {
   const [selectedTab, setSelectedTab] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
+  
+  // Get current location from wouter
+  const [location, setLocation] = useLocation();
+  
+  // Determine which section to show based on the route
+  const [activeSection, setActiveSection] = useState("summary");
+  
+  useEffect(() => {
+    // Extract section from URL path
+    if (location.includes('/customers/directory')) {
+      setActiveSection('directory');
+    } else if (location.includes('/customers/segmentation')) {
+      setActiveSection('segmentation');
+    } else if (location.includes('/customers/satisfaction')) {
+      setActiveSection('satisfaction');
+    } else {
+      setActiveSection('summary');
+    }
+  }, [location]);
+  
+  // Get current page name for display
+  const getCurrentPageName = () => {
+    switch (activeSection) {
+      case 'directory':
+        return 'Customer Directory';
+      case 'segmentation':
+        return 'Customer Segmentation';
+      case 'satisfaction':
+        return 'Customer Satisfaction';
+      default:
+        return 'Customer Summary';
+    }
+  };
   
   // Added new filter states
   const [dateFilter, setDateFilter] = useState("all");
@@ -286,6 +335,11 @@ export default function Customers() {
   const inactiveCustomers = customers.filter(c => c.status === 'inactive').length;
   const onHoldCustomers = customers.filter(c => c.status === 'on-hold').length;
   const totalOrders = customers.reduce((sum, customer) => sum + customer.orders, 0);
+  
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchData();
+  }, []);
   
   // Filter customers based on search term, status, and additional filters
   const getFilteredCustomers = (status?: string) => {
@@ -608,7 +662,22 @@ export default function Customers() {
         customerService.getCustomers(),
         customerService.getCustomerSummary()
       ]);
-      setCustomers(customersData);
+      
+      // Map the API customer data to the UI customer format
+      const uiCustomers: UICustomer[] = customersData.map(customer => ({
+        id: customer.id,
+        name: customer.name,
+        contactPerson: customer.company || '',
+        email: customer.email,
+        phone: customer.phone,
+        location: `${customer.address.city}, ${customer.address.state}`,
+        status: customer.status,
+        orders: customer.totalOrders,
+        lastOrder: customer.lastOrderDate ? customer.lastOrderDate.toLocaleDateString() : 'N/A',
+        totalSpent: `$${customer.totalSpent.toFixed(2)}`
+      }));
+      
+      setCustomers(uiCustomers);
       setSummary(summaryData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -618,14 +687,16 @@ export default function Customers() {
   };
 
   return (
-    <div className="container px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Customer Management</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Customer Management</h1>
+          <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            <span>Current section: </span>
+            <Badge className="ml-2">{getCurrentPageName()}</Badge>
+          </div>
+        </div>
         <div className="flex gap-2">
-          <Button onClick={handleAddCustomer}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Customer
-          </Button>
           <Button variant="outline" onClick={fetchData}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -633,172 +704,499 @@ export default function Customers() {
         </div>
       </div>
       
-      {/* Customer Summary Cards Section */}
-      {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalCustomers}</div>
-              <div className="flex items-center">
-                <User className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">All time customer count</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-500">{summary.activeCustomers}</div>
-              <div className="flex items-center">
-                <UserCheck className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{Math.round((summary.activeCustomers / summary.totalCustomers) * 100)}% of total customers</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Average Revenue</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-500">${summary.averageSpentPerCustomer.toFixed(2)}</div>
-              <div className="flex items-center">
-                <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">Per customer spending</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Customer Segments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-between">
-                <div>
-                  <div className="text-lg font-bold">{summary.businessCustomers}</div>
-                  <p className="text-xs text-muted-foreground">Business</p>
+      {/* Summary Cards - Always visible on all sections */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {activeSection === "summary" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Total Customers</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{totalCustomers}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+{Math.round(totalCustomers * 0.05)} since last month</p>
                 </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Active Customers</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{activeCustomers}</div>
+                <div className="flex items-center">
+                  <p className="text-xs text-muted-foreground">{activeCustomers > 0 ? Math.round((activeCustomers / totalCustomers) * 100) : 0}% of total</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Average Order Value</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">${totalOrders > 0 ? Math.round(totalCustomers * 120).toLocaleString() : 0}</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+3.2% from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Retention Rate</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">94.3%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+1.5% year over year</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : activeSection === "directory" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Total Entries</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{getFilteredCustomers().length}</div>
+                <div className="flex items-center">
+                  <p className="text-xs text-muted-foreground">Showing {getFilteredCustomers().length} of {totalCustomers}</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Last Updated</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{new Date().toLocaleDateString()}</div>
+                <div className="flex items-center">
+                  <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">{new Date().toLocaleTimeString()}</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Response Time</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">2.4s</div>
+                <div className="flex items-center">
+                  <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">-0.3s from last week</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Filter Status</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">
+                  {searchQuery || dateFilter !== "all" || activityFilter !== "all" ? "Active" : "None"}
+                </div>
+                <div className="flex items-center">
+                  <Filter className="h-4 w-4 mr-1 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">
+                    {searchQuery ? "Search" : ""}{searchQuery && (dateFilter !== "all" || activityFilter !== "all") ? " + " : ""}
+                    {dateFilter !== "all" ? "Date" : ""}{dateFilter !== "all" && activityFilter !== "all" ? " + " : ""}
+                    {activityFilter !== "all" ? "Activity" : ""}
+                    {!searchQuery && dateFilter === "all" && activityFilter === "all" ? "No filters applied" : ""}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : activeSection === "segmentation" ? (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Business Customers</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{summary?.businessCustomers || 0}</div>
+                <div className="flex items-center">
+                  <Building2 className="h-4 w-4 mr-1 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">
+                    {summary ? Math.round((summary.businessCustomers / summary.totalCustomers) * 100) : 0}% of total
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Individual Customers</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">{summary?.individualCustomers || 0}</div>
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-1 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">
+                    {summary ? Math.round((summary.individualCustomers / summary.totalCustomers) * 100) : 0}% of total
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Avg. Business Value</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">
+                  ${summary?.businessCustomers ? Math.round((summary.totalRevenue * 0.7) / summary.businessCustomers).toLocaleString() : 0}
+                </div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+5.7% from last year</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Avg. Individual Value</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">
+                  ${summary?.individualCustomers ? Math.round((summary.totalRevenue * 0.3) / summary.individualCustomers).toLocaleString() : 0}
+                </div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+2.3% from last year</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Average Rating</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">4.7/5.0</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+0.2 from last quarter</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Response Rate</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">68%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+5% from last survey</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">NPS Score</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">62</div>
+                <div className="flex items-center">
+                  <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">Industry avg: 45</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center">Survey Completion</CardTitle>
+              </CardHeader>
+              <CardContent className="px-6">
+                <div className="text-2xl font-bold">91.4%</div>
+                <div className="flex items-center">
+                  <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+3.2% higher than industry</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+      
+      {/* Section Navigation Tabs */}
+      <Tabs value={activeSection} onValueChange={(value) => {
+        setLocation(`/customers/${value}`);
+      }} className="mb-6">
+        <TabsList className="grid grid-cols-4 w-full">
+          <TabsTrigger value="summary">Customer Summary</TabsTrigger>
+          <TabsTrigger value="directory">Customer Directory</TabsTrigger>
+          <TabsTrigger value="segmentation">Customer Segmentation</TabsTrigger>
+          <TabsTrigger value="satisfaction">Customer Satisfaction</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      
+      {/* Customer Summary Section */}
+      {activeSection === "summary" && summary && (
+        <div className="flex flex-col items-center w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 w-full">
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle>Customer Distribution</CardTitle>
+                <CardDescription>Breakdown of customer status</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={customerDistribution}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {customerDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          borderColor: 'hsl(var(--border))',
+                          color: 'hsl(var(--foreground))'
+                        }}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle>Order Volume Trend</CardTitle>
+                <CardDescription>Monthly order volume history</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsLineChart
+                      data={orderTrend}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="value" stroke="#2563eb" activeDot={{ r: 8 }} />
+                    </RechartsLineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 w-full">
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle>Customer Type Distribution</CardTitle>
+                <CardDescription>Business vs Individual customers</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Business', value: summary?.businessCustomers || 0 },
+                          { name: 'Individual', value: summary?.individualCustomers || 0 }
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        <Cell fill="#0088FE" />
+                        <Cell fill="#00C49F" />
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle>Customer Revenue Trend</CardTitle>
+                <CardDescription>Average revenue per customer</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsLineChart
+                      data={[
+                        { month: 'Jan', value: 980 },
+                        { month: 'Feb', value: 1020 },
+                        { month: 'Mar', value: 1110 },
+                        { month: 'Apr', value: 1050 },
+                        { month: 'May', value: 1180 },
+                        { month: 'Jun', value: 1250 },
+                        { month: 'Jul', value: 1310 },
+                        { month: 'Aug', value: 1420 }
+                      ]}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
+                      <Line type="monotone" dataKey="value" stroke="#10b981" activeDot={{ r: 8 }} />
+                    </RechartsLineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+      
+      {/* Customer Directory Section */}
+      {activeSection === "directory" && (
+        <div className="flex flex-col items-center w-full">
+          <Card className="w-full">
+            <CardHeader className="pb-2">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
-                  <div className="text-lg font-bold">{summary.individualCustomers}</div>
-                  <p className="text-xs text-muted-foreground">Individual</p>
+                  <CardTitle>Customer Directory</CardTitle>
+                  <CardDescription>Searchable table of all customer accounts</CardDescription>
+                </div>
+                <div className="mt-4 sm:mt-0 flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder="Search customers..."
+                      className="pl-8 w-[200px] md:w-[260px]"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <RenderFilters />
                 </div>
               </div>
-              <div className="mt-2 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary" 
-                  style={{ width: `${(summary.businessCustomers / summary.totalCustomers) * 100}%` }}
-                />
-              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Orders</TableHead>
+                    <TableHead>Last Order</TableHead>
+                    <TableHead>Total Spent</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {getFilteredCustomers().length > 0 ? (
+                    getFilteredCustomers().map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell className="font-medium">
+                        <div>
+                          <div className="font-medium">{customer.name}</div>
+                          <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col text-sm">
+                          <div className="flex items-center">
+                            <Mail className="h-3 w-3 mr-1" /> {customer.email}
+                          </div>
+                          <div className="flex items-center mt-1">
+                            <Phone className="h-3 w-3 mr-1" /> {customer.phone}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{customer.location}</TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          customer.status === 'active' ? 'success' : 
+                          customer.status === 'inactive' ? 'secondary' : 
+                          'warning'
+                        }>
+                          {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{customer.orders}</TableCell>
+                      <TableCell>{customer.lastOrder}</TableCell>
+                      <TableCell>{customer.totalSpent}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" onClick={() => handleEditCustomer(customer)}>
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-6">
+                        No customers found matching your criteria
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
+            <CardFooter className="border-t py-4 px-6 flex justify-center">
+              <div className="text-sm text-muted-foreground">
+                Showing {getFilteredCustomers().length} of {totalCustomers} customers
+              </div>
+            </CardFooter>
           </Card>
         </div>
       )}
       
-      <div className="container mx-auto p-4 md:p-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Customer Management</h1>
-            <p className="text-muted-foreground">Manage customer relationships and monitor order activities</p>
-          </div>
-          <div className="mt-4 md:mt-0 flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search customers..."
-                className="pl-8 w-[200px] md:w-[260px]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button onClick={handleAddCustomer}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Customer
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <UserRound className="h-6 w-6 text-primary" />
-                </div>
-                <span className="text-muted-foreground text-sm">Total</span>
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-bold">{totalCustomers}</h3>
-                <p className="text-muted-foreground text-sm">Total Customers</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
-                  <Building2 className="h-6 w-6 text-green-500" />
-                </div>
-                <span className="text-muted-foreground text-sm">All-time</span>
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-bold">{totalOrders}</h3>
-                <p className="text-muted-foreground text-sm">Total Orders</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-12 w-12 bg-amber-500/10 rounded-full flex items-center justify-center">
-                  <Ship className="h-6 w-6 text-amber-500" />
-                </div>
-                <span className="text-muted-foreground text-sm">Month</span>
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-bold">720</h3>
-                <p className="text-muted-foreground text-sm">New Orders</p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-12 w-12 bg-blue-500/10 rounded-full flex items-center justify-center">
-                  <Activity className="h-6 w-6 text-blue-500" />
-                </div>
-                <span className="text-muted-foreground text-sm">Average</span>
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-2xl font-bold">$4,285</h3>
-                <p className="text-muted-foreground text-sm">Order Value</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Distribution</CardTitle>
-              <CardDescription>Breakdown of customer status</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
+      {/* Customer Segmentation Section */}
+      {activeSection === "segmentation" && (
+        <div className="flex flex-col items-center w-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4 w-full">
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle>Distribution by Type</CardTitle>
+                <CardDescription>Business vs Individual customers</CardDescription>
+              </CardHeader>
+              <CardContent className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={customerDistribution}
+                      data={[
+                        { name: 'Business', value: summary?.businessCustomers || 0 },
+                        { name: 'Individual', value: summary?.individualCustomers || 0 }
+                      ]}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -807,433 +1205,151 @@ export default function Customers() {
                       dataKey="value"
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
-                      {customerDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
+                      <Cell fill="#0088FE" />
+                      <Cell fill="#00C49F" />
                     </Pie>
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
-                    />
+                    <Tooltip />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Volume Trend</CardTitle>
-              <CardDescription>Monthly order volume history</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle>Distribution by Region</CardTitle>
+                <CardDescription>Geographical distribution</CardDescription>
+              </CardHeader>
+              <CardContent className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={orderTrend}
-                    index="name"
-                    categories={["value"]}
-                    colors={["#2563eb"]}
-                    valueFormatter={valueFormatter}
-                  />
+                  <BarChart
+                    data={customersByRegion}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#82ca9d" />
+                  </BarChart>
                 </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
 
-        <Tabs defaultValue="all" className="mb-6" onValueChange={setSelectedTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="all">All Customers</TabsTrigger>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="inactive">Inactive</TabsTrigger>
-            <TabsTrigger value="on-hold">On Hold</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="all" className="space-y-6">
             <Card>
-              <CardHeader className="pb-2">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                  <div>
-                <CardTitle>Customer List</CardTitle>
-                <CardDescription>Manage and track all customer information</CardDescription>
-                  </div>
-                  <RenderFilters />
-                </div>
+              <CardHeader className="text-center">
+                <CardTitle>Distribution by Value</CardTitle>
+                <CardDescription>Customer spending categories</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Orders</TableHead>
-                      <TableHead>Last Order</TableHead>
-                      <TableHead>Total Spent</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {getFilteredCustomers().length > 0 ? (
-                      getFilteredCustomers().map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell className="font-medium">
-                          <div>
-                            <div className="font-medium">{customer.name}</div>
-                            <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
-                          </div>
-                        </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col text-sm">
-                              <div className="flex items-center">
-                                <Mail className="h-3 w-3 mr-1" /> {customer.email}
-                              </div>
-                              <div className="flex items-center mt-1">
-                                <Phone className="h-3 w-3 mr-1" /> {customer.phone}
-                              </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{customer.location}</TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            customer.status === 'active' ? 'success' : 
-                            customer.status === 'inactive' ? 'secondary' : 
-                            'warning'
-                          }>
-                            {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{customer.orders}</TableCell>
-                        <TableCell>{customer.lastOrder}</TableCell>
-                        <TableCell>{customer.totalSpent}</TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
-                                  Edit customer
-                                </DropdownMenuItem>
-                              <DropdownMenuItem>View orders</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
-                                Deactivate
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center py-6">
-                          No customers found matching your criteria
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+              <CardContent className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { name: 'High Value', value: 22 },
+                      { name: 'Medium Value', value: 45 },
+                      { name: 'Low Value', value: 33 }
+                    ]}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#FFBB28" />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
-              <CardFooter className="border-t py-4 px-6">
-                <div className="text-sm text-muted-foreground">
-                  Showing {getFilteredCustomers().length} of {totalCustomers} customers
-                </div>
-              </CardFooter>
             </Card>
-          </TabsContent>
-          
-          <TabsContent value="active">
+          </div>
+        </div>
+      )}
+      
+      {/* Customer Satisfaction Section */}
+      {activeSection === "satisfaction" && (
+        <div className="flex flex-col items-center w-full">
+          <div className="grid grid-cols-1 mb-6 w-full">
             <Card>
-              <CardHeader className="pb-2">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                  <div>
-                    <CardTitle>Active Customers</CardTitle>
-                    <CardDescription>Customers with active accounts and regular orders</CardDescription>
-                  </div>
-                  <RenderFilters />
-                </div>
+              <CardHeader className="text-center">
+                <CardTitle>Satisfaction Score Trends</CardTitle>
+                <CardDescription>Monthly customer feedback scores</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Orders</TableHead>
-                      <TableHead>Last Order</TableHead>
-                      <TableHead>Total Spent</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {getFilteredCustomers('active').length > 0 ? (
-                      getFilteredCustomers('active').map((customer) => (
-                        <TableRow key={customer.id}>
-                          <TableCell className="font-medium">
-                            <div>
-                              <div className="font-medium">{customer.name}</div>
-                              <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col text-sm">
-                              <div className="flex items-center">
-                                <Mail className="h-3 w-3 mr-1" /> {customer.email}
-                              </div>
-                              <div className="flex items-center mt-1">
-                                <Phone className="h-3 w-3 mr-1" /> {customer.phone}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{customer.location}</TableCell>
-                          <TableCell>{customer.orders}</TableCell>
-                          <TableCell>{customer.lastOrder}</TableCell>
-                          <TableCell>{customer.totalSpent}</TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <span className="sr-only">Open menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
-                                  Edit customer
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>View orders</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">
-                                  Deactivate
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-6">
-                          No active customers found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+              <CardContent className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsLineChart
+                    data={[
+                      { month: 'Jan', score: 4.2 },
+                      { month: 'Feb', score: 4.3 },
+                      { month: 'Mar', score: 4.1 },
+                      { month: 'Apr', score: 4.4 },
+                      { month: 'May', score: 4.5 },
+                      { month: 'Jun', score: 4.6 },
+                      { month: 'Jul', score: 4.6 },
+                      { month: 'Aug', score: 4.7 }
+                    ]}
+                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis domain={[3.5, 5]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="score" stroke="#8884d8" activeDot={{ r: 8 }} />
+                  </RechartsLineChart>
+                </ResponsiveContainer>
               </CardContent>
-              <CardFooter className="border-t py-4 px-6">
-                <div className="text-sm text-muted-foreground">
-                  Showing {getFilteredCustomers('active').length} of {activeCustomers} active customers
-                </div>
-              </CardFooter>
             </Card>
-          </TabsContent>
+          </div>
           
-          <TabsContent value="inactive">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
             <Card>
-              <CardHeader className="pb-2">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                  <div>
-                    <CardTitle>Inactive Customers</CardTitle>
-                    <CardDescription>Customers with inactive accounts or no recent orders</CardDescription>
-                  </div>
-                  <RenderFilters />
-                </div>
+              <CardHeader className="pb-2 text-center">
+                <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Last Active</TableHead>
-                      <TableHead>Total Orders</TableHead>
-                      <TableHead>Total Spent</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {getFilteredCustomers('inactive').length > 0 ? (
-                      getFilteredCustomers('inactive').map((customer) => (
-                        <TableRow key={customer.id}>
-                          <TableCell className="font-medium">
-                            <div>
-                              <div className="font-medium">{customer.name}</div>
-                              <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col text-sm">
-                              <div className="flex items-center">
-                                <Mail className="h-3 w-3 mr-1" /> {customer.email}
-                              </div>
-                              <div className="flex items-center mt-1">
-                                <Phone className="h-3 w-3 mr-1" /> {customer.phone}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{customer.location}</TableCell>
-                          <TableCell>{customer.lastOrder}</TableCell>
-                          <TableCell>{customer.orders}</TableCell>
-                          <TableCell>{customer.totalSpent}</TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <span className="sr-only">Open menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
-                                  Edit customer
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>View history</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-primary">
-                                  Reactivate
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-6">
-                          No inactive customers found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-              <CardFooter className="border-t py-4 px-6">
-                <div className="text-sm text-muted-foreground">
-                  Showing {getFilteredCustomers('inactive').length} of {inactiveCustomers} inactive customers
+              <CardContent className="flex flex-col items-center">
+                <div className="text-2xl font-bold">4.7/5.0</div>
+                <div className="flex items-center">
+                  <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+0.2 from last quarter</p>
                 </div>
-              </CardFooter>
+              </CardContent>
             </Card>
-          </TabsContent>
-          
-          <TabsContent value="on-hold">
+            
             <Card>
-              <CardHeader className="pb-2">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                  <div>
-                    <CardTitle>On Hold Customers</CardTitle>
-                    <CardDescription>Customers with accounts temporarily on hold</CardDescription>
-                  </div>
-                  <RenderFilters />
-                </div>
+              <CardHeader className="pb-2 text-center">
+                <CardTitle className="text-sm font-medium">Response Rate</CardTitle>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Reason</TableHead>
-                      <TableHead>On Hold Since</TableHead>
-                      <TableHead>Previous Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {getFilteredCustomers('on-hold').length > 0 ? (
-                      getFilteredCustomers('on-hold').map((customer) => (
-                        <TableRow key={customer.id}>
-                          <TableCell className="font-medium">
-                            <div>
-                              <div className="font-medium">{customer.name}</div>
-                              <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col text-sm">
-                              <div className="flex items-center">
-                                <Mail className="h-3 w-3 mr-1" /> {customer.email}
-                              </div>
-                              <div className="flex items-center mt-1">
-                                <Phone className="h-3 w-3 mr-1" /> {customer.phone}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{customer.location}</TableCell>
-                          <TableCell>Payment verification</TableCell>
-                          <TableCell>{customer.lastOrder}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">Active</Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <span className="sr-only">Open menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => handleEditCustomer(customer)}>
-                                  Edit customer
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>View details</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-success">
-                                  Reactivate
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">
-                                  Deactivate
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-6">
-                          No on-hold customers found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-              <CardFooter className="border-t py-4 px-6">
-                <div className="text-sm text-muted-foreground">
-                  Showing {getFilteredCustomers('on-hold').length} of {onHoldCustomers} on-hold customers
+              <CardContent className="flex flex-col items-center">
+                <div className="text-2xl font-bold">68%</div>
+                <div className="flex items-center">
+                  <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">+5% from last survey</p>
                 </div>
-              </CardFooter>
+              </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-        
-        {/* Add CustomerModal at the end */}
-        <CustomerModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          customer={editingCustomer}
-          onSave={handleCustomerSuccess}
-        />
-      </div>
+            
+            <Card>
+              <CardHeader className="pb-2 text-center">
+                <CardTitle className="text-sm font-medium">NPS Score</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center">
+                <div className="text-2xl font-bold">62</div>
+                <div className="flex items-center">
+                  <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
+                  <p className="text-xs text-green-500">Industry avg: 45</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+      
+      {/* CustomerModal component */}
+      <CustomerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        customer={editingCustomer}
+        onSave={handleCustomerSuccess}
+      />
     </div>
   );
 }

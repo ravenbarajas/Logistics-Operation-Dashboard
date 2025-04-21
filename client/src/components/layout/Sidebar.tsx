@@ -121,7 +121,24 @@ const navItems: NavItem[] = [
   {
     title: "Reports",
     icon: <Table className="mr-2 h-4 w-4" />,
-    href: "/reports",
+    children: [
+      {
+        title: "Recent Reports",
+        href: "/reports/recent",
+      },
+      {
+        title: "Report Templates",
+        href: "/reports/templates",
+      },
+      {
+        title: "Scheduled Reports",
+        href: "/reports/scheduled",
+      },
+      {
+        title: "Custom Report Builder",
+        href: "/reports/builder",
+      },
+    ],
   },
   {
     title: "Customers",

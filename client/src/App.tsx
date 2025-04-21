@@ -101,7 +101,16 @@ function Router() {
               <Route path="/warehouse/storage" component={Warehouse} />
               <Route path="/orders" component={OrderManagement} />
               <Route path="/routes" component={RouteOptimization} />
-              <Route path="/reports" component={Reports} />
+              <Route path="/reports">
+                {() => {
+                  window.location.pathname = "/reports/recent";
+                  return null;
+                }}
+              </Route>
+              <Route path="/reports/recent" component={Reports} />
+              <Route path="/reports/templates" component={Reports} />
+              <Route path="/reports/scheduled" component={Reports} />
+              <Route path="/reports/builder" component={Reports} />
               <Route path="/analytics" component={Analytics} />
               <Route path="/settings" component={Settings} />
               <Route component={NotFound} />

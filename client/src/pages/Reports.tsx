@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -16,7 +16,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -45,7 +44,15 @@ import {
   Search,
   Loader2,
   Database,
-  Filter
+  Filter,
+  FileSpreadsheet,
+  Clock,
+  Plus,
+  MoreHorizontal,
+  Package,
+  ArrowUp,
+  ArrowDown,
+  RefreshCw
 } from "lucide-react";
 import {
   AreaChart,
@@ -59,6 +66,15 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { useLocation } from "wouter";
 
 // Dummy report data
 const reports = [
@@ -402,7 +418,6 @@ const incidentData = [
 ];
 
 export default function Reports() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState("all");
   const [selectedMonth, setSelectedMonth] = React.useState("august");
@@ -419,10 +434,53 @@ export default function Reports() {
     format: ""
   });
   
+  // Get current location and navigate function from wouter
+  const [location, setLocation] = useLocation();
+  
   // State for department, fleet type, and segment filters
   const [selectedDepartment, setSelectedDepartment] = React.useState("all");
   const [selectedFleetType, setSelectedFleetType] = React.useState("all");
   const [selectedSegment, setSelectedSegment] = React.useState("all");
+  
+  // Add state for the main tab navigation (matching the sidebar navigation)
+  const [mainTab, setMainTab] = React.useState("recent");
+  
+  // Set the active tab based on the current URL path
+  useEffect(() => {
+    // Extract the last part of the path to determine which tab should be active
+    const path = window.location.pathname;
+    
+    if (path.includes('/reports/recent')) {
+      setMainTab('recent');
+    } else if (path.includes('/reports/templates')) {
+      setMainTab('templates');
+    } else if (path.includes('/reports/scheduled')) {
+      setMainTab('scheduled');
+    } else if (path.includes('/reports/builder')) {
+      setMainTab('builder');
+    }
+  }, [location]); // Re-run when location changes
+  
+  // Handle main tab change and update URL without page reload
+  const handleTabChange = (value: string) => {
+    setMainTab(value);
+    setLocation(`/reports/${value}`);
+  };
+  
+  // Get the current page name for the heading
+  const getCurrentPageName = () => {
+    if (mainTab === "recent") {
+      return "Recent Reports";
+    } else if (mainTab === "templates") {
+      return "Report Templates";
+    } else if (mainTab === "scheduled") {
+      return "Scheduled Reports";
+    } else if (mainTab === "builder") {
+      return "Custom Report Builder";
+    } else {
+      return "Reports & Analytics";
+    }
+  };
   
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -880,26 +938,25 @@ export default function Reports() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Reports & Analytics</h1>
-          <p className="text-muted-foreground">Access and generate detailed reports on all logistics operations</p>
-        </div>
-        <div className="mt-4 md:mt-0 flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search reports..."
-              className="pl-8 w-[200px] md:w-[260px]"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
+          <h1 className="text-3xl font-bold text-left">
+            Reports & Analytics
+          </h1>
+          <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            <span>Current section: </span>
+            <Badge className="ml-2">
+              {getCurrentPageName()}
+            </Badge>
           </div>
-          <Button onClick={handleGenerateReport}>
-            <FileText className="mr-2 h-4 w-4" />
-            Generate Report
+        </div>
+        <div className="flex gap-2 items-center">
+          <div className="relative">
+          </div>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
           </Button>
         </div>
       </div>
@@ -930,211 +987,268 @@ export default function Reports() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <FileText className="h-6 w-6 text-primary" />
-              </div>
-              <span className="text-muted-foreground text-sm">Total</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">248</h3>
-              <p className="text-muted-foreground text-sm">Generated Reports</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-green-500/10 rounded-full flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-green-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Average</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">93.4%</h3>
-              <p className="text-muted-foreground text-sm">Performance Rating</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-amber-500/10 rounded-full flex items-center justify-center">
-                <BarChart className="h-6 w-6 text-amber-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Month</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">32</h3>
-              <p className="text-muted-foreground text-sm">Reports Generated</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="h-12 w-12 bg-red-500/10 rounded-full flex items-center justify-center">
-                <AlertTriangle className="h-6 w-6 text-red-500" />
-              </div>
-              <span className="text-muted-foreground text-sm">Last Month</span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-2xl font-bold">3</h3>
-              <p className="text-muted-foreground text-sm">Incidents Reported</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Performance Metrics</CardTitle>
-            <CardDescription>Key performance indicators over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={performanceData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="month" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="deliverySpeed" 
-                    name="Delivery Speed"
-                    stroke="hsl(var(--primary))" 
-                    activeDot={{ r: 8 }} 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="costEfficiency" 
-                    name="Cost Efficiency"
-                    stroke="#82ca9d" 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="customerSatisfaction" 
-                    name="Customer Satisfaction"
-                    stroke="#ffc658" 
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Incident Reports</CardTitle>
-            <CardDescription>Monthly safety and incident tracking</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={incidentData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="month" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="incidents" 
-                    stroke="hsl(var(--destructive))" 
-                    fill="hsl(var(--destructive))" 
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="all" className="mb-6" onValueChange={setSelectedCategory}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="all">All Reports</TabsTrigger>
-          <TabsTrigger value="operations">Operations</TabsTrigger>
-          <TabsTrigger value="fleet">Fleet</TabsTrigger>
-          <TabsTrigger value="customer">Customer</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="all">
+      {/* Summary Cards based on active tab */}
+      {mainTab === "recent" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
-              <div className="flex flex-col md:flex-row justify-between md:items-center space-y-2 md:space-y-0">
-                <div>
-                  <CardTitle>Report Library</CardTitle>
-                  <CardDescription>Access and download previously generated reports</CardDescription>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="flex items-center space-x-2">
-                    <CalendarIcon className="h-4 w-4 opacity-50" />
-                    <Select defaultValue="august" onValueChange={setSelectedMonth}>
-                      <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Month" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="august">August 2023</SelectItem>
-                        <SelectItem value="july">July 2023</SelectItem>
-                        <SelectItem value="june">June 2023</SelectItem>
-                        <SelectItem value="may">May 2023</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Select defaultValue="all" onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="operations">Operations</SelectItem>
-                      <SelectItem value="fleet">Fleet</SelectItem>
-                      <SelectItem value="delivery">Delivery</SelectItem>
-                      <SelectItem value="customer">Customer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">248</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+12 from last month</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Generated Today</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">8</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+3 from yesterday</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Average Size</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">2.7 MB</div>
+              <div className="flex items-center">
+                <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">-0.3 MB improvement</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Download Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">94%</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+2% from last month</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      {mainTab === "templates" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Available Templates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">24</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+3 new templates</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Most Used</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">Operations</div>
+              <div className="flex items-center">
+                <p className="text-xs text-muted-foreground">48% of all generated</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Generated MTD</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">127</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+18% from last month</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Template Categories</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">6</div>
+              <div className="flex items-center">
+                <p className="text-xs text-muted-foreground">Across all departments</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      {mainTab === "scheduled" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Active Schedules</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">12</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+2 from last week</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Reports This Week</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">8</div>
+              <div className="flex items-center">
+                <p className="text-xs text-muted-foreground">Next: Today at 6PM</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Recipients</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">27</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+5 new recipients</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Delivery Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">99.4%</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+0.2% from last month</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      {mainTab === "builder" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Custom Reports</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">56</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+14 this month</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Available Fields</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">120+</div>
+              <div className="flex items-center">
+                <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                <p className="text-xs text-green-500">+12 new fields</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Data Sources</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">8</div>
+              <div className="flex items-center">
+                <p className="text-xs text-muted-foreground">Connected systems</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Export Formats</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">5</div>
+              <div className="flex items-center">
+                <p className="text-xs text-muted-foreground">PDF, CSV, XLSX, JSON, HTML</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Main tabs structure that matches the sidebar navigation */}
+      <Tabs value={mainTab} onValueChange={handleTabChange} className="mb-6">
+        <TabsList className="grid grid-cols-4 w-full mb-6">
+          <TabsTrigger value="recent">
+            <FileText className="h-4 w-4 mr-2" />
+            Recent Reports
+          </TabsTrigger>
+          <TabsTrigger value="templates">
+            <Package className="h-4 w-4 mr-2" />
+            Report Templates
+          </TabsTrigger>
+          <TabsTrigger value="scheduled">
+            <CalendarIcon className="h-4 w-4 mr-2" />
+            Scheduled Reports
+          </TabsTrigger>
+          <TabsTrigger value="builder">
+            <Database className="h-4 w-4 mr-2" />
+            Custom Report Builder
+          </TabsTrigger>
+        </TabsList>
+        
+        {/* Recent Reports Tab */}
+        <TabsContent value="recent">
+          <Card>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>Recent Reports</CardTitle>
+                <CardDescription>Recently generated reports with download links</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Select defaultValue="all" onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="operations">Operations</SelectItem>
+                    <SelectItem value="fleet">Fleet</SelectItem>
+                    <SelectItem value="delivery">Delivery</SelectItem>
+                    <SelectItem value="customer">Customer</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardHeader>
             <CardContent>
@@ -1195,384 +1309,382 @@ export default function Reports() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="operations">
+        {/* Report Templates Tab */}
+        <TabsContent value="templates">
           <Card>
-            <CardHeader className="pb-2">
-              <div className="flex flex-col md:flex-row justify-between md:items-center space-y-2 md:space-y-0">
-                <div>
-                  <CardTitle>Operations Reports</CardTitle>
-                  <CardDescription>Performance and process analytics for operations</CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Select defaultValue="all" onValueChange={setSelectedDepartment}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Departments</SelectItem>
-                      <SelectItem value="logistics">Logistics</SelectItem>
-                      <SelectItem value="warehouse">Warehouse</SelectItem>
-                      <SelectItem value="hr">HR</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <CardHeader>
+              <CardTitle>Report Templates</CardTitle>
+              <CardDescription>Standard report templates for quick generation</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Template cards */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Operations Summary</CardTitle>
+                    <CardDescription>Daily overview of operational metrics</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center text-sm text-muted-foreground mb-2">
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      <span>PDF, CSV, Excel formats</span>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span>Generated in ~30 seconds</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" size="sm">Preview</Button>
+                    <Button size="sm" onClick={() => handleGenerateReport()}>Generate</Button>
+                  </CardFooter>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Fleet Performance</CardTitle>
+                    <CardDescription>Vehicle utilization and efficiency metrics</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center text-sm text-muted-foreground mb-2">
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      <span>PDF, CSV formats</span>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span>Generated in ~45 seconds</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" size="sm">Preview</Button>
+                    <Button size="sm" onClick={() => handleGenerateReport()}>Generate</Button>
+                  </CardFooter>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Delivery Analytics</CardTitle>
+                    <CardDescription>On-time delivery and route efficiency</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center text-sm text-muted-foreground mb-2">
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      <span>PDF, CSV formats</span>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span>Generated in ~60 seconds</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" size="sm">Preview</Button>
+                    <Button size="sm" onClick={() => handleGenerateReport()}>Generate</Button>
+                  </CardFooter>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Customer Satisfaction</CardTitle>
+                    <CardDescription>Customer feedback and service metrics</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center text-sm text-muted-foreground mb-2">
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      <span>PDF, CSV formats</span>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <span>Generated in ~40 seconds</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" size="sm">Preview</Button>
+                    <Button size="sm" onClick={() => handleGenerateReport()}>Generate</Button>
+                  </CardFooter>
+                </Card>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Scheduled Reports Tab */}
+        <TabsContent value="scheduled">
+          <Card>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>Scheduled Reports</CardTitle>
+                <CardDescription>Automatically generated reports on schedule</CardDescription>
+              </div>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Schedule New Report
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Report ID</TableHead>
-                    <TableHead>Report Name</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Date</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Frequency</TableHead>
+                    <TableHead>Next Run</TableHead>
+                    <TableHead>Recipients</TableHead>
+                    <TableHead>Format</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Size</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {getFilteredOperationsReports().length > 0 ? (
-                    getFilteredOperationsReports().map((report) => (
-                      <TableRow key={report.id}>
-                        <TableCell className="font-medium">{report.id}</TableCell>
-                        <TableCell>{report.name}</TableCell>
-                        <TableCell>{report.department}</TableCell>
-                        <TableCell>{report.date}</TableCell>
-                        <TableCell>
-                          <Badge variant={report.status === 'completed' ? 'success' : 'warning'}>
-                            {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{report.size}</TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" onClick={() => handleReportDownload(report)}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
+                  <TableRow>
+                    <TableCell className="font-medium">Weekly Operations Summary</TableCell>
+                    <TableCell>Operations</TableCell>
+                    <TableCell>Weekly (Monday)</TableCell>
+                    <TableCell>Aug 28, 2023</TableCell>
+                    <TableCell>5 recipients</TableCell>
+                    <TableCell>PDF</TableCell>
+                    <TableCell>
+                      <Badge variant="success">Active</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6">
-                        No operations reports found matching your criteria
-                      </TableCell>
-                    </TableRow>
-                  )}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>Edit schedule</DropdownMenuItem>
+                          <DropdownMenuItem>View recipients</DropdownMenuItem>
+                          <DropdownMenuItem>Run now</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive">Disable schedule</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Monthly Fleet Report</TableCell>
+                    <TableCell>Fleet</TableCell>
+                    <TableCell>Monthly (1st)</TableCell>
+                    <TableCell>Sep 1, 2023</TableCell>
+                    <TableCell>3 recipients</TableCell>
+                    <TableCell>PDF, CSV</TableCell>
+                    <TableCell>
+                      <Badge variant="success">Active</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>Edit schedule</DropdownMenuItem>
+                          <DropdownMenuItem>View recipients</DropdownMenuItem>
+                          <DropdownMenuItem>Run now</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive">Disable schedule</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Daily Delivery Exceptions</TableCell>
+                    <TableCell>Delivery</TableCell>
+                    <TableCell>Daily (6PM)</TableCell>
+                    <TableCell>Today</TableCell>
+                    <TableCell>7 recipients</TableCell>
+                    <TableCell>PDF</TableCell>
+                    <TableCell>
+                      <Badge variant="success">Active</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>Edit schedule</DropdownMenuItem>
+                          <DropdownMenuItem>View recipients</DropdownMenuItem>
+                          <DropdownMenuItem>Run now</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive">Disable schedule</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             </CardContent>
             <CardFooter className="border-t py-4 px-6">
               <div className="text-sm text-muted-foreground">
-                Showing {getFilteredOperationsReports().length} of {operationsReports.length} operations reports
+                Showing 3 scheduled reports
               </div>
             </CardFooter>
           </Card>
         </TabsContent>
         
-        <TabsContent value="fleet">
+        {/* Custom Report Builder Tab */}
+        <TabsContent value="builder">
           <Card>
-            <CardHeader className="pb-2">
-              <div className="flex flex-col md:flex-row justify-between md:items-center space-y-2 md:space-y-0">
+            <CardHeader>
+              <CardTitle>Custom Report Builder</CardTitle>
+              <CardDescription>Create customized reports based on specific criteria</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <CardTitle>Fleet Reports</CardTitle>
-                  <CardDescription>Vehicle performance and maintenance analytics</CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Select defaultValue="all" onValueChange={setSelectedFleetType}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Fleet Type" />
+                  <label className="block text-sm font-medium mb-2">Report Type</label>
+                  <Select defaultValue="performance" onValueChange={setSelectedReportType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select report type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Vehicles</SelectItem>
-                      <SelectItem value="vans">Delivery Vans</SelectItem>
-                      <SelectItem value="trucks">Trucks</SelectItem>
-                      <SelectItem value="management">Management</SelectItem>
+                      <SelectItem value="performance">Performance Analysis</SelectItem>
+                      <SelectItem value="fleet">Fleet Utilization</SelectItem>
+                      <SelectItem value="delivery">Delivery Metrics</SelectItem>
+                      <SelectItem value="cost">Cost Analysis</SelectItem>
+                      <SelectItem value="customer">Customer Satisfaction</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Report ID</TableHead>
-                    <TableHead>Report Name</TableHead>
-                    <TableHead>Fleet Type</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredFleetReports().length > 0 ? (
-                    getFilteredFleetReports().map((report) => (
-                      <TableRow key={report.id}>
-                        <TableCell className="font-medium">{report.id}</TableCell>
-                        <TableCell>{report.name}</TableCell>
-                        <TableCell>{report.fleetType}</TableCell>
-                        <TableCell>{report.date}</TableCell>
-                        <TableCell>
-                          <Badge variant={report.status === 'completed' ? 'success' : 'warning'}>
-                            {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{report.size}</TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" onClick={() => handleReportDownload(report)}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6">
-                        No fleet reports found matching your criteria
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredFleetReports().length} of {fleetReports.length} fleet reports
-              </div>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="customer">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex flex-col md:flex-row justify-between md:items-center space-y-2 md:space-y-0">
+                
                 <div>
-                  <CardTitle>Customer Reports</CardTitle>
-                  <CardDescription>Customer satisfaction and service level analytics</CardDescription>
+                  <label className="block text-sm font-medium mb-2">Date Range</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="relative">
+                      <Input type="text" placeholder="From date" value="01/08/2023" readOnly />
+                    </div>
+                    <div className="relative">
+                      <Input type="text" placeholder="To date" value="31/08/2023" readOnly />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Select defaultValue="all" onValueChange={setSelectedSegment}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Segment" />
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Format</label>
+                  <Select defaultValue="pdf" onValueChange={setSelectedFormat}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select format" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Segments</SelectItem>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="corporate">Corporate</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
+                      <SelectItem value="pdf">PDF Document</SelectItem>
+                      <SelectItem value="csv">CSV File</SelectItem>
+                      <SelectItem value="json">JSON Data</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                
+                <div className="md:col-span-3">
+                  <label className="block text-sm font-medium mb-2">Data Sections</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="overview" 
+                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        defaultChecked
+                      />
+                      <label htmlFor="overview" className="text-sm">Executive Overview</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="metrics" 
+                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        defaultChecked
+                      />
+                      <label htmlFor="metrics" className="text-sm">Key Metrics</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="trends" 
+                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        defaultChecked
+                      />
+                      <label htmlFor="trends" className="text-sm">Trend Analysis</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="recommendations" 
+                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        defaultChecked
+                      />
+                      <label htmlFor="recommendations" className="text-sm">Recommendations</label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="md:col-span-3 flex justify-end mt-4">
+                  <Button className="w-full md:w-auto" onClick={handleGenerateReport} disabled={isGenerating}>
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Generate Custom Report
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Report ID</TableHead>
-                    <TableHead>Report Name</TableHead>
-                    <TableHead>Segment</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredCustomerReports().length > 0 ? (
-                    getFilteredCustomerReports().map((report) => (
-                      <TableRow key={report.id}>
-                        <TableCell className="font-medium">{report.id}</TableCell>
-                        <TableCell>{report.name}</TableCell>
-                        <TableCell>{report.segment}</TableCell>
-                        <TableCell>{report.date}</TableCell>
-                        <TableCell>
-                          <Badge variant={report.status === 'completed' ? 'success' : 'warning'}>
-                            {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{report.size}</TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" onClick={() => handleReportDownload(report)}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6">
-                        No customer reports found matching your criteria
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+
+              {selectedReportType && (
+                <div className="mt-8 border rounded-md p-4">
+                  <h4 className="text-sm font-medium mb-2">Report Preview</h4>
+                  <div className="bg-muted p-4 rounded-md">
+                    <div className="flex items-center mb-4">
+                      <div className={`h-10 w-10 rounded-md mr-3 flex items-center justify-center ${
+                        selectedFormat === 'pdf' ? 'bg-red-100 text-red-700' :
+                        selectedFormat === 'csv' ? 'bg-blue-100 text-blue-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {selectedFormat === 'pdf' ? <FileText className="h-6 w-6" /> :
+                         selectedFormat === 'csv' ? <FileText className="h-6 w-6" /> :
+                         <Database className="h-6 w-6" />
+                        }
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          {selectedReportType === 'performance' ? 'Performance Analysis Report' :
+                           selectedReportType === 'fleet' ? 'Fleet Utilization Report' :
+                           selectedReportType === 'delivery' ? 'Delivery Metrics Report' :
+                           selectedReportType === 'cost' ? 'Cost Analysis Report' :
+                           'Customer Satisfaction Report'
+                          }
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedFormat.toUpperCase()} format • Data from 01/08/2023 to 31/08/2023
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-muted-foreground/20 rounded w-full"></div>
+                      <div className="h-3 bg-muted-foreground/20 rounded w-4/5"></div>
+                      <div className="h-3 bg-muted-foreground/20 rounded w-5/6"></div>
+                      <div className="h-3 bg-muted-foreground/20 rounded w-3/4"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredCustomerReports().length} of {customerReports.length} customer reports
-              </div>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Custom Report Generator</CardTitle>
-          <CardDescription>Create customized reports based on specific criteria</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Report Type</label>
-              <Select defaultValue="performance" onValueChange={setSelectedReportType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select report type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="performance">Performance Analysis</SelectItem>
-                  <SelectItem value="fleet">Fleet Utilization</SelectItem>
-                  <SelectItem value="delivery">Delivery Metrics</SelectItem>
-                  <SelectItem value="cost">Cost Analysis</SelectItem>
-                  <SelectItem value="customer">Customer Satisfaction</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Date Range</label>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="relative">
-                  <Input type="text" placeholder="From date" value="01/08/2023" readOnly />
-                </div>
-                <div className="relative">
-                  <Input type="text" placeholder="To date" value="31/08/2023" readOnly />
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Format</label>
-              <Select defaultValue="pdf" onValueChange={setSelectedFormat}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pdf">PDF Document</SelectItem>
-                  <SelectItem value="csv">CSV File</SelectItem>
-                  <SelectItem value="json">JSON Data</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="md:col-span-3">
-              <label className="block text-sm font-medium mb-2">Data Sections</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="overview" 
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    defaultChecked
-                  />
-                  <label htmlFor="overview" className="text-sm">Executive Overview</label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="metrics" 
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    defaultChecked
-                  />
-                  <label htmlFor="metrics" className="text-sm">Key Metrics</label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="trends" 
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    defaultChecked
-                  />
-                  <label htmlFor="trends" className="text-sm">Trend Analysis</label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="recommendations" 
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    defaultChecked
-                  />
-                  <label htmlFor="recommendations" className="text-sm">Recommendations</label>
-                </div>
-              </div>
-            </div>
-            
-            <div className="md:col-span-3 flex justify-end mt-4">
-              <Button className="w-full md:w-auto" onClick={handleGenerateReport} disabled={isGenerating}>
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="mr-2 h-4 w-4" />
-                    Generate Custom Report
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {selectedReportType && (
-            <div className="mt-8 border rounded-md p-4">
-              <h4 className="text-sm font-medium mb-2">Report Preview</h4>
-              <div className="bg-muted p-4 rounded-md">
-                <div className="flex items-center mb-4">
-                  <div className={`h-10 w-10 rounded-md mr-3 flex items-center justify-center ${
-                    selectedFormat === 'pdf' ? 'bg-red-100 text-red-700' :
-                    selectedFormat === 'csv' ? 'bg-blue-100 text-blue-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
-                    {selectedFormat === 'pdf' ? <FileText className="h-6 w-6" /> :
-                     selectedFormat === 'csv' ? <FileText className="h-6 w-6" /> :
-                     <Database className="h-6 w-6" />
-                    }
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      {selectedReportType === 'performance' ? 'Performance Analysis Report' :
-                       selectedReportType === 'fleet' ? 'Fleet Utilization Report' :
-                       selectedReportType === 'delivery' ? 'Delivery Metrics Report' :
-                       selectedReportType === 'cost' ? 'Cost Analysis Report' :
-                       'Customer Satisfaction Report'
-                      }
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedFormat.toUpperCase()} format • Data from 01/08/2023 to 31/08/2023
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-3 bg-muted-foreground/20 rounded w-full"></div>
-                  <div className="h-3 bg-muted-foreground/20 rounded w-4/5"></div>
-                  <div className="h-3 bg-muted-foreground/20 rounded w-5/6"></div>
-                  <div className="h-3 bg-muted-foreground/20 rounded w-3/4"></div>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

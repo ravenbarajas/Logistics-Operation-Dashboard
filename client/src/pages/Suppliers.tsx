@@ -546,7 +546,7 @@ export default function Suppliers() {
   const [loading, setLoading] = useState(false);
   
   // Get current location
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   
   // Add new filter states
   const [deliveryDateFilter, setDeliveryDateFilter] = useState("all");
@@ -738,6 +738,8 @@ export default function Suppliers() {
   // Handle main tab change
   const handleMainTabChange = (value: string) => {
     setMainTab(value);
+    // Update URL based on selected tab
+    setLocation(`/suppliers/${value}`);
   };
   
   // Handle search

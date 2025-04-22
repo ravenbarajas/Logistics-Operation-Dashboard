@@ -24,7 +24,16 @@ function ContentWrapper({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   
   // Only center these specific pages
-  const shouldCenter = ["/vehicles", "/shipments", "/analytics", "/routes"].includes(location);
+  const shouldCenter = [
+    "/vehicles", 
+    "/vehicles/inventory", 
+    "/vehicles/drivers", 
+    "/vehicles/maintenance", 
+    "/vehicles/fuel", 
+    "/shipments", 
+    "/analytics", 
+    "/routes"
+  ].includes(location);
   
   return (
     <div className={shouldCenter ? "container mx-auto" : ""}>
@@ -83,6 +92,10 @@ function Router() {
             <Switch>
               <Route path="/" component={Dashboard} />
               <Route path="/vehicles" component={Vehicles} />
+              <Route path="/vehicles/inventory" component={Vehicles} />
+              <Route path="/vehicles/drivers" component={Vehicles} />
+              <Route path="/vehicles/maintenance" component={Vehicles} />
+              <Route path="/vehicles/fuel" component={Vehicles} />
               <Route path="/shipments" component={Shipments} />
               <Route path="/customers">
                 {() => {

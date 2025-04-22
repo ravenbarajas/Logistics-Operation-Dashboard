@@ -52,7 +52,24 @@ const navItems: NavItem[] = [
   {
     title: "Fleet Management",
     icon: <Truck className="mr-2 h-4 w-4" />,
-    href: "/vehicles",
+    children: [
+      {
+        title: "Vehicle Inventory",
+        href: "/vehicles/inventory",
+      },
+      {
+        title: "Driver Performance",
+        href: "/vehicles/drivers",
+      },
+      {
+        title: "Vehicle Maintenance",
+        href: "/vehicles/maintenance",
+      },
+      {
+        title: "Fuel Consumption",
+        href: "/vehicles/fuel",
+      },
+    ],
   },
   {
     title: "Shipments",

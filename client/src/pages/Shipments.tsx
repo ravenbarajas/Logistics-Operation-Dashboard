@@ -628,10 +628,29 @@ export default function Shipments({ shipment, onRefresh }: ShipmentManagementPro
     }
   };
 
+  // Get the current page name for the heading
+  const getCurrentPageName = () => {
+    switch (mainTabValue) {
+      case "tracking": return "Shipment Tracking";
+      case "exceptions": return "Shipment Exceptions";
+      case "efficiency": return "Shipment Efficiency";
+      case "environmental": return "Environmental Impact";
+      default: return "Shipments";
+    }
+  };
+
   return (
     <div className="container px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Shipment Management</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Shipment Management</h1>
+          <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            <span>Current section: </span>
+            <Badge className="ml-2">
+              {getCurrentPageName()}
+            </Badge>
+          </div>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={fetchData}>
             <RefreshCw className="h-4 w-4 mr-2" />

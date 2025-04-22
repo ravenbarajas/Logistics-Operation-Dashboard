@@ -96,7 +96,24 @@ const navItems: NavItem[] = [
   {
     title: "Analytics",
     icon: <BarChart className="mr-2 h-4 w-4" />,
-    href: "/analytics",
+    children: [
+      {
+        title: "Risk Analytics",
+        href: "/analytics/risk",
+      },
+      {
+        title: "Performance Insights",
+        href: "/analytics/performance",
+      },
+      {
+        title: "Route Analytics",
+        href: "/analytics/route",
+      },
+      {
+        title: "Financial Analytics",
+        href: "/analytics/financial",
+      },
+    ],
   },
   {
     title: "Route Optimization",

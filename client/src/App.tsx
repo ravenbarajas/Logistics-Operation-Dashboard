@@ -146,7 +146,16 @@ function Router() {
               <Route path="/reports/templates" component={Reports} />
               <Route path="/reports/scheduled" component={Reports} />
               <Route path="/reports/builder" component={Reports} />
-              <Route path="/analytics" component={Analytics} />
+              <Route path="/analytics">
+                {() => {
+                  window.location.pathname = "/analytics/risk";
+                  return null;
+                }}
+              </Route>
+              <Route path="/analytics/risk" component={Analytics} />
+              <Route path="/analytics/performance" component={Analytics} />
+              <Route path="/analytics/route" component={Analytics} />
+              <Route path="/analytics/financial" component={Analytics} />
               <Route path="/settings" component={Settings} />
               <Route component={NotFound} />
             </Switch>

@@ -298,146 +298,442 @@ export default function Analytics() {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Monthly Deliveries</CardTitle>
-              <div className="flex items-center gap-2">
-                <Select defaultValue="2023">
-                  <SelectTrigger className="w-[100px] h-8">
-                    <SelectValue placeholder="Year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2023">2023</SelectItem>
-                    <SelectItem value="2022">2022</SelectItem>
-                    <SelectItem value="2021">2021</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  <BarChart3 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <CardDescription>Number of deliveries completed each month</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyDeliveries}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="name" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="total" 
-                    fill="hsl(var(--primary))" 
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Delivery Performance</CardTitle>
-              <div className="flex items-center gap-2">
-                <Select defaultValue="quarter">
-                  <SelectTrigger className="w-[130px] h-8">
-                    <SelectValue placeholder="Time Period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="month">This Month</SelectItem>
-                    <SelectItem value="quarter">This Quarter</SelectItem>
-                    <SelectItem value="year">This Year</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <CardDescription>On-time vs late delivery performance</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={deliveryPerformanceData}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="date" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="onTime" 
-                    stackId="1" 
-                    stroke="hsl(var(--primary))" 
-                    fill="hsl(var(--primary))" 
-                    fillOpacity={0.6}
-                    name="On Time"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="late" 
-                    stackId="1" 
-                    stroke="hsl(var(--destructive))" 
-                    fill="hsl(var(--destructive))" 
-                    fillOpacity={0.6}
-                    name="Late"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Risk Assessment and Improvement Opportunities - Extracted from tabs */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">Risk Assessment & Improvement Analysis</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Risk Assessment */}
+      {/* Risk Assessment and Improvement Opportunities Section */}
+      <Card className="mb-6 p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-4">Risk Assessment Analytics</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Risk Assessment */}
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <AlertTriangle className="h-5 w-5 mr-2 text-primary" />
+                      Risk Assessment Matrix
+                    </CardTitle>
+                    <CardDescription>
+                      Logistics operational risks with impact and mitigation readiness
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8" 
+                      onClick={() => {
+                        const container = document.getElementById('risks-container');
+                        if (container) {
+                          container.scrollBy({ top: -200, behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8" 
+                      onClick={() => {
+                        const container = document.getElementById('risks-container');
+                        if (container) {
+                          container.scrollBy({ top: 200, behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div id="risks-container" className="max-h-64 overflow-y-hidden hide-scrollbar">
+                  <table className="w-full min-w-[500px]">
+                    <thead className="sticky top-0 bg-background z-10">
+                      <tr className="border-b dark:border-gray-700">
+                        <th className="py-2 px-4 text-left text-sm font-medium">Risk Category</th>
+                        <th className="py-2 px-4 text-left text-sm font-medium">Probability</th>
+                        <th className="py-2 px-4 text-left text-sm font-medium">Impact</th>
+                        <th className="py-2 px-4 text-left text-sm font-medium">Readiness</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {logisticsPerformanceData.riskAssessment.map((risk, index) => (
+                        <tr key={index} className="border-b dark:border-gray-700">
+                          <td className="py-2 px-4 text-sm">{risk.category}</td>
+                          <td className="py-2 px-4">
+                            <Badge className={`${risk.probability > 7 ? 'bg-red-500' : risk.probability > 4 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                              {risk.probability}/10
+                            </Badge>
+                          </td>
+                          <td className="py-2 px-4">
+                            <Badge className={`${risk.impact > 7 ? 'bg-red-500' : risk.impact > 4 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                              {risk.impact}/10
+                            </Badge>
+                          </td>
+                          <td className="py-2 px-4">
+                            <Badge className={`${risk.readiness < 5 ? 'bg-red-500' : risk.readiness < 8 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                              {risk.readiness}/10
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Improvement Opportunities */}
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <Clipboard className="h-5 w-5 mr-2 text-primary" />
+                      Improvement Opportunities
+                    </CardTitle>
+                    <CardDescription>
+                      High-impact areas for performance enhancement
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8" 
+                      onClick={() => {
+                        const container = document.getElementById('improvements-container');
+                        if (container) {
+                          container.scrollBy({ top: -200, behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8" 
+                      onClick={() => {
+                        const container = document.getElementById('improvements-container');
+                        if (container) {
+                          container.scrollBy({ top: 200, behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div id="improvements-container" className="max-h-64 overflow-y-hidden hide-scrollbar">
+                  <div className="space-y-4">
+                    {logisticsPerformanceData.improvementOpportunities.map((opportunity, index) => (
+                      <div key={index} className="border rounded-md p-3 dark:border-gray-700">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium">{opportunity.area}</span>
+                          <Badge className={`${opportunity.priority > 7 ? 'bg-red-500' : opportunity.priority > 4 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                            Priority: {opportunity.priority}/10
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">Potential Impact</div>
+                            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+                              <div 
+                                className="h-full bg-blue-500" 
+                                style={{ width: `${opportunity.potential * 10}%` }}
+                              />
+                            </div>
+                            <div className="text-right text-xs mt-1">{opportunity.potential}/10</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">Implementation Effort</div>
+                            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+                              <div 
+                                className="h-full bg-amber-500" 
+                                style={{ width: `${opportunity.effort * 10}%` }}
+                              />
+                            </div>
+                            <div className="text-right text-xs mt-1">{opportunity.effort}/10</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </Card>
+
+      {/* Performance Insights Section*/}
+      <Card className="mb-6 p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-4">Performance Insights</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* KPI Trends - Circular Progress Indicators */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2 text-primary" />
+                  KPI Performance Indicators
+                </CardTitle>
+                <CardDescription>
+                  Current performance against targets across key indicators
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {logisticsPerformanceData.kpiTrend.slice(0, 6).map((kpi, index) => {
+                    const percentage = Math.round((kpi.value / kpi.target) * 100);
+                    const color = percentage >= 100 ? 'text-green-500' : 
+                                  percentage >= 80 ? 'text-emerald-500' : 
+                                  percentage >= 60 ? 'text-amber-500' : 'text-red-500';
+                    
+                    return (
+                      <div key={index} className="flex flex-col items-center">
+                        <div className="relative w-20 h-20">
+                          <svg className="w-full h-full" viewBox="0 0 100 100">
+                            <circle 
+                              className="text-gray-200 stroke-current" 
+                              strokeWidth="10" 
+                              cx="50" 
+                              cy="50" 
+                              r="40" 
+                              fill="transparent"
+                            />
+                            <circle 
+                              className={`${color} stroke-current`} 
+                              strokeWidth="10" 
+                              strokeLinecap="round" 
+                              cx="50" 
+                              cy="50" 
+                              r="40" 
+                              fill="transparent"
+                              strokeDasharray={`${Math.min(percentage, 100) * 2.51}, 251`}
+                              transform="rotate(-90 50 50)"
+                            />
+                            <text 
+                              x="50%" 
+                              y="50%" 
+                              dy=".3em" 
+                              textAnchor="middle" 
+                              className={`${color} fill-current text-lg font-bold`}
+                            >
+                              {percentage}%
+                            </text>
+                          </svg>
+                        </div>
+                        <div className="mt-2 text-center">
+                          <div className="text-sm font-medium truncate max-w-[100px] mx-auto">
+                            {kpi.category}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {kpi.value}/{kpi.target}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Performance Tracking - Line Chart */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center">
+                  <Clock className="h-5 w-5 mr-2 text-primary" />
+                  Daily Performance Tracking
+                </CardTitle>
+                <CardDescription>
+                  Consolidated performance across domains for the past 7 days
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={logisticsPerformanceData.dailyPerformance}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                        dataKey="date" 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <YAxis 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                        domain={[60, 100]}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                    />
+                    <Legend />
+                      <Line type="monotone" dataKey="operations" name="Operations" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="delivery" name="Delivery" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="warehouse" name="Warehouse" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="customer" name="Customer" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
+                    </LineChart>
+                </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-0">
           <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Monthly Deliveries</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Select defaultValue="2023">
+                    <SelectTrigger className="w-[100px] h-8">
+                      <SelectValue placeholder="Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2023">2023</SelectItem>
+                      <SelectItem value="2022">2022</SelectItem>
+                      <SelectItem value="2021">2021</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" className="h-8 w-8">
+                    <BarChart3 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <CardDescription>Number of deliveries completed each month</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyDeliveries}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="name" 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <YAxis 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="total" 
+                      fill="hsl(var(--primary))" 
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Delivery Performance</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Select defaultValue="quarter">
+                    <SelectTrigger className="w-[130px] h-8">
+                      <SelectValue placeholder="Time Period" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="month">This Month</SelectItem>
+                      <SelectItem value="quarter">This Quarter</SelectItem>
+                      <SelectItem value="year">This Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" className="h-8 w-8">
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <CardDescription>On-time vs late delivery performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={deliveryPerformanceData}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="date" 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <YAxis 
+                      className="text-xs" 
+                      tick={{fill: 'hsl(var(--foreground))'}}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="onTime" 
+                      stackId="1" 
+                      stroke="hsl(var(--primary))" 
+                      fill="hsl(var(--primary))" 
+                      fillOpacity={0.6}
+                      name="On Time"
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="late" 
+                      stackId="1" 
+                      stroke="hsl(var(--destructive))" 
+                      fill="hsl(var(--destructive))" 
+                      fillOpacity={0.6}
+                      name="Late"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Card>
+      
+      {/* Route and Bottleneck Analysis Section */}
+      <Card className="mb-6 p-6">
+        <div className="mb-0">
+          <h2 className="text-2xl font-bold mb-4">Route & Network Analytics</h2>
+          
+          {/* Network Bottlenecks - Full Width Row */}
+          <Card className="mb-6">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle className="flex items-center">
                     <AlertTriangle className="h-5 w-5 mr-2 text-primary" />
-                    Risk Assessment Matrix
+                    Critical Network Bottlenecks
                   </CardTitle>
                   <CardDescription>
-                    Logistics operational risks with impact and mitigation readiness
+                    Key congestion points currently impacting logistics flow
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -446,430 +742,139 @@ export default function Analytics() {
                     size="icon" 
                     className="h-8 w-8" 
                     onClick={() => {
-                      const container = document.getElementById('risks-container');
+                      const container = document.getElementById('bottlenecks-container');
                       if (container) {
-                        container.scrollBy({ top: -200, behavior: 'smooth' });
+                        container.scrollBy({ left: -300, behavior: 'smooth' });
                       }
                     }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                   </Button>
                   <Button 
                     variant="outline" 
                     size="icon" 
                     className="h-8 w-8" 
                     onClick={() => {
-                      const container = document.getElementById('risks-container');
+                      const container = document.getElementById('bottlenecks-container');
                       if (container) {
-                        container.scrollBy({ top: 200, behavior: 'smooth' });
+                        container.scrollBy({ left: 300, behavior: 'smooth' });
                       }
                     }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                   </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div id="risks-container" className="max-h-64 overflow-y-hidden hide-scrollbar">
-                <table className="w-full min-w-[500px]">
-                  <thead className="sticky top-0 bg-background z-10">
-                    <tr className="border-b dark:border-gray-700">
-                      <th className="py-2 px-4 text-left text-sm font-medium">Risk Category</th>
-                      <th className="py-2 px-4 text-left text-sm font-medium">Probability</th>
-                      <th className="py-2 px-4 text-left text-sm font-medium">Impact</th>
-                      <th className="py-2 px-4 text-left text-sm font-medium">Readiness</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {logisticsPerformanceData.riskAssessment.map((risk, index) => (
-                      <tr key={index} className="border-b dark:border-gray-700">
-                        <td className="py-2 px-4 text-sm">{risk.category}</td>
-                        <td className="py-2 px-4">
-                          <Badge className={`${risk.probability > 7 ? 'bg-red-500' : risk.probability > 4 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
-                            {risk.probability}/10
-                          </Badge>
-                        </td>
-                        <td className="py-2 px-4">
-                          <Badge className={`${risk.impact > 7 ? 'bg-red-500' : risk.impact > 4 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
-                            {risk.impact}/10
-                          </Badge>
-                        </td>
-                        <td className="py-2 px-4">
-                          <Badge className={`${risk.readiness < 5 ? 'bg-red-500' : risk.readiness < 8 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
-                            {risk.readiness}/10
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Improvement Opportunities */}
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="flex items-center">
-                    <Clipboard className="h-5 w-5 mr-2 text-primary" />
-                    Improvement Opportunities
-                  </CardTitle>
-                  <CardDescription>
-                    High-impact areas for performance enhancement
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="h-8 w-8" 
-                    onClick={() => {
-                      const container = document.getElementById('improvements-container');
-                      if (container) {
-                        container.scrollBy({ top: -200, behavior: 'smooth' });
-                      }
-                    }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="h-8 w-8" 
-                    onClick={() => {
-                      const container = document.getElementById('improvements-container');
-                      if (container) {
-                        container.scrollBy({ top: 200, behavior: 'smooth' });
-                      }
-                    }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div id="improvements-container" className="max-h-64 overflow-y-hidden hide-scrollbar">
-                <div className="space-y-4">
-                  {logisticsPerformanceData.improvementOpportunities.map((opportunity, index) => (
-                    <div key={index} className="border rounded-md p-3 dark:border-gray-700">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{opportunity.area}</span>
-                        <Badge className={`${opportunity.priority > 7 ? 'bg-red-500' : opportunity.priority > 4 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
-                          Priority: {opportunity.priority}/10
+              {/* Horizontal scrolling cards with no scrollbar + navigation buttons */}
+              <div 
+                id="bottlenecks-container"
+                className="flex overflow-x-hidden pb-4 hide-scrollbar" 
+              >
+                <div className="flex gap-4 py-1 px-0.5 min-w-full">
+                  {networkAnalyticsData.bottlenecks.map((bottleneck, index) => (
+                    <div key={index} className="min-w-[220px] max-w-[250px] flex-shrink-0 border rounded-lg p-4 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="font-medium truncate max-w-[150px]">{bottleneck.location}</div>
+                        <Badge className={`${bottleneck.severity > 7 ? 'bg-red-500' : bottleneck.severity > 5 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
+                          {bottleneck.severity.toFixed(1)}/10
                         </Badge>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="flex flex-col gap-2">
                         <div>
-                          <div className="text-xs text-muted-foreground mb-1">Potential Impact</div>
-                          <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+                          <div className="text-xs text-muted-foreground mb-1 flex justify-between">
+                            <span>Impacted Shipments</span>
+                            <span className="font-medium">{bottleneck.impactedShipments}</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
                             <div 
-                              className="h-full bg-blue-500" 
-                              style={{ width: `${opportunity.potential * 10}%` }}
+                              className="h-full bg-red-500" 
+                              style={{ width: `${(bottleneck.impactedShipments / 2000) * 100}%` }}
                             />
                           </div>
-                          <div className="text-right text-xs mt-1">{opportunity.potential}/10</div>
                         </div>
                         <div>
-                          <div className="text-xs text-muted-foreground mb-1">Implementation Effort</div>
-                          <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+                          <div className="text-xs text-muted-foreground mb-1 flex justify-between">
+                            <span>Avg Delay</span>
+                            <span className="font-medium">{bottleneck.avgDelay} hrs</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
                             <div 
                               className="h-full bg-amber-500" 
-                              style={{ width: `${opportunity.effort * 10}%` }}
+                              style={{ width: `${(bottleneck.avgDelay / 15) * 100}%` }}
                             />
                           </div>
-                          <div className="text-right text-xs mt-1">{opportunity.effort}/10</div>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      
-      {/* Performance Insights */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">Performance Insights</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* KPI Trends - Circular Progress Indicators */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center">
-                <TrendingUp className="h-5 w-5 mr-2 text-primary" />
-                KPI Performance Indicators
-              </CardTitle>
-              <CardDescription>
-                Current performance against targets across key indicators
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {logisticsPerformanceData.kpiTrend.slice(0, 6).map((kpi, index) => {
-                  const percentage = Math.round((kpi.value / kpi.target) * 100);
-                  const color = percentage >= 100 ? 'text-green-500' : 
-                                percentage >= 80 ? 'text-emerald-500' : 
-                                percentage >= 60 ? 'text-amber-500' : 'text-red-500';
-                  
-                  return (
-                    <div key={index} className="flex flex-col items-center">
-                      <div className="relative w-20 h-20">
-                        <svg className="w-full h-full" viewBox="0 0 100 100">
-                          <circle 
-                            className="text-gray-200 stroke-current" 
-                            strokeWidth="10" 
-                            cx="50" 
-                            cy="50" 
-                            r="40" 
-                            fill="transparent"
-                          />
-                          <circle 
-                            className={`${color} stroke-current`} 
-                            strokeWidth="10" 
-                            strokeLinecap="round" 
-                            cx="50" 
-                            cy="50" 
-                            r="40" 
-                            fill="transparent"
-                            strokeDasharray={`${Math.min(percentage, 100) * 2.51}, 251`}
-                            transform="rotate(-90 50 50)"
-                          />
-                          <text 
-                            x="50%" 
-                            y="50%" 
-                            dy=".3em" 
-                            textAnchor="middle" 
-                            className={`${color} fill-current text-lg font-bold`}
-                          >
-                            {percentage}%
-                          </text>
-                        </svg>
-                      </div>
-                      <div className="mt-2 text-center">
-                        <div className="text-sm font-medium truncate max-w-[100px] mx-auto">
-                          {kpi.category}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {kpi.value}/{kpi.target}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Performance Tracking - Line Chart */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center">
-                <Clock className="h-5 w-5 mr-2 text-primary" />
-                Daily Performance Tracking
-              </CardTitle>
-              <CardDescription>
-                Consolidated performance across domains for the past 7 days
-              </CardDescription>
-          </CardHeader>
-          <CardContent>
-              <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={logisticsPerformanceData.dailyPerformance}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                      dataKey="date" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                      domain={[60, 100]}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Legend />
-                    <Line type="monotone" dataKey="operations" name="Operations" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="delivery" name="Delivery" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="warehouse" name="Warehouse" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="customer" name="Customer" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
-                  </LineChart>
-              </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      
-      {/* Route and Bottleneck Analysis */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-4">Route & Network Analysis</h2>
-        
-        {/* Network Bottlenecks - Full Width Row */}
-        <Card className="mb-6">
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="flex items-center">
-                  <AlertTriangle className="h-5 w-5 mr-2 text-primary" />
-                  Critical Network Bottlenecks
-                </CardTitle>
-                <CardDescription>
-                  Key congestion points currently impacting logistics flow
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="h-8 w-8" 
-                  onClick={() => {
-                    const container = document.getElementById('bottlenecks-container');
-                    if (container) {
-                      container.scrollBy({ left: -300, behavior: 'smooth' });
-                    }
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="h-8 w-8" 
-                  onClick={() => {
-                    const container = document.getElementById('bottlenecks-container');
-                    if (container) {
-                      container.scrollBy({ left: 300, behavior: 'smooth' });
-                    }
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Horizontal scrolling cards with no scrollbar + navigation buttons */}
-            <div 
-              id="bottlenecks-container"
-              className="flex overflow-x-hidden pb-4 hide-scrollbar" 
-            >
-              <div className="flex gap-4 py-1 px-0.5 min-w-full">
-                {networkAnalyticsData.bottlenecks.map((bottleneck, index) => (
-                  <div key={index} className="min-w-[220px] max-w-[250px] flex-shrink-0 border rounded-lg p-4 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="font-medium truncate max-w-[150px]">{bottleneck.location}</div>
-                      <Badge className={`${bottleneck.severity > 7 ? 'bg-red-500' : bottleneck.severity > 5 ? 'bg-amber-500' : 'bg-green-500'} text-white`}>
-                        {bottleneck.severity.toFixed(1)}/10
-                      </Badge>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1 flex justify-between">
-                          <span>Impacted Shipments</span>
-                          <span className="font-medium">{bottleneck.impactedShipments}</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
-                          <div 
-                            className="h-full bg-red-500" 
-                            style={{ width: `${(bottleneck.impactedShipments / 2000) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1 flex justify-between">
-                          <span>Avg Delay</span>
-                          <span className="font-medium">{bottleneck.avgDelay} hrs</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
-                          <div 
-                            className="h-full bg-amber-500" 
-                            style={{ width: `${(bottleneck.avgDelay / 15) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-
-              {/* Average Network Delay - Key Metrics */}
-              <div className="border rounded-lg p-4 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                    <span className="font-medium">Average Network Delay</span>
-                  </div>
-                  <Badge className="bg-amber-500 text-white">+5.2%</Badge>
-                </div>
-                <div className="text-2xl font-bold mb-2">6.8 hrs</div>
-                <div className="text-xs text-muted-foreground">
-                  Increased from 6.5 hrs last month • 2.3 hrs above target
-                </div>
-                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800 mt-2">
-                  <div className="h-full bg-amber-500" style={{ width: "68%" }} />
-                </div>
-              </div>
               
-              {/* Most Affected Hub - Key Metrics */}
-              <div className="border rounded-lg p-4 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-2 text-red-500" />
-                    <span className="font-medium">Most Affected Hub</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+
+                {/* Average Network Delay - Key Metrics */}
+                <div className="border rounded-lg p-4 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2 text-blue-500" />
+                      <span className="font-medium">Average Network Delay</span>
+                    </div>
+                    <Badge className="bg-amber-500 text-white">+5.2%</Badge>
                   </div>
-                  <Badge className="bg-red-500 text-white">Critical</Badge>
+                  <div className="text-2xl font-bold mb-2">6.8 hrs</div>
+                  <div className="text-xs text-muted-foreground">
+                    Increased from 6.5 hrs last month • 2.3 hrs above target
+                  </div>
+                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800 mt-2">
+                    <div className="h-full bg-amber-500" style={{ width: "68%" }} />
+                  </div>
                 </div>
-                <div className="text-2xl font-bold mb-2">Chicago Hub</div>
-                <div className="text-xs text-muted-foreground">
-                  1,240 shipments impacted • Avg delay 5.8 hrs
+                
+                {/* Most Affected Hub - Key Metrics */}
+                <div className="border rounded-lg p-4 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                      <span className="font-medium">Most Affected Hub</span>
+                    </div>
+                    <Badge className="bg-red-500 text-white">Critical</Badge>
+                  </div>
+                  <div className="text-2xl font-bold mb-2">Chicago Hub</div>
+                  <div className="text-xs text-muted-foreground">
+                    1,240 shipments impacted • Avg delay 5.8 hrs
+                  </div>
+                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800 mt-2">
+                    <div className="h-full bg-red-500" style={{ width: "82%" }} />
+                  </div>
                 </div>
-                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800 mt-2">
-                  <div className="h-full bg-red-500" style={{ width: "82%" }} />
+                
+                {/* Rerouting Efficiency - Key Metrics */}
+                <div className="border rounded-lg p-4 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <Truck className="h-4 w-4 mr-2 text-green-500" />
+                      <span className="font-medium">Rerouting Efficiency</span>
+                    </div>
+                    <Badge className="bg-green-500 text-white">+12%</Badge>
+                  </div>
+                  <div className="text-2xl font-bold mb-2">76.4%</div>
+                  <div className="text-xs text-muted-foreground">
+                    425 shipments successfully rerouted • 2.1 hrs saved on average
+                  </div>
+                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800 mt-2">
+                    <div className="h-full bg-green-500" style={{ width: "76%" }} />
+                  </div>
                 </div>
               </div>
-              
-              {/* Rerouting Efficiency - Key Metrics */}
-              <div className="border rounded-lg p-4 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center">
-                    <Truck className="h-4 w-4 mr-2 text-green-500" />
-                    <span className="font-medium">Rerouting Efficiency</span>
-                  </div>
-                  <Badge className="bg-green-500 text-white">+12%</Badge>
-                </div>
-                <div className="text-2xl font-bold mb-2">76.4%</div>
-                <div className="text-xs text-muted-foreground">
-                  425 shipments successfully rerouted • 2.1 hrs saved on average
-                </div>
-                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800 mt-2">
-                  <div className="h-full bg-green-500" style={{ width: "76%" }} />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* New Two Column Layout - Replacing Previous Components */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Hub Throughput Capacity - Replacing Route Performance */}
-        <Card>
+            </CardContent>
+          </Card>
+          
+          {/* New Two Column Layout - Replacing Previous Components */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Hub Throughput Capacity - Replacing Route Performance */}
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center">
                 <Truck className="h-5 w-5 mr-2 text-primary" />
@@ -932,210 +937,216 @@ export default function Analytics() {
             </CardContent>
           </Card>
 
-          {/* Seasonal Transit Time Variations - Replacing Network Connection Strength */}
+            {/* Seasonal Transit Time Variations - Replacing Network Connection Strength */}
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center">
-                <Network className="h-5 w-5 mr-2 text-primary" />
-                Seasonal Transit Time Variations
-              </CardTitle>
-              <CardDescription>
-                Analysis of transit time fluctuations across seasons
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={[
-                      { season: 'Winter', chicago: 35.2, newyork: 28.4, losangeles: 22.8, dallas: 24.2 },
-                      { season: 'Spring', chicago: 29.8, newyork: 25.6, losangeles: 21.5, dallas: 22.7 },
-                      { season: 'Summer', chicago: 27.4, newyork: 26.1, losangeles: 23.2, dallas: 25.8 },
-                      { season: 'Fall', chicago: 31.6, newyork: 27.5, losangeles: 22.1, dallas: 23.4 }
-                    ]}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
-                      dataKey="season" 
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                    />
-                    <YAxis 
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                      label={{ value: 'Hours', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
-                      formatter={(value, name) => [`${value} hours`, name === 'chicago' ? 'Chicago' : 
-                                                             name === 'newyork' ? 'New York' : 
-                                                             name === 'losangeles' ? 'Los Angeles' : 'Dallas']}
-                    />
-                    <Legend 
-                      formatter={(value) => value === 'chicago' ? 'Chicago' : 
-                                            value === 'newyork' ? 'New York' : 
-                                            value === 'losangeles' ? 'Los Angeles' : 'Dallas'}
-                    />
-                    <Bar dataKey="chicago" fill="#3b82f6" />
-                    <Bar dataKey="newyork" fill="#10b981" />
-                    <Bar dataKey="losangeles" fill="#f59e0b" />
-                    <Bar dataKey="dallas" fill="#8b5cf6" />
-                  </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-        </div>
-      </div>
-      
-      {/* Fuel Analytics - Line Chart // Cost Analytics - Pie Chart // Sustainability - Bar Chart */}
-      <Tabs defaultValue="fuel" className="mb-6">
-        <TabsList className="mb-2">
-          <TabsTrigger value="fuel">Fuel Analytics</TabsTrigger>
-          <TabsTrigger value="cost">Cost Analysis</TabsTrigger>
-          <TabsTrigger value="sustainability">Sustainability</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="fuel" className="max-h-[calc(100vh-20rem)] overflow-y-auto">
-          <Card>
-            <CardHeader className="py-4">
-              <CardTitle>Fuel Consumption Trends</CardTitle>
-              <CardDescription>Monthly consumption patterns across fleet</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={fuelConsumptionData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
-                      dataKey="month" 
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                    />
-                    <YAxis 
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
-                    />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="diesel" 
-                      stroke="#8884d8" 
-                      activeDot={{ r: 8 }} 
-                    />
-                    <Line type="monotone" dataKey="gasoline" stroke="#82ca9d" />
-                    <Line type="monotone" dataKey="electric" stroke="#ffc658" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="cost" className="max-h-[calc(100vh-20rem)] overflow-y-auto">
-          <Card>
-            <CardHeader className="py-4">
-              <CardTitle>Operational Cost Breakdown</CardTitle>
-              <CardDescription>Analysis of transportation costs</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center">
+                  <Network className="h-5 w-5 mr-2 text-primary" />
+                  Seasonal Transit Time Variations
+                </CardTitle>
+                <CardDescription>
+                  Analysis of transit time fluctuations across seasons
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
                       data={[
-                        { name: 'Fuel', value: 42 },
-                        { name: 'Maintenance', value: 18 },
-                        { name: 'Driver Wages', value: 28 },
-                        { name: 'Insurance', value: 8 },
-                        { name: 'Other', value: 4 },
+                        { season: 'Winter', chicago: 35.2, newyork: 28.4, losangeles: 22.8, dallas: 24.2 },
+                        { season: 'Spring', chicago: 29.8, newyork: 25.6, losangeles: 21.5, dallas: 22.7 },
+                        { season: 'Summer', chicago: 27.4, newyork: 26.1, losangeles: 23.2, dallas: 25.8 },
+                        { season: 'Fall', chicago: 31.6, newyork: 27.5, losangeles: 22.1, dallas: 23.4 }
                       ]}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
-                      {transportModeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
-                    />
-                    <Legend />
-                  </PieChart>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis 
+                        dataKey="season" 
+                        className="text-xs" 
+                        tick={{fill: 'hsl(var(--foreground))'}}
+                      />
+                      <YAxis 
+                        className="text-xs" 
+                        tick={{fill: 'hsl(var(--foreground))'}}
+                        label={{ value: 'Hours', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12 }}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          borderColor: 'hsl(var(--border))',
+                          color: 'hsl(var(--foreground))'
+                        }}
+                        formatter={(value, name) => [`${value} hours`, name === 'chicago' ? 'Chicago' : 
+                                                              name === 'newyork' ? 'New York' : 
+                                                              name === 'losangeles' ? 'Los Angeles' : 'Dallas']}
+                      />
+                      <Legend 
+                        formatter={(value) => value === 'chicago' ? 'Chicago' : 
+                                              value === 'newyork' ? 'New York' : 
+                                              value === 'losangeles' ? 'Los Angeles' : 'Dallas'}
+                      />
+                      <Bar dataKey="chicago" fill="#3b82f6" />
+                      <Bar dataKey="newyork" fill="#10b981" />
+                      <Bar dataKey="losangeles" fill="#f59e0b" />
+                      <Bar dataKey="dallas" fill="#8b5cf6" />
+                    </BarChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="sustainability" className="max-h-[calc(100vh-20rem)] overflow-y-auto">
-          <Card>
-            <CardHeader className="py-4">
-              <CardTitle>Carbon Footprint</CardTitle>
-              <CardDescription>CO2 emissions by transport mode</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={[
-                      { name: 'Q1', truck: 145, train: 45, electric: 20 },
-                      { name: 'Q2', truck: 158, train: 48, electric: 28 },
-                      { name: 'Q3', truck: 132, train: 52, electric: 35 },
-                      { name: 'Q4', truck: 142, train: 50, electric: 40 },
-                    ]}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis 
-                      dataKey="name" 
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                    />
-                    <YAxis 
-                      className="text-xs" 
-                      tick={{fill: 'hsl(var(--foreground))'}}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        borderColor: 'hsl(var(--border))',
-                        color: 'hsl(var(--foreground))'
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="truck" name="Diesel Trucks" fill="#FF8042" />
-                    <Bar dataKey="train" name="Rail Transport" fill="#FFBB28" />
-                    <Bar dataKey="electric" name="Electric Vehicles" fill="#00C49F" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          </div>
+        </div>
+      </Card>
+      
+      {/* Financial Analytics Section */}
+      <Card className="p-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Financial Analytics</h2>
+          <Tabs defaultValue="fuel" className="mb-6">
+            <TabsList className="mb-6 grid grid-cols-3 w-full md:w-auto">
+              <TabsTrigger value="fuel">Fuel Analytics</TabsTrigger>
+              <TabsTrigger value="cost">Cost Analysis</TabsTrigger>
+              <TabsTrigger value="sustainability">Sustainability</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="fuel" className="max-h-[calc(100vh-20rem)] overflow-y-auto">
+              <Card>
+                <CardHeader className="py-4">
+                  <CardTitle>Fuel Consumption Trends</CardTitle>
+                  <CardDescription>Monthly consumption patterns across fleet</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={fuelConsumptionData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="month" 
+                          className="text-xs" 
+                          tick={{fill: 'hsl(var(--foreground))'}}
+                        />
+                        <YAxis 
+                          className="text-xs" 
+                          tick={{fill: 'hsl(var(--foreground))'}}
+                        />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            borderColor: 'hsl(var(--border))',
+                            color: 'hsl(var(--foreground))'
+                          }}
+                        />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="diesel" 
+                          stroke="#8884d8" 
+                          activeDot={{ r: 8 }} 
+                        />
+                        <Line type="monotone" dataKey="gasoline" stroke="#82ca9d" />
+                        <Line type="monotone" dataKey="electric" stroke="#ffc658" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="cost" className="max-h-[calc(100vh-20rem)] overflow-y-auto">
+              <Card>
+                <CardHeader className="py-4">
+                  <CardTitle>Operational Cost Breakdown</CardTitle>
+                  <CardDescription>Analysis of transportation costs</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'Fuel', value: 42 },
+                            { name: 'Maintenance', value: 18 },
+                            { name: 'Driver Wages', value: 28 },
+                            { name: 'Insurance', value: 8 },
+                            { name: 'Other', value: 4 },
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {transportModeData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            borderColor: 'hsl(var(--border))',
+                            color: 'hsl(var(--foreground))'
+                          }}
+                        />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="sustainability" className="max-h-[calc(100vh-20rem)] overflow-y-auto">
+              <Card>
+                <CardHeader className="py-4">
+                  <CardTitle>Carbon Footprint</CardTitle>
+                  <CardDescription>CO2 emissions by transport mode</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={[
+                          { name: 'Q1', truck: 145, train: 45, electric: 20 },
+                          { name: 'Q2', truck: 158, train: 48, electric: 28 },
+                          { name: 'Q3', truck: 132, train: 52, electric: 35 },
+                          { name: 'Q4', truck: 142, train: 50, electric: 40 },
+                        ]}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="name" 
+                          className="text-xs" 
+                          tick={{fill: 'hsl(var(--foreground))'}}
+                        />
+                        <YAxis 
+                          className="text-xs" 
+                          tick={{fill: 'hsl(var(--foreground))'}}
+                        />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            borderColor: 'hsl(var(--border))',
+                            color: 'hsl(var(--foreground))'
+                          }}
+                        />
+                        <Legend />
+                        <Bar dataKey="truck" name="Diesel Trucks" fill="#FF8042" />
+                        <Bar dataKey="train" name="Rail Transport" fill="#FFBB28" />
+                        <Bar dataKey="electric" name="Electric Vehicles" fill="#00C49F" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </Card>
     </div>
   );
 }

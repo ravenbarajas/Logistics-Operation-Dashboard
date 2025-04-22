@@ -72,9 +72,26 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    title: "Shipments",
-    icon: <Compass className="mr-2 h-4 w-4" />,
-    href: "/shipments",
+    title: "Shipment Management",
+    icon: <Package className="mr-2 h-4 w-4" />,
+    children: [
+      {
+        title: "Shipment Tracking",
+        href: "/shipments/tracking",
+      },
+      {
+        title: "Shipment Exception",
+        href: "/shipments/exceptions",
+      },
+      {
+        title: "Shipment Efficiency",
+        href: "/shipments/efficiency",
+      },
+      {
+        title: "Environmental Impact",
+        href: "/shipments/environmental",
+      },
+    ],
   },
   {
     title: "Analytics",
@@ -189,6 +206,46 @@ const navItems: NavItem[] = [
 export default function Sidebar({ isMobile, onClose }: SidebarProps) {
   const [location] = useLocation();
   
+  // Helper function to check if a path is active, accounting for query parameters
+  const isPathActive = (path: string) => {
+    // For paths without query parameters
+    if (!path.includes('?')) {
+      // For the shipments paths with nested routes
+      if (path === '/shipments') {
+        return location === '/shipments';
+      }
+      
+      if (path.startsWith('/shipments/')) {
+        return location === path;
+      }
+      
+      // For other paths, check exact match or if location starts with the path (for nested routes)
+      return location === path || (location.startsWith(path) && location.includes('?'));
+    }
+    
+    // For paths with query parameters
+    const [basePath, queryString] = path.split('?');
+    
+    // If location doesn't start with base path, it's not active
+    if (!location.startsWith(basePath)) return false;
+    
+    // If no query parameters in current location, it's not active
+    if (!location.includes('?')) return false;
+    
+    // Extract query parameters
+    const locationQueryString = location.split('?')[1];
+    
+    // For shipments page, check the tab parameter specifically
+    if (basePath === '/shipments') {
+      const tabInPath = new URLSearchParams(queryString).get('tab');
+      const tabInLocation = new URLSearchParams(locationQueryString).get('tab');
+      return tabInPath === tabInLocation;
+    }
+    
+    // For other pages with query params, check if they are the same
+    return queryString === locationQueryString;
+  };
+  
   return (
     <aside className="flex flex-col w-64 border-r border-border bg-card text-card-foreground h-full">
       <div className="p-4 border-b border-border">
@@ -210,7 +267,7 @@ export default function Sidebar({ isMobile, onClose }: SidebarProps) {
                         "flex justify-between items-center px-4 py-2 text-sm font-medium rounded-md hover:bg-muted no-underline",
                         "data-[state=open]:text-primary data-[state=open]:bg-muted/40",
                         "dark:text-white dark:hover:bg-muted/20 dark:data-[state=open]:bg-muted/30",
-                        item.children.some(child => location === child.href) 
+                        item.children.some(child => isPathActive(child.href)) 
                           ? "text-primary font-medium dark:text-primary-foreground" 
                           : ""
                       )}
@@ -229,7 +286,7 @@ export default function Sidebar({ isMobile, onClose }: SidebarProps) {
                               onClick={isMobile && onClose ? onClose : undefined}
                               className={cn(
                                 "flex items-center px-4 py-2 text-sm rounded-md",
-                                location === child.href
+                                isPathActive(child.href)
                                   ? "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
                                   : "hover:bg-muted dark:hover:bg-muted/20 dark:text-foreground"
                               )}
@@ -248,7 +305,7 @@ export default function Sidebar({ isMobile, onClose }: SidebarProps) {
                   onClick={isMobile && onClose ? onClose : undefined}
                   className={cn(
                     "flex items-center px-4 py-2 text-sm font-medium rounded-md",
-                    location === item.href
+                    isPathActive(item.href!)
                       ? "bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground"
                       : "hover:bg-muted dark:hover:bg-muted/20 dark:text-foreground"
                   )}

@@ -417,37 +417,8 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
   };
   
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>
-              <div className="flex items-center">
-                <AlertTriangleIcon className="h-5 w-5 mr-2 text-amber-500" />
-                Shipment Exception Management
-              </div>
-            </CardTitle>
-            <CardDescription>
-              Monitor and resolve shipment issues and exceptions
-            </CardDescription>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-8" 
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <RefreshCwIcon className="h-4 w-4 mr-1 animate-spin" />
-            ) : (
-              <RefreshCwIcon className="h-4 w-4 mr-1" />
-            )}
-            Refresh
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4">
+    <div className="overflow-hidden">
+      <CardContent className="p-0">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card className="border">
             <CardContent className="p-4 flex items-center">
@@ -708,6 +679,6 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
           </div>
         </Tabs>
       </CardContent>
-    </Card>
+    </div>
   );
 } 

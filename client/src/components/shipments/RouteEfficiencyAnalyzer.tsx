@@ -191,33 +191,8 @@ export function RouteEfficiencyAnalyzer({ shipments }: RouteEfficiencyAnalyzerPr
   };
   
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>
-              <div className="flex items-center">
-                <RouteIcon className="h-5 w-5 mr-2" />
-                Route Efficiency Analysis
-              </div>
-            </CardTitle>
-            <CardDescription>
-              Performance analysis of logistics routes and efficiency metrics
-            </CardDescription>
-          </div>
-          <Select value={timeframe} onValueChange={setTimeframe}>
-            <SelectTrigger className="w-[180px] h-8">
-              <SelectValue placeholder="Select timeframe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="week">Past Week</SelectItem>
-              <SelectItem value="month">Past Month</SelectItem>
-              <SelectItem value="quarter">Past Quarter</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4">
+    <div className="overflow-hidden">
+      <CardContent className="p-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-4">
             <TabsTrigger value="metrics">Efficiency Metrics</TabsTrigger>
@@ -451,6 +426,6 @@ export function RouteEfficiencyAnalyzer({ shipments }: RouteEfficiencyAnalyzerPr
           </div>
         </div>
       </CardContent>
-    </Card>
+    </div>
   );
 } 

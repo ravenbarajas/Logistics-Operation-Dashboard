@@ -169,15 +169,6 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
       <CardHeader className="pb-2 pt-0">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>
-              <div className="flex items-center">
-                <TruckIcon className="h-5 w-5 mr-2" />
-                Shipment Tracking
-              </div>
-            </CardTitle>
-            <CardDescription>
-              Real-time tracking for shipment #{shipment.trackingNumber}
-            </CardDescription>
           </div>
           <Button 
             variant="outline" 

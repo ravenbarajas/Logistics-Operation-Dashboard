@@ -49,6 +49,7 @@ import { ShipmentTracking } from "@/components/shipments/ShipmentTracking";
 import { RouteEfficiencyAnalyzer } from "@/components/shipments/RouteEfficiencyAnalyzer";
 import { EnvironmentalImpactCalculator } from "@/components/shipments/EnvironmentalImpactCalculator";
 import { ShipmentExceptionHandler } from "@/components/shipments/ShipmentExceptionHandler";
+import { useLocation } from "wouter";
 
 // Extended Shipment interface with additional properties that might be needed
 interface ExtendedShipment extends Shipment {
@@ -68,6 +69,7 @@ interface ExtendedShipment extends Shipment {
 }
 
 export default function Shipments() {
+  const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -93,6 +95,34 @@ export default function Shipments() {
   // Delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [shipmentToDelete, setShipmentToDelete] = useState<Shipment | null>(null);
+
+  // Get tab from URL query parameter
+  const getTabFromUrl = () => {
+    const path = location;
+    if (path.includes("/shipments/exceptions")) {
+      return "exceptions";
+    } else if (path.includes("/shipments/efficiency")) {
+      return "efficiency";
+    } else if (path.includes("/shipments/environmental")) {
+      return "environmental";
+    } else if (path === "/shipments") {
+      // Redirect base path to tracking
+      window.history.replaceState({}, "", "/shipments/tracking");
+      return "tracking";
+    }
+    return "tracking"; // Default to tracking
+  };
+  
+  // Add state for main tab navigation with initial value from URL
+  const [mainTabValue, setMainTabValue] = useState(getTabFromUrl);
+  const [trackingQuery, setTrackingQuery] = useState("");
+  const [trackingError, setTrackingError] = useState<string | null>(null);
+  const [trackedShipment, setTrackedShipment] = useState<Shipment | null>(null);
+
+  // Update tab value whenever location changes (handles sidebar navigation)
+  useEffect(() => {
+    setMainTabValue(getTabFromUrl());
+  }, [location]);
 
   const fetchData = async () => {
     try {
@@ -173,6 +203,18 @@ export default function Shipments() {
   useEffect(() => {
     fetchData();
     fetchAnalyticsData();
+    
+    // Listen for popstate events (back/forward navigation)
+    const handlePopState = () => {
+      // When browser back/forward is used, we need to update our tab state
+      // based on the new URL
+      setMainTabValue(getTabFromUrl());
+    };
+    
+    // Listen for URL changes to update the active tab
+    window.addEventListener("popstate", handlePopState);
+    
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   const handleAddShipment = () => {
@@ -530,6 +572,43 @@ export default function Shipments() {
     "scheduled": { color: "purple", label: "Scheduled" }
   };
   
+  // Handler for tracking shipments on the dedicated tracking tab
+  const handleTrackShipment = () => {
+    if (!trackingQuery) {
+      setTrackingError("Please enter a tracking number");
+      return;
+    }
+    
+    const foundShipment = shipments.find(s => 
+      s.trackingNumber && s.trackingNumber.toLowerCase().includes(trackingQuery.toLowerCase())
+    );
+    
+    if (foundShipment) {
+      setTrackedShipment(foundShipment);
+      setTrackingError(null);
+    } else {
+      setTrackingError("No shipment found with that tracking number");
+      setTrackedShipment(null);
+    }
+  };
+  
+  // Update URL when tab changes
+  const handleTabChange = (value: string) => {
+    // Set the tab state
+    setMainTabValue(value);
+    
+    // Update URL without full page reload using path-based navigation
+    if (value === "tracking") {
+      window.history.pushState({}, "", "/shipments/tracking");
+    } else if (value === "exceptions") {
+      window.history.pushState({}, "", "/shipments/exceptions");
+    } else if (value === "efficiency") {
+      window.history.pushState({}, "", "/shipments/efficiency");
+    } else if (value === "environmental") {
+      window.history.pushState({}, "", "/shipments/environmental");
+    }
+  };
+
   return (
     <div className="container px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -603,160 +682,244 @@ export default function Shipments() {
         </div>
       )}
       
-      {/* Shipment Tracking Section */}
-      <div className="mb-8">
-        <Tabs defaultValue="active" className="mb-6 space-y-6">
-          <TabsList className="grid grid-cols-3 w-full md:w-auto">
-            <TabsTrigger value="active">Active Shipments ({filteredActiveShipments.length})</TabsTrigger>
-            <TabsTrigger value="history">Shipment History ({filteredCompletedShipments.length})</TabsTrigger>
-            <TabsTrigger value="scheduled">Scheduled ({filteredScheduledShipments.length})</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="active" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div>
-                    <CardTitle className="flex items-center mb-1">
-                      <Truck className="h-5 w-5 mr-2 text-primary" />
-                      Active Shipments ({filteredActiveShipments.length})
-                    </CardTitle>
-                <CardDescription>Manage your current shipments in progress</CardDescription>
-                  </div>
-                  <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-                    <div className="flex gap-2 items-center">
-                    <div className="flex items-center">
-                      <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span className="text-sm mr-2">Status:</span>
-                    </div>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="in-transit">In Transit</SelectItem>
-                          <SelectItem value="processing">Processing</SelectItem>
-                          <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="scheduled">Scheduled</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <EnhancedTable
-                  data={filteredActiveShipments}
-                  columns={activeShipmentColumns}
-                  actions={activeShipmentActions}
-                  searchKey="trackingNumber"
-                  searchPlaceholder="Search by tracking number..."
-                  statusKey="status"
-                  statusMap={statusColorMap}
-                  emptyMessage="No active shipments found"
-                  onRowClick={(shipment) => setSelectedShipment(shipment)}
-                  rowClassName="cursor-pointer hover:bg-muted/50"
-                />
-              </CardContent>
-              {selectedShipment && (
-                <ShipmentTracking 
-                  shipment={selectedShipment} 
+      {/* Main Tabs Navigation */}
+      <Tabs value={mainTabValue} onValueChange={handleTabChange} className="mb-8 space-y-6">
+        <TabsList className="grid grid-cols-4 w-full">
+          <TabsTrigger value="tracking" className="flex items-center">
+            <Search className="h-4 w-4 mr-2" />
+            Tracking
+          </TabsTrigger>
+          <TabsTrigger value="exceptions" className="flex items-center">
+            <AlertTriangleIcon className="h-4 w-4 mr-2" />
+            Exceptions
+          </TabsTrigger>
+          <TabsTrigger value="efficiency" className="flex items-center">
+            <Route className="h-4 w-4 mr-2" />
+            Efficiency
+          </TabsTrigger>
+          <TabsTrigger value="environmental" className="flex items-center">
+            <Leaf className="h-4 w-4 mr-2" />
+            Environmental
+          </TabsTrigger>
+        </TabsList>
+        
+        {/* Tracking Tab */}
+        <TabsContent value="tracking" className="space-y-4">
+          {/* Shipment Tracking Search */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Search className="h-5 w-5 mr-2 text-primary" />
+                Shipment Tracking
+              </CardTitle>
+              <CardDescription>
+                Enter a tracking number to view detailed shipment information and status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Shipment Management Section */}
+              <div className="mb-8">
+                <Tabs defaultValue="active" className="mb-6 space-y-6">
+                  <TabsList className="grid grid-cols-3 w-full md:w-auto">
+                    <TabsTrigger value="active">Active Shipments ({filteredActiveShipments.length})</TabsTrigger>
+                    <TabsTrigger value="history">Shipment History ({filteredCompletedShipments.length})</TabsTrigger>
+                    <TabsTrigger value="scheduled">Scheduled ({filteredScheduledShipments.length})</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="active" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                          <div>
+                            <CardTitle className="flex items-center mb-1">
+                              <Truck className="h-5 w-5 mr-2 text-primary" />
+                              Active Shipments ({filteredActiveShipments.length})
+                            </CardTitle>
+                        <CardDescription>Manage your current shipments in progress</CardDescription>
+                          </div>
+                          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                            <div className="flex gap-2 items-center">
+                            <div className="flex items-center">
+                              <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
+                              <span className="text-sm mr-2">Status:</span>
+                            </div>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">All Statuses</SelectItem>
+                                <SelectItem value="in-transit">In Transit</SelectItem>
+                                  <SelectItem value="processing">Processing</SelectItem>
+                                  <SelectItem value="delivered">Delivered</SelectItem>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <EnhancedTable
+                          data={filteredActiveShipments}
+                          columns={activeShipmentColumns}
+                          actions={activeShipmentActions}
+                          searchKey="trackingNumber"
+                          searchPlaceholder="Search by tracking number..."
+                          statusKey="status"
+                          statusMap={statusColorMap}
+                          emptyMessage="No active shipments found"
+                          onRowClick={(shipment) => setSelectedShipment(shipment)}
+                          rowClassName="cursor-pointer hover:bg-muted/50"
+                        />
+                      </CardContent>
+                      {selectedShipment && (
+                        <ShipmentTracking 
+                          shipment={selectedShipment} 
+                          onRefresh={fetchData}
+                        />
+                      )}
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="history" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <FileText className="h-5 w-5 mr-2 text-primary" />
+                          Shipment History
+                        </CardTitle>
+                        <CardDescription>View completed and cancelled shipments</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <EnhancedTable
+                          data={filteredCompletedShipments}
+                          columns={completedShipmentColumns}
+                          actions={completedShipmentActions}
+                          searchKey="trackingNumber"
+                          searchPlaceholder="Search by tracking number..."
+                          statusKey="status"
+                          statusMap={statusColorMap}
+                          emptyMessage="No shipment history found"
+                          onRowClick={(shipment) => setSelectedShipment(shipment)}
+                          rowClassName="cursor-pointer hover:bg-muted/50"
+                        />
+                      </CardContent>
+                      {selectedShipment && (
+                        <ShipmentTracking 
+                          shipment={selectedShipment} 
+                          onRefresh={fetchData}
+                        />
+                      )}
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="scheduled" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Calendar className="h-5 w-5 mr-2 text-primary" />
+                          Scheduled Shipments
+                        </CardTitle>
+                        <CardDescription>Upcoming shipments waiting to be processed</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <EnhancedTable
+                          data={filteredScheduledShipments}
+                          columns={scheduledShipmentColumns}
+                          actions={scheduledShipmentActions}
+                          searchKey="trackingNumber"
+                          searchPlaceholder="Search by tracking number..."
+                          statusKey="status"
+                          statusMap={statusColorMap}
+                          emptyMessage="No scheduled shipments found"
+                          onRowClick={(shipment) => setSelectedShipment(shipment)}
+                          rowClassName="cursor-pointer hover:bg-muted/50"
+                        />
+                      </CardContent>
+                      {selectedShipment && (
+                        <ShipmentTracking 
+                          shipment={selectedShipment} 
+                          onRefresh={fetchData}
+                        />
+                      )}
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Exceptions Tab */}
+        <TabsContent value="exceptions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <AlertTriangleIcon className="h-5 w-5 mr-2 text-primary" />
+                Shipment Exceptions
+              </CardTitle>
+              <CardDescription>Monitor and handle shipment exceptions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center p-4">Loading exception data...</div>
+              ) : (
+                <ShipmentExceptionHandler 
+                  shipments={shipments} 
+                  onResolveException={(shipmentId, resolution) => {
+                    console.log(`Resolving exception for shipment ${shipmentId}: ${resolution}`);
+                    // You can add actual implementation here
+                  }}
                   onRefresh={fetchData}
                 />
               )}
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="history" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2 text-primary" />
-                  Shipment History
-                </CardTitle>
-                <CardDescription>View completed and cancelled shipments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <EnhancedTable
-                  data={filteredCompletedShipments}
-                  columns={completedShipmentColumns}
-                  actions={completedShipmentActions}
-                  searchKey="trackingNumber"
-                  searchPlaceholder="Search by tracking number..."
-                  statusKey="status"
-                  statusMap={statusColorMap}
-                  emptyMessage="No shipment history found"
-                  onRowClick={(shipment) => setSelectedShipment(shipment)}
-                  rowClassName="cursor-pointer hover:bg-muted/50"
-                />
-              </CardContent>
-              {selectedShipment && (
-                <ShipmentTracking 
-                  shipment={selectedShipment} 
-                  onRefresh={fetchData}
-                />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Efficiency Tab */}
+        <TabsContent value="efficiency" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Route className="h-5 w-5 mr-2 text-primary" />
+                Route Efficiency
+              </CardTitle>
+              <CardDescription>Analyze and optimize your shipment routes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center p-4">Loading efficiency data...</div>
+              ) : (
+                <RouteEfficiencyAnalyzer shipments={shipments} />
               )}
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="scheduled" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="h-5 w-5 mr-2 text-primary" />
-                  Scheduled Shipments
-                </CardTitle>
-                <CardDescription>Upcoming shipments waiting to be processed</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <EnhancedTable
-                  data={filteredScheduledShipments}
-                  columns={scheduledShipmentColumns}
-                  actions={scheduledShipmentActions}
-                  searchKey="trackingNumber"
-                  searchPlaceholder="Search by tracking number..."
-                  statusKey="status"
-                  statusMap={statusColorMap}
-                  emptyMessage="No scheduled shipments found"
-                  onRowClick={(shipment) => setSelectedShipment(shipment)}
-                  rowClassName="cursor-pointer hover:bg-muted/50"
-                />
-              </CardContent>
-              {selectedShipment && (
-                <ShipmentTracking 
-                  shipment={selectedShipment} 
-                  onRefresh={fetchData}
-                />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Environmental Tab */}
+        <TabsContent value="environmental" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Leaf className="h-5 w-5 mr-2 text-primary" />
+                Environmental Impact
+              </CardTitle>
+              <CardDescription>Monitor and reduce the environmental footprint of your shipments</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center p-4">Loading environmental data...</div>
+              ) : (
+                <EnvironmentalImpactCalculator shipments={shipments} />
               )}
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-      
-      {/* Exception Handler Section */}
-      <div className="mb-8">
-        <ShipmentExceptionHandler 
-          shipments={shipments} 
-          onResolveException={(shipmentId, resolution) => {
-            console.log(`Resolving exception for shipment ${shipmentId}: ${resolution}`);
-            // You can add actual implementation here
-          }}
-          onRefresh={fetchData}
-        />
-      </div>
-      
-      {/* Route Efficiency Section */}
-      <div className="mb-8">
-        <RouteEfficiencyAnalyzer shipments={shipments} />
-      </div>
-      
-      {/* Environmental Impact Section */}
-      <div className="mb-8">
-        <EnvironmentalImpactCalculator shipments={shipments} />
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
       
       <ShipmentModal
         isOpen={modalOpen}

@@ -172,33 +172,8 @@ export function EnvironmentalImpactCalculator({ shipments }: EnvironmentalImpact
   };
   
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>
-              <div className="flex items-center">
-                <Leaf className="h-5 w-5 mr-2 text-green-500" />
-                Environmental Impact Analysis
-              </div>
-            </CardTitle>
-            <CardDescription>
-              Carbon footprint and sustainability metrics for your logistics operations
-            </CardDescription>
-          </div>
-          <Select value={comparisonPeriod} onValueChange={setComparisonPeriod}>
-            <SelectTrigger className="w-[150px] h-8">
-              <SelectValue placeholder="Select period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="month">This Month</SelectItem>
-              <SelectItem value="quarter">This Quarter</SelectItem>
-              <SelectItem value="year">This Year</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4">
+    <div className="overflow-hidden">
+      <CardContent className="p-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card className="border">
             <CardContent className="p-4 flex flex-col items-center">
@@ -470,6 +445,6 @@ export function EnvironmentalImpactCalculator({ shipments }: EnvironmentalImpact
           </div>
         </div>
       </CardContent>
-    </Card>
+    </div>
   );
 } 

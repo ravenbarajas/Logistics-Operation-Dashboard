@@ -137,7 +137,16 @@ function Router() {
               <Route path="/warehouse/inventory" component={Warehouse} />
               <Route path="/warehouse/analytics" component={Warehouse} />
               <Route path="/warehouse/storage" component={Warehouse} />
-              <Route path="/orders" component={OrderManagement} />
+              <Route path="/orders">
+                {() => {
+                  window.history.pushState({}, "", "/orders/management");
+                  return null;
+                }}
+              </Route>
+              <Route path="/orders/management" component={OrderManagement} />
+              <Route path="/orders/analytics" component={OrderManagement} />
+              <Route path="/orders/performance" component={OrderManagement} />
+              <Route path="/orders/financials" component={OrderManagement} />
               <Route path="/routes" component={RouteOptimization} />
               <Route path="/routes/management" component={RouteOptimization} />
               <Route path="/routes/traffic" component={RouteOptimization} />

@@ -21,6 +21,9 @@ import {
   Map,
   Navigation,
   LineChart,
+  ShoppingCart,
+  CreditCard,
+  TrendingUp,
 } from "lucide-react";
 import {
   Accordion,
@@ -142,8 +145,25 @@ const navItems: NavItem[] = [
   },
   {
     title: "Order Management",
-    icon: <Heart className="mr-2 h-4 w-4" />,
-    href: "/orders",
+    icon: <ShoppingCart className="mr-2 h-4 w-4" />,
+    children: [
+      {
+        title: "Order Management",
+        href: "/orders",
+      },
+      {
+        title: "Order Analytics",
+        href: "/orders/analytics",
+      },
+      {
+        title: "Order Performance",
+        href: "/orders/performance",
+      },
+      {
+        title: "Order Financials",
+        href: "/orders/financials",
+      },
+    ],
   },
   {
     title: "Warehouse Management",
@@ -245,6 +265,23 @@ export default function Sidebar({ isMobile, onClose }: SidebarProps) {
   
   // Helper function to check if a path is active, accounting for query parameters
   const isPathActive = (path: string) => {
+    // Special case for order management paths
+    if (path === '/orders') {
+      return location === '/orders' || location === '/orders/management';
+    }
+    
+    if (path === '/orders/analytics') {
+      return location === '/orders/analytics';
+    }
+    
+    if (path === '/orders/performance') {
+      return location === '/orders/performance';
+    }
+    
+    if (path === '/orders/financials') {
+      return location === '/orders/financials';
+    }
+    
     // For paths without query parameters
     if (!path.includes('?')) {
       // For the shipments paths with nested routes
@@ -281,6 +318,40 @@ export default function Sidebar({ isMobile, onClose }: SidebarProps) {
     
     // For other pages with query params, check if they are the same
     return queryString === locationQueryString;
+  };
+  
+  // Check if the path is for Order Management section
+  const isOrderLink = (href: string) => {
+    return href === '/orders' || 
+           href === '/orders/management' || 
+           href === '/orders/analytics' || 
+           href === '/orders/performance' || 
+           href === '/orders/financials';
+  };
+  
+  // Check if the path is for Shipment Management section
+  const isShipmentLink = (href: string) => {
+    return href === '/shipments' ||
+           href === '/shipments/tracking' ||
+           href === '/shipments/exceptions' ||
+           href === '/shipments/efficiency' ||
+           href === '/shipments/environmental';
+  };
+  
+  // Handle special navigation for client-side routing
+  const handleSpecialNavigation = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    
+    // Update URL without causing a page reload
+    window.history.pushState({}, '', href);
+    
+    // Notify router that the location has changed
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    
+    // Close mobile sidebar if needed
+    if (isMobile && onClose) {
+      onClose();
+    }
   };
   
   return (
@@ -320,7 +391,13 @@ export default function Sidebar({ isMobile, onClose }: SidebarProps) {
                           <li key={child.href}>
                             <Link
                               href={child.href}
-                              onClick={isMobile && onClose ? onClose : undefined}
+                              onClick={(e) => {
+                                if (isOrderLink(child.href) || isShipmentLink(child.href)) {
+                                  handleSpecialNavigation(e, child.href);
+                                } else if (isMobile && onClose) {
+                                  onClose();
+                                }
+                              }}
                               className={cn(
                                 "flex items-center px-4 py-2 text-sm rounded-md",
                                 isPathActive(child.href)

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { 
   Card, 
   CardContent, 
@@ -840,6 +841,7 @@ const regionalPerformanceData: RegionalPerformanceMetrics[] = [
 ];
 
 export default function OrderManagement() {
+  const [location, setLocation] = useLocation();
   const [orderList, setOrderList] = useState<Order[]>(orders);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>(orders);
   const [searchTerm, setSearchTerm] = useState("");
@@ -947,6 +949,54 @@ export default function OrderManagement() {
   
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   
+  // Get tab from URL path
+  const getTabFromUrl = () => {
+    const path = location;
+    if (path.includes("/orders/analytics")) {
+      return "analytics";
+    } else if (path.includes("/orders/performance")) {
+      return "performance";
+    } else if (path.includes("/orders/financials")) {
+      return "financials";
+    } else if (path === "/orders") {
+      // Redirect base path to management
+      setLocation("/orders/management");
+      return "management";
+    }
+    return "management"; // Default to management tab
+  };
+  
+  // Add state for active main tab with initial value from URL
+  const [activeTab, setActiveTab] = useState(getTabFromUrl);
+  const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  
+  // Update tab value whenever location changes (handles sidebar navigation)
+  useEffect(() => {
+    const tab = getTabFromUrl();
+    setActiveTab(tab);
+  }, [location]);
+  
+  // Update URL when tab changes
+  const handleTabChange = (tabValue: string) => {
+    setActiveTab(tabValue);
+    
+    // Update URL path for proper navigation and sidebar highlighting
+    const path = `/orders/${tabValue}`;
+    setLocation(path);
+  };
+  
+  // Get the current page name for the heading
+  const getCurrentPageName = () => {
+    switch (activeTab) {
+      case "management": return "Order Management";
+      case "analytics": return "Order Analytics";
+      case "performance": return "Order Performance";
+      case "financials": return "Order Financials";
+      default: return "Orders";
+    }
+  };
+  
   // Function to calculate timeline total hours
   const getTimelineTotalHours = (data: typeof timelineData, view: 'avg' | 'max' | 'min'): string => {
     const total = data.reduce((sum, item) => {
@@ -954,7 +1004,7 @@ export default function OrderManagement() {
         return sum + item.hours;
       } else if (view === 'min') {
         return sum + item.minHours;
-      } else {
+    } else {
         return sum + item.maxHours;
       }
     }, 0);
@@ -1658,10 +1708,6 @@ export default function OrderManagement() {
   );
   const totalRegionalPages = Math.ceil(filteredRegionalData.length / regionalPageSize);
 
-  // Add state for the order details modal
-  const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  
   // Handle viewing order details
   const handleViewOrderDetails = (order: Order) => {
     setSelectedOrder(order);
@@ -1745,91 +1791,19 @@ export default function OrderManagement() {
   
   const [selectedTimeInterval, setSelectedTimeInterval] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Order Management</h1>
-        <div className="flex gap-2 items-center">
-          <Button onClick={() => setIsNewOrderModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Order
-          </Button>
-          <Button variant="outline" onClick={() => setOrderList(orders)}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
+  // Render Main Order Management tab
+  const renderOrderManagementTab = () => {
+    return (
+      <div className="space-y-6">
+        {/* Enhanced Order Table */}
+        {renderEnhancedOrderTable()}
       </div>
-      
-      {/* Order Summary Cards */}
-      {summary && (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-          </CardHeader>
-            <CardContent className="px-6">
-              <div className="text-2xl font-bold">{summary.totalOrders}</div>
-            <div className="flex items-center">
-              <ShoppingCart className="h-4 w-4 mr-1 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">All orders</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Processing</CardTitle>
-          </CardHeader>
-            <CardContent className="px-6">
-              <div className="text-2xl font-bold text-blue-500">{summary.processingOrders}</div>
-            <div className="flex items-center">
-              <Package className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{summary.processingPercentage}% of total orders</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Delivered</CardTitle>
-          </CardHeader>
-            <CardContent className="px-6">
-              <div className="text-2xl font-bold text-green-500">{summary.deliveredOrders}</div>
-            <div className="flex items-center">
-              <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{summary.deliveredPercentage}% delivery rate</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
-          </CardHeader>
-            <CardContent className="px-6">
-              <div className="text-2xl font-bold text-amber-500">{summary.pendingPayment}</div>
-            <div className="flex items-center">
-              <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{summary.pendingPercentage}% of total orders</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      )}
-      
-      {/* Enhanced Order Table */}
-      {renderEnhancedOrderTable()}
-      
-      <NewOrderModal 
-        isOpen={isNewOrderModalOpen} 
-        onClose={() => setIsNewOrderModalOpen(false)}
-        onSuccess={handleAddOrder}
-      />
-
-      <div className="mb-6"></div>
-
-      {/* Order Status Analytics Section */}
+    );
+  };
+  
+  // Render Order Analytics tab
+  const renderOrderAnalyticsTab = () => {
+    return (
       <Card className="mb-6">
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1862,8 +1836,8 @@ export default function OrderManagement() {
             </div>
           </CardHeader>
         <CardContent className="p-0">
-          <Tabs defaultValue="volume" className="w-full p-4">
-            <TabsList className="w-full grid grid-cols-4 mb-4">
+          <Tabs defaultValue="volume" className="w-full p-6 pt-0">
+            <TabsList className="w-full grid grid-cols-4 mb-6">
               <TabsTrigger value="volume" className="text-xs">
                 <BarChartBig className="h-3.5 w-3.5 mr-1" />
                 Volume & Revenue
@@ -3156,8 +3130,12 @@ export default function OrderManagement() {
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* Order Performance Analytics Section */}
+    );
+  };
+  
+  // Render Order Performance tab
+  const renderOrderPerformanceTab = () => {
+    return (
       <Card className="mb-6">
           <CardHeader>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -3190,8 +3168,8 @@ export default function OrderManagement() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <Tabs defaultValue="overview" className="w-full p-4">
-            <TabsList className="w-full grid grid-cols-6 mb-4">
+          <Tabs defaultValue="overview" className="w-full p-6 pt-0">
+            <TabsList className="w-full grid grid-cols-6 mb-6">
               <TabsTrigger value="overview" className="text-xs">
                 Overview
               </TabsTrigger>
@@ -5176,216 +5154,503 @@ export default function OrderManagement() {
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* Order Financial Analytics Section */}
+    );
+  };
+  
+  // Render Order Financials tab
+  const renderOrderFinancialsTab = () => {
+    return (
       <Card>
         <CardContent className="p-0">
           <OrderFinancialAnalytics />
         </CardContent>
       </Card>
-      
-      {/* Order Details Modal */}
-      {selectedOrder && (
-        <OrderDetailsModal
-          isOpen={isOrderDetailsModalOpen}
-          onClose={() => {
-            setIsOrderDetailsModalOpen(false);
-            setSelectedOrder(null);
-          }}
-          order={selectedOrder}
-        />
-      )}
-      
-      {/* Add OrderDetailsWrapper just before the closing div */}
-      <OrderDetailsWrapper
-        isOpen={isOrderDetailsModalOpen}
-        onClose={() => {
-          setIsOrderDetailsModalOpen(false);
-          setSelectedOrder(null);
-        }}
-        order={selectedOrder}
-        onUpdateStatus={handleUpdateOrderStatus}
-        onDeleteOrder={handleDeleteOrder}
-      />
-    </div>
-  );
-}
-
-// Regional distribution data for the map
-const regionalOrderData = [
-  { region: "Northeast", orders: 4521, revenue: 985578, aov: 218, lat: 42.5, lng: -72, percentage: 42.1 },
-  { region: "Southeast", orders: 1932, revenue: 357420, aov: 185, lat: 33, lng: -84, percentage: 18.0 },
-  { region: "Midwest", orders: 1614, revenue: 330870, aov: 205, lat: 41.5, lng: -93, percentage: 15.0 },
-  { region: "Southwest", orders: 1291, revenue: 296930, aov: 230, lat: 32, lng: -106, percentage: 12.0 },
-  { region: "West", orders: 1398, revenue: 342510, aov: 245, lat: 37, lng: -122, percentage: 13.0 }
-];
-
-// The regional boundaries for overlay
-const regionBoundaries = {
-  Northeast: [
-    [47.4, -80.5],
-    [47.4, -66.9],
-    [37.2, -66.9],
-    [37.2, -80.5],
-  ],
-  Southeast: [
-    [37.2, -80.5],
-    [37.2, -76.0],
-    [24.5, -76.0],
-    [24.5, -96.0],
-    [30.5, -96.0],
-    [30.5, -87.6],
-    [35.0, -87.6],
-    [35.0, -80.5],
-  ],
-  Midwest: [
-    [49.4, -104.1],
-    [49.4, -80.5],
-    [37.2, -80.5],
-    [35.0, -87.6],
-    [35.0, -96.0],
-    [43.5, -96.0],
-    [43.5, -104.1],
-  ],
-  Southwest: [
-    [37.0, -96.0],
-    [30.5, -96.0],
-    [24.5, -96.0],
-    [24.5, -106.6],
-    [31.3, -114.8],
-    [37.0, -114.8],
-  ],
-  West: [
-    [49.4, -124.8],
-    [49.4, -104.1],
-    [43.5, -104.1],
-    [37.0, -114.8],
-    [31.3, -114.8],
-    [31.3, -124.8],
-  ]
-};
-
-function OrderRegionalMap() {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const leafletMap = useRef<L.Map | null>(null);
-  const markersRef = useRef<{[key: string]: L.Marker}>({});
-  const regionsRef = useRef<{[key: string]: L.Polygon}>({});
-
-  // Define colors for the regions
-  const regionColors = {
-    "Northeast": "#1e40af", // blue-800
-    "Southeast": "#3b82f6", // blue-500
-    "Midwest": "#60a5fa",   // blue-400
-    "Southwest": "#93c5fd", // blue-300
-    "West": "#3b82f6"       // blue-500
+    );
   };
 
-  useEffect(() => {
-    // Initialize the map if it doesn't exist
-    if (!leafletMap.current && mapRef.current) {
-      // Create map centered on USA
-      leafletMap.current = L.map(mapRef.current).setView([39.8283, -98.5795], 4);
-
-      // Add the tile layer (OpenStreetMap)
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(leafletMap.current);
-
-      // Update z-index for Leaflet containers
-      const leafletContainers = document.querySelectorAll('.leaflet-container');
-      leafletContainers.forEach(container => {
-        if (container instanceof HTMLElement) {
-          container.style.zIndex = '10';
-        }
-      });
-    }
-
-    // Clean up on component unmount
-    return () => {
-      if (leafletMap.current) {
-        leafletMap.current.remove();
-        leafletMap.current = null;
-      }
+  function OrderRegionalMap() {
+    const mapRef = useRef<HTMLDivElement>(null);
+    const leafletMap = useRef<L.Map | null>(null);
+    const markersRef = useRef<{[key: string]: L.Marker}>({});
+    const regionsRef = useRef<{[key: string]: L.Polygon}>({});
+  
+    // Define colors for the regions
+    const regionColors = {
+      "Northeast": "#1e40af", // blue-800
+      "Southeast": "#3b82f6", // blue-500
+      "Midwest": "#60a5fa",   // blue-400
+      "Southwest": "#93c5fd", // blue-300
+      "West": "#3b82f6"       // blue-500
     };
-  }, []);
-
-  // Add markers and polygons
-  useEffect(() => {
-    if (!leafletMap.current) return;
-    
-    const map = leafletMap.current;
-    
-    // Add region polygons
-    Object.entries(regionBoundaries).forEach(([region, coordinates]) => {
-      if (regionsRef.current[region]) {
-        map.removeLayer(regionsRef.current[region]);
+  
+    useEffect(() => {
+      // Initialize the map if it doesn't exist
+      if (!leafletMap.current && mapRef.current) {
+        // Create map centered on USA
+        leafletMap.current = L.map(mapRef.current).setView([39.8283, -98.5795], 4);
+  
+        // Add the tile layer (OpenStreetMap)
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(leafletMap.current);
+  
+        // Update z-index for Leaflet containers
+        const leafletContainers = document.querySelectorAll('.leaflet-container');
+        leafletContainers.forEach(container => {
+          if (container instanceof HTMLElement) {
+            container.style.zIndex = '10';
+          }
+        });
       }
+  
+      // Clean up on component unmount
+      return () => {
+        if (leafletMap.current) {
+          leafletMap.current.remove();
+          leafletMap.current = null;
+        }
+      };
+    }, []);
+  
+    // Add markers and polygons
+    useEffect(() => {
+      if (!leafletMap.current) return;
       
-      const polygonColor = regionColors[region as keyof typeof regionColors] || "#3b82f6";
+      const map = leafletMap.current;
       
-      const polygon = L.polygon(coordinates as L.LatLngExpression[], {
-        color: polygonColor,
-        fillColor: polygonColor,
-        fillOpacity: 0.2,
-        weight: 2
-      }).addTo(map);
-      
-      regionsRef.current[region] = polygon;
-    });
-    
-    // Add markers for each region
-    regionalOrderData.forEach(regionData => {
-      const { region, orders, revenue, aov, lat, lng, percentage } = regionData;
-      
-      // Calculate marker size based on order volume
-      const markerSize = Math.max(30, Math.min(60, orders / 100));
-      const markerColor = regionColors[region as keyof typeof regionColors] || "#3b82f6";
-      
-      const markerIcon = L.divIcon({
-        className: 'custom-region-marker',
-        html: `
-          <div style="
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: ${markerColor};
-            color: white;
-            width: ${markerSize}px;
-            height: ${markerSize}px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 0 4px rgba(0,0,0,0.3);
-            font-weight: bold;
-            font-size: ${markerSize / 3}px;
-          ">${orders}</div>
-        `,
-        iconSize: [markerSize, markerSize],
-        iconAnchor: [markerSize/2, markerSize/2],
+      // Add region polygons
+      Object.entries(regionBoundaries).forEach(([region, coordinates]) => {
+        if (regionsRef.current[region]) {
+          map.removeLayer(regionsRef.current[region]);
+        }
+        
+        const polygonColor = regionColors[region as keyof typeof regionColors] || "#3b82f6";
+        
+        const polygon = L.polygon(coordinates as L.LatLngExpression[], {
+          color: polygonColor,
+          fillColor: polygonColor,
+          fillOpacity: 0.2,
+          weight: 2
+        }).addTo(map);
+        
+        regionsRef.current[region] = polygon;
       });
       
-      if (markersRef.current[region]) {
-        map.removeLayer(markersRef.current[region]);
-      }
+      // Add markers for each region
+      regionalOrderData.forEach(regionData => {
+        const { region, orders, revenue, aov, lat, lng, percentage } = regionData;
+        
+        // Calculate marker size based on order volume
+        const markerSize = Math.max(30, Math.min(60, orders / 100));
+        const markerColor = regionColors[region as keyof typeof regionColors] || "#3b82f6";
+        
+        const markerIcon = L.divIcon({
+          className: 'custom-region-marker',
+          html: `
+            <div style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background-color: ${markerColor};
+              color: white;
+              width: ${markerSize}px;
+              height: ${markerSize}px;
+              border-radius: 50%;
+              border: 2px solid white;
+              box-shadow: 0 0 4px rgba(0,0,0,0.3);
+              font-weight: bold;
+              font-size: ${markerSize / 3}px;
+            ">${orders}</div>
+          `,
+          iconSize: [markerSize, markerSize],
+          iconAnchor: [markerSize/2, markerSize/2],
+        });
+        
+        if (markersRef.current[region]) {
+          map.removeLayer(markersRef.current[region]);
+        }
+        
+        const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(map);
+        
+        // Add popup with region info
+        marker.bindPopup(`
+          <div style="min-width: 150px;">
+            <strong>${region}</strong>
+            <div>Orders: ${orders.toLocaleString()}</div>
+            <div>Revenue: $${(revenue/1000).toFixed(1)}k</div>
+            <div>AOV: $${aov}</div>
+            <div>Share: ${percentage.toFixed(1)}%</div>
+          </div>
+        `);
+        
+        markersRef.current[region] = marker;
+      });
       
-      const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(map);
-      
-      // Add popup with region info
-      marker.bindPopup(`
-        <div style="min-width: 150px;">
-          <strong>${region}</strong>
-          <div>Orders: ${orders.toLocaleString()}</div>
-          <div>Revenue: $${(revenue/1000).toFixed(1)}k</div>
-          <div>AOV: $${aov}</div>
-          <div>Share: ${percentage.toFixed(1)}%</div>
-        </div>
-      `);
-      
-      markersRef.current[region] = marker;
-    });
-    
-  }, []);
+    }, []);
+  
+    return (
+      <div ref={mapRef} style={{ height: "320px", width: "100%", zIndex: "10" }} className="rounded-md"></div>
+    );
+  }
+
+  // The regional boundaries for overlay
+  const regionBoundaries = {
+    Northeast: [
+      [47.4, -80.5],
+      [47.4, -66.9],
+      [37.2, -66.9],
+      [37.2, -80.5],
+    ],
+    Southeast: [
+      [37.2, -80.5],
+      [37.2, -76.0],
+      [24.5, -76.0],
+      [24.5, -96.0],
+      [30.5, -96.0],
+      [30.5, -87.6],
+      [35.0, -87.6],
+      [35.0, -80.5],
+    ],
+    Midwest: [
+      [49.4, -104.1],
+      [49.4, -80.5],
+      [37.2, -80.5],
+      [35.0, -87.6],
+      [35.0, -96.0],
+      [43.5, -96.0],
+      [43.5, -104.1],
+    ],
+    Southwest: [
+      [37.0, -96.0],
+      [30.5, -96.0],
+      [24.5, -96.0],
+      [24.5, -106.6],
+      [31.3, -114.8],
+      [37.0, -114.8],
+    ],
+    West: [
+      [49.4, -124.8],
+      [49.4, -104.1],
+      [43.5, -104.1],
+      [37.0, -114.8],
+      [31.3, -114.8],
+      [31.3, -124.8],
+    ]
+  };
+
+  // Regional distribution data for the map
+  const regionalOrderData = [
+    { region: "Northeast", orders: 4521, revenue: 985578, aov: 218, lat: 42.5, lng: -72, percentage: 42.1 },
+    { region: "Southeast", orders: 1932, revenue: 357420, aov: 185, lat: 33, lng: -84, percentage: 18.0 },
+    { region: "Midwest", orders: 1614, revenue: 330870, aov: 205, lat: 41.5, lng: -93, percentage: 15.0 },
+    { region: "Southwest", orders: 1291, revenue: 296930, aov: 230, lat: 32, lng: -106, percentage: 12.0 },
+    { region: "West", orders: 1398, revenue: 342510, aov: 245, lat: 37, lng: -122, percentage: 13.0 }
+  ];
 
   return (
-    <div ref={mapRef} style={{ height: "320px", width: "100%", zIndex: "10" }} className="rounded-md"></div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">Order Management</h1>
+          <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            <span>Current section: </span>
+            <Badge className="ml-2">
+              {getCurrentPageName()}
+            </Badge>
+          </div>
+        </div>
+        <div className="flex gap-2 items-center">
+          <Button onClick={() => setIsNewOrderModalOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Order
+          </Button>
+          <Button variant="outline" onClick={() => setOrderList(orders)}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+      </div>
+      
+      {/* Conditional KPI Cards */}
+      {summary && (
+          <>
+            {/* Management Tab KPIs */}
+            {activeTab === "management" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">{summary.totalOrders}</div>
+                    <div className="flex items-center">
+                      <ShoppingCart className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">All orders</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Processing</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold text-blue-500">{summary.processingOrders}</div>
+                    <div className="flex items-center">
+                      <Package className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">{summary.processingPercentage}% of total orders</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Delivered</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold text-green-500">{summary.deliveredOrders}</div>
+                    <div className="flex items-center">
+                      <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">{summary.deliveredPercentage}% delivery rate</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold text-amber-500">{summary.pendingPayment}</div>
+                    <div className="flex items-center">
+                      <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">{summary.pendingPercentage}% of total orders</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Analytics Tab KPIs */}
+            {activeTab === "analytics" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">24.8%</div>
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">+2.1% from last month</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">$152.35</div>
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">+$12.40 from last month</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Cart Abandonment</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold text-amber-500">68.3%</div>
+                    <div className="flex items-center">
+                      <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">-3.2% from last month</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Repeat Purchases</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">34.6%</div>
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">+5.7% from last month</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Performance Tab KPIs */}
+            {activeTab === "performance" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">On-Time Delivery</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">94.2%</div>
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">+1.5% from target</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Processing Time</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">1.8 hours</div>
+                    <div className="flex items-center">
+                      <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">-0.3 hours from average</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Pick Rate</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">124 items/hr</div>
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">+8 from last week</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Fulfillment Rate</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">98.6%</div>
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">+0.8% from last month</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Financials Tab KPIs */}
+            {activeTab === "financials" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">$256,890</div>
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">+12.3% from last month</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Fulfillment Cost</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">$54,620</div>
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 mr-1 text-amber-500" />
+                      <p className="text-xs text-amber-500">+5.2% from last month</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Return Cost</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">$8,342</div>
+                    <div className="flex items-center">
+                      <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">-2.4% from last month</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-6">
+                    <div className="text-2xl font-bold">32.5%</div>
+                    <div className="flex items-center">
+                      <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                      <p className="text-xs text-green-500">+1.8% from last month</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </>
+        )}
+
+      {/* Main tab navigation */}
+      <Tabs 
+        value={activeTab} 
+        onValueChange={handleTabChange} 
+        className="mb-6"
+      >
+        <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <TabsTrigger value="management" className="flex items-center">
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            <span>Order Management</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center">
+            <BarChartBig className="h-4 w-4 mr-2" />
+            <span>Order Analytics</span>
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center">
+            <Activity className="h-4 w-4 mr-2" />
+            <span>Order Performance</span>
+          </TabsTrigger>
+          <TabsTrigger value="financials" className="flex items-center">
+            <DollarSign className="h-4 w-4 mr-2" />
+            <span>Order Financials</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <div className="mt-6">
+          {activeTab === "management" && renderOrderManagementTab()}
+          {activeTab === "analytics" && renderOrderAnalyticsTab()}
+          {activeTab === "performance" && renderOrderPerformanceTab()}
+          {activeTab === "financials" && renderOrderFinancialsTab()}
+        </div>
+      </Tabs>
+
+      <NewOrderModal 
+        isOpen={isNewOrderModalOpen} 
+        onClose={() => setIsNewOrderModalOpen(false)}
+        onSuccess={handleAddOrder}
+      />
+      
+      {/* Keep OrderDetailsModal and other UI elements */}
+      {isOrderDetailsModalOpen && selectedOrder && (
+        <OrderDetailsModal
+          order={selectedOrder}
+          isOpen={isOrderDetailsModalOpen}
+          onClose={() => setIsOrderDetailsModalOpen(false)}
+        />
+      )}
+    </div>
   );
 }

@@ -116,7 +116,7 @@ export function OrderFinancialAnalytics({}: OrderFinancialAnalyticsProps) {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <CardTitle>Order Financial Analytics</CardTitle>
@@ -139,7 +139,7 @@ export function OrderFinancialAnalytics({}: OrderFinancialAnalyticsProps) {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-4 mb-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="returns">Returns & Refunds</TabsTrigger>
           <TabsTrigger value="profitability">Profitability Analysis</TabsTrigger>

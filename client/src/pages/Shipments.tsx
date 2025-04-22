@@ -8,7 +8,7 @@ import {
   Search, Plus, Filter, Calendar, Clock, RefreshCw, MapPin, Edit, Trash, 
   ChevronDown, Package, Truck, User, FileText, ExternalLink, Clipboard, AlertCircle,
   BarChartBig, Activity, Zap, TrendingUp, Target, LineChart as LineChartIcon, Route, Droplet,
-  AlertTriangleIcon, RouteIcon, Leaf, TruckIcon
+  AlertTriangleIcon, RouteIcon, Leaf, TruckIcon, RefreshCwIcon
 } from "lucide-react";
 import {
   Select,
@@ -68,7 +68,12 @@ interface ExtendedShipment extends Shipment {
   loadUtilization?: number;
 }
 
-export default function Shipments() {
+interface ShipmentManagementProps {
+  shipment: Shipment;
+  onRefresh?: () => void;
+}
+
+export default function Shipments({ shipment, onRefresh }: ShipmentManagementProps) {
   const [location] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -91,7 +96,21 @@ export default function Shipments() {
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<Shipment | undefined>();
-  
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleRefresh = () => {
+    setIsLoading(true);
+    
+    // Simulate loading
+    setTimeout(() => {
+      setIsLoading(false);
+      if (onRefresh) {
+        onRefresh();
+      }
+    }, 1000);
+  };
+
   // Delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [shipmentToDelete, setShipmentToDelete] = useState<Shipment | null>(null);
@@ -614,10 +633,6 @@ export default function Shipments() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Shipment Management</h1>
         <div className="flex gap-2">
-          <Button onClick={handleAddShipment}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Shipment
-          </Button>
           <Button variant="outline" onClick={fetchData}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -915,7 +930,7 @@ export default function Shipments() {
                               <Truck className="h-5 w-5 mr-2 text-primary" />
                               Active Shipments ({filteredActiveShipments.length})
                             </CardTitle>
-                        <CardDescription>Manage your current shipments in progress</CardDescription>
+                            <CardDescription>Manage your current shipments in progress</CardDescription>
                           </div>
                           <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
                             <div className="flex gap-2 items-center">
@@ -937,6 +952,20 @@ export default function Shipments() {
                                   <SelectItem value="cancelled">Cancelled</SelectItem>
                               </SelectContent>
                             </Select>
+                            <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8" 
+            onClick={handleRefresh}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <RefreshCwIcon className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <RefreshCwIcon className="h-4 w-4 mr-1" />
+            )}
+            Refresh
+          </Button>
                             </div>
                           </div>
                         </div>

@@ -170,20 +170,6 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
         <div className="flex justify-between items-center">
           <div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-8" 
-            onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <RefreshCwIcon className="h-4 w-4 mr-1 animate-spin" />
-            ) : (
-              <RefreshCwIcon className="h-4 w-4 mr-1" />
-            )}
-            Refresh
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="p-6">

@@ -419,55 +419,6 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
   return (
     <div className="overflow-hidden">
       <CardContent className="p-0">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="border">
-            <CardContent className="p-4 flex items-center">
-              <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center mr-3">
-                <AlertCircleIcon className="h-5 w-5 text-amber-500" />
-              </div>
-              <div>
-                <div className="text-xl font-bold">{exceptionMetrics.active}</div>
-                <div className="text-sm text-muted-foreground">Active Exceptions</div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border">
-            <CardContent className="p-4 flex items-center">
-              <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center mr-3">
-                <AlertTriangleIcon className="h-5 w-5 text-red-500" />
-              </div>
-              <div>
-                <div className="text-xl font-bold">{exceptionMetrics.critical}</div>
-                <div className="text-sm text-muted-foreground">Critical Issues</div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border">
-            <CardContent className="p-4 flex items-center">
-              <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
-                <CheckCircleIcon className="h-5 w-5 text-green-500" />
-              </div>
-              <div>
-                <div className="text-xl font-bold">{exceptionMetrics.resolved}</div>
-                <div className="text-sm text-muted-foreground">Resolved Issues</div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border">
-            <CardContent className="p-4 flex items-center">
-              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-3">
-                <ClockIcon className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <div className="text-xl font-bold">{exceptionMetrics.avgResolutionTime}h</div>
-                <div className="text-sm text-muted-foreground">Avg Resolution Time</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">

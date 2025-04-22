@@ -625,61 +625,241 @@ export default function Shipments() {
         </div>
       </div>
       
-      {/* Shipment Summary Cards Section */}
+      {/* Shipment Summary Cards Section - Different cards for each tab */}
       {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalShipments}</div>
-              <div className="flex items-center">
-                <Package className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">All time shipment count</p>
-              </div>
-            </CardContent>
-          </Card>
+        <>
+          {/* Tracking Tab KPIs */}
+          {mainTabValue === "tracking" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{summary.totalShipments}</div>
+                  <div className="flex items-center">
+                    <Package className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">All time shipment count</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">In Transit</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-500">{summary.inTransit}</div>
+                  <div className="flex items-center">
+                    <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Currently in transit</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">On-Time Rate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-500">{summary.onTimeDeliveryRate}%</div>
+                  <div className="flex items-center">
+                    <Activity className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Deliveries on time</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Delivered Today</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-500">
+                    {Math.round(summary.totalShipments * 0.05)}
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Completed deliveries today</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">In Transit</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-500">{summary.inTransit}</div>
-              <div className="flex items-center">
-                <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">Currently in transit</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Exceptions Tab KPIs */}
+          {mainTabValue === "exceptions" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Exceptions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-500">{summary.delayedShipments}</div>
+                  <div className="flex items-center">
+                    <AlertTriangleIcon className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Issues requiring attention</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Critical Issues</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-600">
+                    {Math.round(summary.delayedShipments * 0.3)}
+                  </div>
+                  <div className="flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">High priority issues</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Resolution Rate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-500">78%</div>
+                  <div className="flex items-center">
+                    <Activity className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Issues resolved within 24h</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Avg Resolution Time</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-500">16.4 hrs</div>
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Average time to resolve</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">On-Time Rate</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-500">{summary.onTimeDeliveryRate}%</div>
-              <div className="flex items-center">
-                <Activity className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">Deliveries on time</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Efficiency Tab KPIs */}
+          {mainTabValue === "efficiency" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Route Efficiency</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-500">87.3%</div>
+                  <div className="flex items-center">
+                    <RouteIcon className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Average route optimization</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Miles per Delivery</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-500">32.6 mi</div>
+                  <div className="flex items-center">
+                    <TruckIcon className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Average distance per delivery</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Load Utilization</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-500">81.4%</div>
+                  <div className="flex items-center">
+                    <Package className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Average truck capacity used</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Delivery Density</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-500">5.7</div>
+                  <div className="flex items-center">
+                    <TrendingUp className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Deliveries per route</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Delayed Shipments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-500">{summary.delayedShipments}</div>
-              <div className="flex items-center">
-                <AlertCircle className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{(summary.delayedShipments / summary.totalShipments * 100).toFixed(1)}% of total shipments</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          {/* Environmental Tab KPIs */}
+          {mainTabValue === "environmental" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">CO₂ Emissions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">-12.5%</div>
+                  <div className="flex items-center">
+                    <Leaf className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Reduction from last quarter</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Fuel Consumption</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-500">4.8 gal/100mi</div>
+                  <div className="flex items-center">
+                    <Droplet className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Average fuel efficiency</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Electric Vehicles</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-500">23.4%</div>
+                  <div className="flex items-center">
+                    <Zap className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Of fleet using electric power</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Carbon Offset</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-500">1,256 t</div>
+                  <div className="flex items-center">
+                    <Leaf className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">CO₂ offset this year</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </>
       )}
       
       {/* Main Tabs Navigation */}

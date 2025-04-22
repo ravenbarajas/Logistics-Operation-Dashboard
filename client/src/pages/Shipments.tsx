@@ -603,324 +603,138 @@ export default function Shipments() {
         </div>
       )}
       
-      {/* Analytics Overview */}
-      <div className="mb-6">
-        
-        {analyticsLoading || !summary ? (
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="flex justify-center py-8">
-                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
-              </div>
-            </CardContent>  
-          </Card>
-        ) : (
-          <>
-            {/* Charts Row 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-primary" />
-                    Monthly Shipment Performance
-                  </CardTitle>
-                  <CardDescription>
-                    Number of shipments by status over time
-                  </CardDescription>
-          </CardHeader>
-          <CardContent>
-                  <AreaChart
-                    className="h-72"
-                    data={deliveryPerformanceData}
-                    index="month"
-                    categories={["On Time", "Delayed", "Cancelled"]}
-                    colors={["emerald", "amber", "rose"]}
-                    valueFormatter={(value: number) => `${value} shipments`}
-                  />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <MapPin className="h-4 w-4 mr-2 text-primary" />
-                    Shipment Volume by Region
-                  </CardTitle>
-                  <CardDescription>
-                    Distribution of shipments across geographic regions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <DonutChart
-                    className="h-72"
-                    data={regionData}
-                    category="value"
-                    index="region"
-                    colors={["indigo", "cyan", "amber", "emerald", "rose"]}
-                    valueFormatter={(value: number) => `${value} shipments`}
-                    label="Total Shipments"
-                  />
-                  <Legend
-                    className="mt-3"
-                    categories={regionData.map(r => r.region)}
-                    colors={["indigo", "cyan", "amber", "emerald", "rose"]}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Operational KPIs Row */}
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-3 flex items-center">
-                <Activity className="h-5 w-5 mr-2 text-primary" />
-                Operational KPIs
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {operationalKPIs.map((kpi, index) => (
-                  <Card key={index}>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">{kpi.metric}</CardTitle>
-          </CardHeader>
-          <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="text-2xl font-bold">{kpi.value}%</div>
-                        <div className={`flex items-center ${
-                          kpi.trend > 0 ? 'text-green-500' : kpi.trend < 0 ? 'text-red-500' : 'text-gray-500'
-                        }`}>
-                          {kpi.trend > 0 ? (
-                            <TrendingUp className="h-4 w-4 mr-1" />
-                          ) : kpi.trend < 0 ? (
-                            <TrendingUp className="h-4 w-4 mr-1 rotate-180" />
-                          ) : (
-                            <LineChartIcon className="h-4 w-4 mr-1" />
-                          )}
-                          <span className="text-sm">{Math.abs(kpi.trend)}%</span>
-                        </div>
-                      </div>
-                      <div className="mt-2 h-2 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
-                        <div 
-                          className={`h-full ${kpi.value >= kpi.target ? 'bg-green-500' : 'bg-amber-500'}`} 
-                          style={{ width: `${kpi.value}%` }}
-                        />
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground flex justify-between">
-                        <span>Current</span>
-                        <span>Target: {kpi.target}%</span>
-                      </div>
-          </CardContent>
-        </Card>
-                ))}
-              </div>
-            </div>
-            
-
-
-            {/* Carrier Performance */}
-            <Card className="mb-6">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center">
-                  <Zap className="h-4 w-4 mr-2 text-primary" />
-                  Carrier Performance Analysis
+      {/* Shipment Tracking Section */}
+      <div className="mb-8">
+        <Tabs defaultValue="active" className="mb-6 space-y-6">
+          <TabsList className="grid grid-cols-3 w-full md:w-auto">
+            <TabsTrigger value="active">Active Shipments ({filteredActiveShipments.length})</TabsTrigger>
+            <TabsTrigger value="history">Shipment History ({filteredCompletedShipments.length})</TabsTrigger>
+            <TabsTrigger value="scheduled">Scheduled ({filteredScheduledShipments.length})</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="active" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div>
+                    <CardTitle className="flex items-center mb-1">
+                      <Truck className="h-5 w-5 mr-2 text-primary" />
+                      Active Shipments ({filteredActiveShipments.length})
+                    </CardTitle>
+                <CardDescription>Manage your current shipments in progress</CardDescription>
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                    <div className="flex gap-2 items-center">
+                    <div className="flex items-center">
+                      <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span className="text-sm mr-2">Status:</span>
+                    </div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="in-transit">In Transit</SelectItem>
+                          <SelectItem value="processing">Processing</SelectItem>
+                          <SelectItem value="delivered">Delivered</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="scheduled">Scheduled</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <EnhancedTable
+                  data={filteredActiveShipments}
+                  columns={activeShipmentColumns}
+                  actions={activeShipmentActions}
+                  searchKey="trackingNumber"
+                  searchPlaceholder="Search by tracking number..."
+                  statusKey="status"
+                  statusMap={statusColorMap}
+                  emptyMessage="No active shipments found"
+                  onRowClick={(shipment) => setSelectedShipment(shipment)}
+                  rowClassName="cursor-pointer hover:bg-muted/50"
+                />
+              </CardContent>
+              {selectedShipment && (
+                <ShipmentTracking 
+                  shipment={selectedShipment} 
+                  onRefresh={fetchData}
+                />
+              )}
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="history" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2 text-primary" />
+                  Shipment History
                 </CardTitle>
-                <CardDescription>
-                  Comparative analysis of carrier metrics across on-time performance, cost, and volume
-                </CardDescription>
-          </CardHeader>
-          <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div>
-                    <h4 className="text-sm font-medium mb-2 text-center">On-Time Performance (%)</h4>
-                    <BarChart
-                      className="h-48"
-                      data={carrierPerformance}
-                      index="carrier"
-                      categories={["onTime"]}
-                      colors={["emerald"]}
-                      valueFormatter={(value: number) => `${value}%`}
-                      layout="vertical"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-2 text-center">Cost Efficiency ($)</h4>
-                    <BarChart
-                      className="h-48"
-                      data={carrierPerformance}
-                      index="carrier"
-                      categories={["cost"]}
-                      colors={["amber"]}
-                      valueFormatter={(value: number) => `$${value}`}
-                      layout="vertical"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-2 text-center">Shipment Volume</h4>
-                    <BarChart
-                      className="h-48"
-                      data={carrierPerformance}
-                      index="carrier"
-                      categories={["volume"]}
-                      colors={["indigo"]}
-                      valueFormatter={(value: number) => `${value}`}
-                      layout="vertical"
-                    />
-                  </div>
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div className="flex flex-col items-center">
-                      <div className="font-medium">Best On-Time</div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Badge className="bg-emerald-500">PremiumHaul</Badge>
-                        <span className="text-xs">96%</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="font-medium">Most Cost-Effective</div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Badge className="bg-amber-500">GlobalLogix</Badge>
-                        <span className="text-xs">$4,800</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="font-medium">Highest Volume</div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Badge className="bg-indigo-500">ExpressCarry</Badge>
-                        <span className="text-xs">130 shipments</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-          </CardContent>
-        </Card>
-          </>
-        )}
+                <CardDescription>View completed and cancelled shipments</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EnhancedTable
+                  data={filteredCompletedShipments}
+                  columns={completedShipmentColumns}
+                  actions={completedShipmentActions}
+                  searchKey="trackingNumber"
+                  searchPlaceholder="Search by tracking number..."
+                  statusKey="status"
+                  statusMap={statusColorMap}
+                  emptyMessage="No shipment history found"
+                  onRowClick={(shipment) => setSelectedShipment(shipment)}
+                  rowClassName="cursor-pointer hover:bg-muted/50"
+                />
+              </CardContent>
+              {selectedShipment && (
+                <ShipmentTracking 
+                  shipment={selectedShipment} 
+                  onRefresh={fetchData}
+                />
+              )}
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="scheduled" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Calendar className="h-5 w-5 mr-2 text-primary" />
+                  Scheduled Shipments
+                </CardTitle>
+                <CardDescription>Upcoming shipments waiting to be processed</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EnhancedTable
+                  data={filteredScheduledShipments}
+                  columns={scheduledShipmentColumns}
+                  actions={scheduledShipmentActions}
+                  searchKey="trackingNumber"
+                  searchPlaceholder="Search by tracking number..."
+                  statusKey="status"
+                  statusMap={statusColorMap}
+                  emptyMessage="No scheduled shipments found"
+                  onRowClick={(shipment) => setSelectedShipment(shipment)}
+                  rowClassName="cursor-pointer hover:bg-muted/50"
+                />
+              </CardContent>
+              {selectedShipment && (
+                <ShipmentTracking 
+                  shipment={selectedShipment} 
+                  onRefresh={fetchData}
+                />
+              )}
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-      
-      <Tabs defaultValue="active" className="mb-8">
-        <TabsList className="mb-4">
-          <TabsTrigger value="active">Active Shipments ({filteredActiveShipments.length})</TabsTrigger>
-          <TabsTrigger value="history">Shipment History ({filteredCompletedShipments.length})</TabsTrigger>
-          <TabsTrigger value="scheduled">Scheduled ({filteredScheduledShipments.length})</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="active" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <CardTitle className="flex items-center mb-1">
-                    <Truck className="h-5 w-5 mr-2 text-primary" />
-                    Active Shipments ({filteredActiveShipments.length})
-                  </CardTitle>
-              <CardDescription>Manage your current shipments in progress</CardDescription>
-                </div>
-                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-                  <div className="flex gap-2 items-center">
-                  <div className="flex items-center">
-                    <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm mr-2">Status:</span>
-                  </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="in-transit">In Transit</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="scheduled">Scheduled</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <EnhancedTable
-                data={filteredActiveShipments}
-                columns={activeShipmentColumns}
-                actions={activeShipmentActions}
-                searchKey="trackingNumber"
-                searchPlaceholder="Search by tracking number..."
-                statusKey="status"
-                statusMap={statusColorMap}
-                emptyMessage="No active shipments found"
-                onRowClick={(shipment) => setSelectedShipment(shipment)}
-                rowClassName="cursor-pointer hover:bg-muted/50"
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="history" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="h-5 w-5 mr-2 text-primary" />
-                Shipment History
-              </CardTitle>
-              <CardDescription>View completed and cancelled shipments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <EnhancedTable
-                data={filteredCompletedShipments}
-                columns={completedShipmentColumns}
-                actions={completedShipmentActions}
-                searchKey="trackingNumber"
-                searchPlaceholder="Search by tracking number..."
-                statusKey="status"
-                statusMap={statusColorMap}
-                emptyMessage="No shipment history found"
-                onRowClick={(shipment) => setSelectedShipment(shipment)}
-                rowClassName="cursor-pointer hover:bg-muted/50"
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="scheduled" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Calendar className="h-5 w-5 mr-2 text-primary" />
-                Scheduled Shipments
-              </CardTitle>
-              <CardDescription>Upcoming shipments waiting to be processed</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <EnhancedTable
-                data={filteredScheduledShipments}
-                columns={scheduledShipmentColumns}
-                actions={scheduledShipmentActions}
-                searchKey="trackingNumber"
-                searchPlaceholder="Search by tracking number..."
-                statusKey="status"
-                statusMap={statusColorMap}
-                emptyMessage="No scheduled shipments found"
-                onRowClick={(shipment) => setSelectedShipment(shipment)}
-                rowClassName="cursor-pointer hover:bg-muted/50"
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      
-      {/* Shipment Tracking - Only shown when a shipment is selected */}
-      {selectedShipment && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 flex items-center">
-            <TruckIcon className="h-6 w-6 mr-2 text-primary" />
-            Shipment Tracking
-          </h2>
-          <ShipmentTracking 
-            shipment={selectedShipment} 
-            onRefresh={fetchData}
-          />
-        </div>
-      )}
       
       {/* Exception Handler Section */}
       <div className="mb-8">

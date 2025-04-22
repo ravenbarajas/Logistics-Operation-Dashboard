@@ -165,8 +165,8 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
   }
   
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2">
+    <div>
+      <CardHeader className="pb-2 pt-0">
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>
@@ -195,7 +195,7 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-4">
+      <CardContent className="p-6">
         <div className="mb-4">
           <div className="flex justify-between mb-2">
             <div className="flex items-center">
@@ -324,6 +324,6 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
           </div>
         </div>
       </CardContent>
-    </Card>
+    </div>
   );
 } 

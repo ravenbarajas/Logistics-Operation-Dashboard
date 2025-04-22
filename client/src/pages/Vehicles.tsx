@@ -670,10 +670,10 @@ export default function Vehicles() {
   // Get the current page name for the heading
   const getCurrentPageName = () => {
     switch (activeTab) {
-      case "vehicles": return "Vehicles";
-      case "drivers": return "Drivers";
-      case "maintenance": return "Maintenance";
-      case "fuel": return "Fuel";
+      case "vehicles": return "Vehicle Inventory";
+      case "drivers": return "Driver Management";
+      case "maintenance": return "Vehicle Maintenance";
+      case "fuel": return "Fuel Consumption";
       default: return "Fleet";
     }
   };

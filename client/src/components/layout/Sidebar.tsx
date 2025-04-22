@@ -18,6 +18,9 @@ import {
   Boxes,
   Activity,
   BarChart3,
+  Map,
+  Navigation,
+  LineChart,
 } from "lucide-react";
 import {
   Accordion,
@@ -116,9 +119,26 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    title: "Route Optimization",
-    icon: <RouteOff className="mr-2 h-4 w-4" />,
-    href: "/routes",
+    title: "Route Management",
+    icon: <Map className="mr-2 h-4 w-4" />,
+    children: [
+      {
+        title: "Route Management",
+        href: "/routes/management",
+      },
+      {
+        title: "Route Optimization",
+        href: "/routes",
+      },
+      {
+        title: "Traffic Analysis",
+        href: "/routes/traffic",
+      },
+      {
+        title: "Route Insights",
+        href: "/routes/insights",
+      },
+    ],
   },
   {
     title: "Order Management",

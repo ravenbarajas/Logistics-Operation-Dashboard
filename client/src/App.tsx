@@ -36,7 +36,10 @@ function ContentWrapper({ children }: { children: React.ReactNode }) {
     "/shipments/efficiency",
     "/shipments/environmental",
     "/analytics", 
-    "/routes"
+    "/routes",
+    "/routes/management",
+    "/routes/traffic",
+    "/routes/insights"
   ].includes(location);
   
   return (
@@ -136,6 +139,9 @@ function Router() {
               <Route path="/warehouse/storage" component={Warehouse} />
               <Route path="/orders" component={OrderManagement} />
               <Route path="/routes" component={RouteOptimization} />
+              <Route path="/routes/management" component={RouteOptimization} />
+              <Route path="/routes/traffic" component={RouteOptimization} />
+              <Route path="/routes/insights" component={RouteOptimization} />
               <Route path="/reports">
                 {() => {
                   window.location.pathname = "/reports/recent";

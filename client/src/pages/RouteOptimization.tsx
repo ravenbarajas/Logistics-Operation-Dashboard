@@ -10,7 +10,8 @@ import { activeRoutes, scheduledRoutes, completedRoutes, routeTemplates } from "
 import { 
   AlertCircle, BarChart3, Clock, Fuel as FuelIcon, LineChart, PlusCircle, Route, 
   TrendingDown, Wind, Truck, Calendar, CheckCircle, Copy, RefreshCw, Settings,
-  Zap, DollarSign, Compass, MapPin, Calculator, ChevronLeft, ChevronRight, Search, ChevronsLeft, ChevronsRight, Save, Play, Map as MapIcon
+  Zap, DollarSign, Compass, MapPin, Calculator, ChevronLeft, ChevronRight, Search, ChevronsLeft, ChevronsRight, Save, Play, Map as MapIcon,
+  TrafficCone, Activity, User
 } from "lucide-react";
 import { BarChart } from "@/components/ui/bar-chart";
 import { LineChart as LineChartComponent } from "@/components/ui/line-chart";
@@ -22,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { GeoDistribution } from "@/components/maps/GeoDistribution";
+import { useLocation } from "wouter";
 
 // Mock data for charts
 const optimizationSummaryData = [
@@ -50,6 +52,7 @@ const monthlyTrendData = [
 ];
 
 export default function RouteOptimization() {
+  const [location] = useLocation();
   const [routes, setRoutes] = useState({
     active: [...activeRoutes],
     scheduled: [...scheduledRoutes],
@@ -69,6 +72,57 @@ export default function RouteOptimization() {
   const [pageSize, setPageSize] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   
+  // For in-page navigation
+  const [mainTabValue, setMainTabValue] = useState(getTabFromUrl);
+
+  // Get tab from URL query parameter
+  function getTabFromUrl() {
+    const path = location;
+    if (path.includes("/routes/traffic")) {
+      return "traffic";
+    } else if (path.includes("/routes/insights")) {
+      return "insights";
+    } else if (path.includes("/routes/management")) {
+      return "management";
+    } else {
+      // Default to optimization (main routes page)
+      return "optimization";
+    }
+  }
+
+  // Update tab value whenever location changes (handles sidebar navigation)
+  useEffect(() => {
+    setMainTabValue(getTabFromUrl());
+  }, [location]);
+
+  // Update URL when tab changes
+  const handleTabChange = (value: string) => {
+    // Set the tab state
+    setMainTabValue(value);
+    
+    // Update URL without full page reload using path-based navigation
+    if (value === "management") {
+      window.history.pushState({}, "", "/routes/management");
+    } else if (value === "optimization") {
+      window.history.pushState({}, "", "/routes");
+    } else if (value === "traffic") {
+      window.history.pushState({}, "", "/routes/traffic");
+    } else if (value === "insights") {
+      window.history.pushState({}, "", "/routes/insights");
+    }
+  };
+
+  // Get the current page name for the heading
+  const getCurrentPageName = () => {
+    switch (mainTabValue) {
+      case "optimization": return "Route Optimization";
+      case "management": return "Route Management";
+      case "traffic": return "Traffic Analysis";
+      case "insights": return "Route Insights";
+      default: return "Routes";
+    }
+  };
+
   const fetchSummaryData = async () => {
     try {
       setLoading(true);
@@ -83,6 +137,18 @@ export default function RouteOptimization() {
   
   useEffect(() => {
     fetchSummaryData();
+    
+    // Listen for popstate events (back/forward navigation)
+    const handlePopState = () => {
+      // When browser back/forward is used, we need to update our tab state
+      // based on the new URL
+      setMainTabValue(getTabFromUrl());
+    };
+    
+    // Listen for URL changes to update the active tab
+    window.addEventListener("popstate", handlePopState);
+    
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
   
   // Reset to first page when tab, search query, or route type changes
@@ -227,78 +293,280 @@ export default function RouteOptimization() {
   return (
     <div className="container px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Route Optimization</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Route Management System</h1>
+          <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            <span>Current section: </span>
+            <Badge className="ml-2">
+              {getCurrentPageName()}
+            </Badge>
+          </div>
+        </div>
         <div className="flex gap-2">
-          <Button onClick={() => setIsRouteModalOpen(true)}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Plan New Route
-          </Button>
           <Button variant="outline" onClick={fetchSummaryData}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
         </div>
       </div>
-      
-      {/* Route Summary Cards */}
+
+      {/* Summary Cards - Different for each tab */}
       {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Routes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalRoutes}</div>
-              <div className="flex items-center">
-                <Route className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">All planned routes</p>
-              </div>
-            </CardContent>
-          </Card>
+        <>
+          {/* Optimization Tab KPIs */}
+          {mainTabValue === "optimization" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Routes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{summary.totalRoutes}</div>
+                  <div className="flex items-center">
+                    <Route className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">All planned routes</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Active Routes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-500">{summary.activeRoutes}</div>
+                  <div className="flex items-center">
+                    <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">{Math.round((summary.activeRoutes / summary.totalRoutes) * 100)}% currently active</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Completed Routes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-500">{summary.completedRoutes}</div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">{Math.round((summary.completedRoutes / summary.totalRoutes) * 100)}% completion rate</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Avg. Distance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-500">{summary.averageRouteDistance} mi</div>
+                  <div className="flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Total: {summary.totalDistance.toLocaleString()} miles</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Active Routes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-500">{summary.activeRoutes}</div>
-              <div className="flex items-center">
-                <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{Math.round((summary.activeRoutes / summary.totalRoutes) * 100)}% currently active</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Management Tab KPIs */}
+          {mainTabValue === "management" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Route Templates</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-500">{routes.templates.length}</div>
+                  <div className="flex items-center">
+                    <Copy className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Reusable route templates</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Schedule Adherence</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-500">92%</div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Routes following schedule</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Driver Assignments</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-500">26</div>
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Drivers currently assigned</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Vehicle Utilization</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-500">87%</div>
+                  <div className="flex items-center">
+                    <Truck className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Fleet capacity utilization</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Completed Routes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-500">{summary.completedRoutes}</div>
-              <div className="flex items-center">
-                <CheckCircle className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{Math.round((summary.completedRoutes / summary.totalRoutes) * 100)}% completion rate</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Traffic Tab KPIs */}
+          {mainTabValue === "traffic" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Traffic Congestion</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-500">42%</div>
+                  <div className="flex items-center">
+                    <TrafficCone className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Average urban congestion</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Avg. Speed</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-500">34 mph</div>
+                  <div className="flex items-center">
+                    <LineChart className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Average route speed</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Delay Impact</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-500">+18%</div>
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Added time from traffic</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Rerouting Events</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-purple-500">127</div>
+                  <div className="flex items-center">
+                    <RefreshCw className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Real-time route adjustments</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Avg. Distance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-500">{summary.averageRouteDistance} mi</div>
-              <div className="flex items-center">
-                <AlertCircle className="h-4 w-4 mr-1 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">Total: {summary.totalDistance.toLocaleString()} miles</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          {/* Insights Tab KPIs */}
+          {mainTabValue === "insights" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Efficiency Score</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-500">86.3</div>
+                  <div className="flex items-center">
+                    <Activity className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Overall system efficiency</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Cost Per Mile</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-500">$1.24</div>
+                  <div className="flex items-center">
+                    <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Average operational cost</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Fuel Efficiency</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-500">6.8 mpg</div>
+                  <div className="flex items-center">
+                    <FuelIcon className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Fleet average consumption</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">CO₂ Reduction</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">-12%</div>
+                  <div className="flex items-center">
+                    <Wind className="h-4 w-4 mr-1 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">YoY emissions improvement</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Route Management */}
-      <Card className="mb-6 p-6">
+      {/* Main Tabs Navigation */}
+      <Tabs value={mainTabValue} onValueChange={handleTabChange} className="mb-8 space-y-6">
+        <TabsList className="grid grid-cols-4 w-full">
+          <TabsTrigger value="management" className="flex items-center">
+            <MapIcon className="h-4 w-4 mr-2" />
+            Management
+          </TabsTrigger>
+          <TabsTrigger value="optimization" className="flex items-center">
+            <Route className="h-4 w-4 mr-2" />
+            Optimization
+          </TabsTrigger>
+          <TabsTrigger value="traffic" className="flex items-center">
+            <TrafficCone className="h-4 w-4 mr-2" />
+            Traffic
+          </TabsTrigger>
+          <TabsTrigger value="insights" className="flex items-center">
+            <Activity className="h-4 w-4 mr-2" />
+            Insights
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Management Tab */}
+        <TabsContent value="management" className="space-y-4">
+          <Card className="mb-6 p-6">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <CardTitle>
@@ -1058,441 +1326,446 @@ export default function RouteOptimization() {
             )}
           </div>
         </div>
-      </Card>
+          </Card>
+        </TabsContent>
 
-      {/* Route Optimization Tools & Analytics */}
-      <Card className="mb-6 p-6">
-        <div className="flex flex-col gap-1 mb-6">
-          <CardTitle>
-            Route Optimization
-          </CardTitle>
-          <CardDescription>Improve routes for speed and efficiency</CardDescription>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-0">
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-primary" />
-                  <CardTitle>Route Optimization Engine</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="h-8">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Refresh
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-8">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Settings
-                  </Button>
-                  <Button size="sm" className="h-8">
-                    <Play className="h-4 w-4 mr-2" />
-                    Run Optimization
-                  </Button>
-                </div>
-              </div>
-              <CardDescription>
-                Advanced route optimization with machine learning algorithms
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {/* Optimization Parameters */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="optimization-strategy">Optimization Strategy</Label>
-                    <Select defaultValue="balanced">
-                      <SelectTrigger id="optimization-strategy">
-                        <SelectValue placeholder="Select strategy" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="distance">Minimize Distance (Dijkstra's Algorithm)</SelectItem>
-                        <SelectItem value="time">Minimize Time (A* Search)</SelectItem>
-                        <SelectItem value="fuel">Minimize Fuel (Genetic Algorithm)</SelectItem>
-                        <SelectItem value="balanced">Balanced (Multi-Objective Optimization)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="vehicle-type">Vehicle Type</Label>
-                    <Select defaultValue="box-truck">
-                      <SelectTrigger id="vehicle-type">
-                        <SelectValue placeholder="Select vehicle" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="delivery-van">Delivery Van (2.5T)</SelectItem>
-                        <SelectItem value="box-truck">26ft Box Truck (12T)</SelectItem>
-                        <SelectItem value="semi-truck">53ft Semi-Truck (40T)</SelectItem>
-                        <SelectItem value="electric-van">Electric Delivery Van (3T)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                {/* Basic Parameters */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="max-stops">Maximum Stops</Label>
-                    <Input id="max-stops" type="number" defaultValue="10" min="1" max="50" />
-                    <p className="text-xs text-muted-foreground">Capacity: 50 stops per route</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="max-distance">Maximum Distance (mi)</Label>
-                    <Input id="max-distance" type="number" defaultValue="500" min="1" max="2000" />
-                    <p className="text-xs text-muted-foreground">Range: 1-2000 miles</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="departure-time">Departure Time</Label>
-                    <Input id="departure-time" type="time" defaultValue="08:00" />
-                    <p className="text-xs text-muted-foreground">24-hour format</p>
-                  </div>
-                </div>
-                
-                {/* Optimization Constraints */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-medium">Optimization Constraints</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="time-window">Time Window (hrs)</Label>
-                      <Input id="time-window" type="number" defaultValue="8" min="1" max="24" />
+        {/* Optimization Tab (main routes page) */}
+        <TabsContent value="optimization" className="space-y-4">
+          {/* Route Optimization Tools & Analytics */}
+          <Card className="mb-6 p-6">
+            <div className="flex flex-col gap-1 mb-6">
+              <CardTitle>
+                Route Optimization
+              </CardTitle>
+              <CardDescription>Improve routes for speed and efficiency</CardDescription>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-0">
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Settings className="h-5 w-5 text-primary" />
+                      <CardTitle>Route Optimization Engine</CardTitle>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="load-capacity">Load Capacity (%)</Label>
-                      <Input id="load-capacity" type="number" defaultValue="85" min="0" max="100" />
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" className="h-8">
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Refresh
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-8">
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Settings
+                      </Button>
+                      <Button size="sm" className="h-8">
+                        <Play className="h-4 w-4 mr-2" />
+                        Run Optimization
+                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="avoid-tolls" />
-                      <label htmlFor="avoid-tolls" className="text-sm font-medium leading-none">
-                        Avoid Tolls
-                      </label>
+                  <CardDescription>
+                    Advanced route optimization with machine learning algorithms
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Optimization Parameters */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="optimization-strategy">Optimization Strategy</Label>
+                        <Select defaultValue="balanced">
+                          <SelectTrigger id="optimization-strategy">
+                            <SelectValue placeholder="Select strategy" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="distance">Minimize Distance (Dijkstra's Algorithm)</SelectItem>
+                            <SelectItem value="time">Minimize Time (A* Search)</SelectItem>
+                            <SelectItem value="fuel">Minimize Fuel (Genetic Algorithm)</SelectItem>
+                            <SelectItem value="balanced">Balanced (Multi-Objective Optimization)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="vehicle-type">Vehicle Type</Label>
+                        <Select defaultValue="box-truck">
+                          <SelectTrigger id="vehicle-type">
+                            <SelectValue placeholder="Select vehicle" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="delivery-van">Delivery Van (2.5T)</SelectItem>
+                            <SelectItem value="box-truck">26ft Box Truck (12T)</SelectItem>
+                            <SelectItem value="semi-truck">53ft Semi-Truck (40T)</SelectItem>
+                            <SelectItem value="electric-van">Electric Delivery Van (3T)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="avoid-highways" />
-                      <label htmlFor="avoid-highways" className="text-sm font-medium leading-none">
-                        Avoid Highways
-                      </label>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="prioritize-deliveries" defaultChecked />
-                      <label htmlFor="prioritize-deliveries" className="text-sm font-medium leading-none">
-                        Prioritize Time-Sensitive Deliveries
-                      </label>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="consider-traffic" defaultChecked />
-                      <label htmlFor="consider-traffic" className="text-sm font-medium leading-none">
-                        Consider Real-time Traffic
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Advanced Settings */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-medium">Advanced Settings</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="algorithm-complexity">Algorithm Complexity</Label>
-                      <Select defaultValue="medium">
-                        <SelectTrigger id="algorithm-complexity">
-                          <SelectValue placeholder="Select complexity" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low (Faster, Less Optimal)</SelectItem>
-                          <SelectItem value="medium">Medium (Balanced)</SelectItem>
-                          <SelectItem value="high">High (Slower, More Optimal)</SelectItem>
-                          <SelectItem value="extreme">Extreme (Maximum Optimization)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="optimization-timeout">Optimization Timeout (s)</Label>
-                      <Input id="optimization-timeout" type="number" defaultValue="30" min="5" max="300" />
-                      <p className="text-xs text-muted-foreground">Maximum time to find solution</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="optimization-weights">Optimization Weights</Label>
+                    {/* Basic Parameters */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm">Distance</span>
-                          <span className="text-sm font-medium">40%</span>
+                        <Label htmlFor="max-stops">Maximum Stops</Label>
+                        <Input id="max-stops" type="number" defaultValue="10" min="1" max="50" />
+                        <p className="text-xs text-muted-foreground">Capacity: 50 stops per route</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="max-distance">Maximum Distance (mi)</Label>
+                        <Input id="max-distance" type="number" defaultValue="500" min="1" max="2000" />
+                        <p className="text-xs text-muted-foreground">Range: 1-2000 miles</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="departure-time">Departure Time</Label>
+                        <Input id="departure-time" type="time" defaultValue="08:00" />
+                        <p className="text-xs text-muted-foreground">24-hour format</p>
+                      </div>
+                    </div>
+                    
+                    {/* Optimization Constraints */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium">Optimization Constraints</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="time-window">Time Window (hrs)</Label>
+                          <Input id="time-window" type="number" defaultValue="8" min="1" max="24" />
                         </div>
-                        <Progress value={40} className="h-2 [&>div]:bg-blue-500" />
+                        <div className="space-y-2">
+                          <Label htmlFor="load-capacity">Load Capacity (%)</Label>
+                          <Input id="load-capacity" type="number" defaultValue="85" min="0" max="100" />
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-4">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="avoid-tolls" />
+                          <label htmlFor="avoid-tolls" className="text-sm font-medium leading-none">
+                            Avoid Tolls
+                          </label>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="avoid-highways" />
+                          <label htmlFor="avoid-highways" className="text-sm font-medium leading-none">
+                            Avoid Highways
+                          </label>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="prioritize-deliveries" defaultChecked />
+                          <label htmlFor="prioritize-deliveries" className="text-sm font-medium leading-none">
+                            Prioritize Time-Sensitive Deliveries
+                          </label>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="consider-traffic" defaultChecked />
+                          <label htmlFor="consider-traffic" className="text-sm font-medium leading-none">
+                            Consider Real-time Traffic
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Advanced Settings */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium">Advanced Settings</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="algorithm-complexity">Algorithm Complexity</Label>
+                          <Select defaultValue="medium">
+                            <SelectTrigger id="algorithm-complexity">
+                              <SelectValue placeholder="Select complexity" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low">Low (Faster, Less Optimal)</SelectItem>
+                              <SelectItem value="medium">Medium (Balanced)</SelectItem>
+                              <SelectItem value="high">High (Slower, More Optimal)</SelectItem>
+                              <SelectItem value="extreme">Extreme (Maximum Optimization)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="optimization-timeout">Optimization Timeout (s)</Label>
+                          <Input id="optimization-timeout" type="number" defaultValue="30" min="5" max="300" />
+                          <p className="text-xs text-muted-foreground">Maximum time to find solution</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="optimization-weights">Optimization Weights</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm">Distance</span>
+                              <span className="text-sm font-medium">40%</span>
+                            </div>
+                            <Progress value={40} className="h-2 [&>div]:bg-blue-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm">Time</span>
+                              <span className="text-sm font-medium">35%</span>
+                            </div>
+                            <Progress value={35} className="h-2 [&>div]:bg-green-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm">Cost</span>
+                              <span className="text-sm font-medium">25%</span>
+                            </div>
+                            <Progress value={25} className="h-2 [&>div]:bg-amber-500" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Traffic Data Sources</Label>
+                        <div className="flex flex-wrap gap-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="google-traffic" defaultChecked />
+                            <label htmlFor="google-traffic" className="text-sm font-medium leading-none">
+                              Google Maps
+                            </label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="tomtom-traffic" defaultChecked />
+                            <label htmlFor="tomtom-traffic" className="text-sm font-medium leading-none">
+                              TomTom
+                            </label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="here-traffic" />
+                            <label htmlFor="here-traffic" className="text-sm font-medium leading-none">
+                              HERE Maps
+                            </label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="historical-traffic" defaultChecked />
+                            <label htmlFor="historical-traffic" className="text-sm font-medium leading-none">
+                              Historical Data
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Optimization Preview */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium">Optimization Preview</h4>
+                      <div className="border rounded-md p-4 bg-muted/30">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <div className="text-sm font-medium mb-2">Current Route</div>
+                            <div className="h-24 bg-background rounded-md flex items-center justify-center border">
+                              <div className="text-center">
+                                <div className="text-sm text-muted-foreground">12 stops</div>
+                                <div className="text-sm text-muted-foreground">342 miles</div>
+                                <div className="text-sm text-muted-foreground">6.2 hours</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium mb-2">Optimized Route</div>
+                            <div className="h-24 bg-background rounded-md flex items-center justify-center border border-green-500/30">
+                              <div className="text-center">
+                                <div className="text-sm text-green-500">12 stops</div>
+                                <div className="text-sm text-green-500">298 miles (-12.9%)</div>
+                                <div className="text-sm text-green-500">5.1 hours (-17.7%)</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Algorithm Performance Metrics */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium">Algorithm Performance</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="space-y-2">
+                          <div className="text-sm text-muted-foreground">Computation Time</div>
+                          <div className="text-2xl font-bold">1.2s</div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-sm text-muted-foreground">Memory Usage</div>
+                          <div className="text-2xl font-bold">256MB</div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-sm text-muted-foreground">Iterations</div>
+                          <div className="text-2xl font-bold">1,245</div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-sm text-muted-foreground">Convergence</div>
+                          <div className="text-2xl font-bold">98.5%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between border-t pt-4">
+                  <Button variant="outline">Reset to Defaults</Button>
+                  <Button className="flex items-center">
+                    <Zap className="mr-2 h-4 w-4" />
+                    Optimize Routes
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5 text-green-500" />
+                    Optimization Impact
+                  </CardTitle>
+                  <CardDescription>Real-time optimization metrics</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Key Performance Indicators */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">Total Routes</div>
+                      <div className="text-2xl font-bold">186</div>
+                      <div className="text-xs text-green-500">+12% from last week</div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">Active Vehicles</div>
+                      <div className="text-2xl font-bold">42</div>
+                      <div className="text-xs text-green-500">92% utilization</div>
+                    </div>
+                  </div>
+                  
+                  {/* Optimization Metrics */}
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium">Distance Reduction</span>
+                        <span className="text-sm text-green-500 font-medium">12%</span>
+                      </div>
+                      <Progress value={12} className="h-2 [&>div]:bg-green-500" />
+                      <div className="text-xs text-muted-foreground mt-1">Saved 1,245 miles this week</div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium">Fuel Savings</span>
+                        <span className="text-sm text-green-500 font-medium">19.2%</span>
+                      </div>
+                      <Progress value={19.2} className="h-2 [&>div]:bg-green-500" />
+                      <div className="text-xs text-muted-foreground mt-1">Saved 342 gallons this week</div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium">Time Efficiency</span>
+                        <span className="text-sm text-green-500 font-medium">16.4%</span>
+                      </div>
+                      <Progress value={16.4} className="h-2 [&>div]:bg-green-500" />
+                      <div className="text-xs text-muted-foreground mt-1">Saved 124 hours this week</div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium">CO₂ Emissions</span>
+                        <span className="text-sm text-green-500 font-medium">19.3%</span>
+                      </div>
+                      <Progress value={19.3} className="h-2 [&>div]:bg-green-500" />
+                      <div className="text-xs text-muted-foreground mt-1">Reduced by 3.2 tons this week</div>
+                    </div>
+                  </div>
+                  
+                  {/* Cost Analysis */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Cost Analysis</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="text-sm text-muted-foreground">Fuel Cost</div>
+                        <div className="text-2xl font-bold">$8,245</div>
+                        <div className="text-xs text-green-500">Saved $1,945</div>
                       </div>
                       <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm">Time</span>
-                          <span className="text-sm font-medium">35%</span>
-                        </div>
-                        <Progress value={35} className="h-2 [&>div]:bg-green-500" />
+                        <div className="text-sm text-muted-foreground">Labor Cost</div>
+                        <div className="text-2xl font-bold">$12,480</div>
+                        <div className="text-xs text-green-500">Saved $2,080</div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="text-sm text-muted-foreground">Maintenance</div>
+                        <div className="text-2xl font-bold">$3,560</div>
+                        <div className="text-xs text-green-500">Saved $720</div>
                       </div>
                       <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm">Cost</span>
-                          <span className="text-sm font-medium">25%</span>
-                        </div>
-                        <Progress value={25} className="h-2 [&>div]:bg-amber-500" />
+                        <div className="text-sm text-muted-foreground">Tolls & Fees</div>
+                        <div className="text-2xl font-bold">$1,850</div>
+                        <div className="text-xs text-green-500">Saved $580</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 py-3 px-4 bg-muted rounded-md">
+                      <div className="text-sm font-medium mb-2 flex items-center">
+                        <DollarSign className="h-4 w-4 mr-1 text-green-500" />
+                        Total Monthly Savings
+                      </div>
+                      <div className="text-2xl font-bold">$14,325</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Based on 186 optimized routes
                       </div>
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label>Traffic Data Sources</Label>
-                    <div className="flex flex-wrap gap-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="google-traffic" defaultChecked />
-                        <label htmlFor="google-traffic" className="text-sm font-medium leading-none">
-                          Google Maps
-                        </label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="tomtom-traffic" defaultChecked />
-                        <label htmlFor="tomtom-traffic" className="text-sm font-medium leading-none">
-                          TomTom
-                        </label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="here-traffic" />
-                        <label htmlFor="here-traffic" className="text-sm font-medium leading-none">
-                          HERE Maps
-                        </label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="historical-traffic" defaultChecked />
-                        <label htmlFor="historical-traffic" className="text-sm font-medium leading-none">
-                          Historical Data
-                        </label>
-                      </div>
+                  {/* Savings Forecast */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Savings Forecast</h4>
+                    <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                      <div className="text-xs text-muted-foreground">Monthly</div>
+                      <div className="text-xs text-muted-foreground">Quarterly</div>
+                      <div className="text-xs text-muted-foreground">Yearly</div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="text-lg font-bold">$14,325</div>
+                      <div className="text-lg font-bold">$42,975</div>
+                      <div className="text-lg font-bold">$171,900</div>
+                    </div>
+                    <Separator className="my-3" />
+                    <div className="text-xs text-center text-muted-foreground pt-1">
+                      Projections based on current optimization patterns and route volume
                     </div>
                   </div>
-                </div>
-                
-                {/* Optimization Preview */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-medium">Optimization Preview</h4>
-                  <div className="border rounded-md p-4 bg-muted/30">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-sm font-medium mb-2">Current Route</div>
-                        <div className="h-24 bg-background rounded-md flex items-center justify-center border">
-                          <div className="text-center">
-                            <div className="text-sm text-muted-foreground">12 stops</div>
-                            <div className="text-sm text-muted-foreground">342 miles</div>
-                            <div className="text-sm text-muted-foreground">6.2 hours</div>
-                          </div>
-                        </div>
+                  
+                  {/* Environmental Impact */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Environmental Impact</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="text-sm text-muted-foreground">CO₂ Reduction</div>
+                        <div className="text-2xl font-bold">3.2 tons</div>
+                        <div className="text-xs text-green-500">19.3% reduction</div>
                       </div>
-                      <div>
-                        <div className="text-sm font-medium mb-2">Optimized Route</div>
-                        <div className="h-24 bg-background rounded-md flex items-center justify-center border border-green-500/30">
-                          <div className="text-center">
-                            <div className="text-sm text-green-500">12 stops</div>
-                            <div className="text-sm text-green-500">298 miles (-12.9%)</div>
-                            <div className="text-sm text-green-500">5.1 hours (-17.7%)</div>
-                          </div>
-                        </div>
+                      <div className="space-y-2">
+                        <div className="text-sm text-muted-foreground">Fuel Efficiency</div>
+                        <div className="text-2xl font-bold">18.4 mpg</div>
+                        <div className="text-xs text-green-500">+2.1 mpg improvement</div>
                       </div>
                     </div>
-                  </div>
-                </div>
-                
-                {/* Algorithm Performance Metrics */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-medium">Algorithm Performance</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Computation Time</div>
-                      <div className="text-2xl font-bold">1.2s</div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Memory Usage</div>
-                      <div className="text-2xl font-bold">256MB</div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Iterations</div>
-                      <div className="text-2xl font-bold">1,245</div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Convergence</div>
-                      <div className="text-2xl font-bold">98.5%</div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Equivalent to planting 42 trees or removing 1.2 cars from the road annually
                     </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between border-t pt-4">
-              <Button variant="outline">Reset to Defaults</Button>
-              <Button className="flex items-center">
-                <Zap className="mr-2 h-4 w-4" />
-                Optimize Routes
-              </Button>
-            </CardFooter>
+                </CardContent>
+              </Card>
+            </div>
           </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingDown className="h-5 w-5 text-green-500" />
-                Optimization Impact
-              </CardTitle>
-              <CardDescription>Real-time optimization metrics</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Key Performance Indicators */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Total Routes</div>
-                  <div className="text-2xl font-bold">186</div>
-                  <div className="text-xs text-green-500">+12% from last week</div>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Active Vehicles</div>
-                  <div className="text-2xl font-bold">42</div>
-                  <div className="text-xs text-green-500">92% utilization</div>
-                </div>
-              </div>
-              
-              {/* Optimization Metrics */}
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium">Distance Reduction</span>
-                    <span className="text-sm text-green-500 font-medium">12%</span>
-                  </div>
-                  <Progress value={12} className="h-2 [&>div]:bg-green-500" />
-                  <div className="text-xs text-muted-foreground mt-1">Saved 1,245 miles this week</div>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium">Fuel Savings</span>
-                    <span className="text-sm text-green-500 font-medium">19.2%</span>
-                  </div>
-                  <Progress value={19.2} className="h-2 [&>div]:bg-green-500" />
-                  <div className="text-xs text-muted-foreground mt-1">Saved 342 gallons this week</div>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium">Time Efficiency</span>
-                    <span className="text-sm text-green-500 font-medium">16.4%</span>
-                  </div>
-                  <Progress value={16.4} className="h-2 [&>div]:bg-green-500" />
-                  <div className="text-xs text-muted-foreground mt-1">Saved 124 hours this week</div>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium">CO₂ Emissions</span>
-                    <span className="text-sm text-green-500 font-medium">19.3%</span>
-                  </div>
-                  <Progress value={19.3} className="h-2 [&>div]:bg-green-500" />
-                  <div className="text-xs text-muted-foreground mt-1">Reduced by 3.2 tons this week</div>
-                </div>
-              </div>
-              
-              {/* Cost Analysis */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Cost Analysis</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Fuel Cost</div>
-                    <div className="text-2xl font-bold">$8,245</div>
-                    <div className="text-xs text-green-500">Saved $1,945</div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Labor Cost</div>
-                    <div className="text-2xl font-bold">$12,480</div>
-                    <div className="text-xs text-green-500">Saved $2,080</div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Maintenance</div>
-                    <div className="text-2xl font-bold">$3,560</div>
-                    <div className="text-xs text-green-500">Saved $720</div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Tolls & Fees</div>
-                    <div className="text-2xl font-bold">$1,850</div>
-                    <div className="text-xs text-green-500">Saved $580</div>
-                  </div>
-                </div>
-                
-                <div className="mt-4 py-3 px-4 bg-muted rounded-md">
-                  <div className="text-sm font-medium mb-2 flex items-center">
-                    <DollarSign className="h-4 w-4 mr-1 text-green-500" />
-                    Total Monthly Savings
-                  </div>
-                  <div className="text-2xl font-bold">$14,325</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Based on 186 optimized routes
-                  </div>
-                </div>
-              </div>
-              
-              {/* Savings Forecast */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Savings Forecast</h4>
-                <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                  <div className="text-xs text-muted-foreground">Monthly</div>
-                  <div className="text-xs text-muted-foreground">Quarterly</div>
-                  <div className="text-xs text-muted-foreground">Yearly</div>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="text-lg font-bold">$14,325</div>
-                  <div className="text-lg font-bold">$42,975</div>
-                  <div className="text-lg font-bold">$171,900</div>
-                </div>
-                <Separator className="my-3" />
-                <div className="text-xs text-center text-muted-foreground pt-1">
-                  Projections based on current optimization patterns and route volume
-                </div>
-              </div>
-              
-              {/* Environmental Impact */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Environmental Impact</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">CO₂ Reduction</div>
-                    <div className="text-2xl font-bold">3.2 tons</div>
-                    <div className="text-xs text-green-500">19.3% reduction</div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Fuel Efficiency</div>
-                    <div className="text-2xl font-bold">18.4 mpg</div>
-                    <div className="text-xs text-green-500">+2.1 mpg improvement</div>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground mt-2">
-                  Equivalent to planting 42 trees or removing 1.2 cars from the road annually
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </Card>
-      
-      {/* Optimization Visualizations */}
-      <Card className="mb-6 p-6">
+        </TabsContent>
+
+        {/* Traffic Tab */}
+        <TabsContent value="traffic" className="space-y-4">
+          <Card className="mb-6 p-6">
         <div className="flex flex-col gap-1 mb-6">
           <CardTitle>
             Traffic Analysis
@@ -1780,29 +2053,12 @@ export default function RouteOptimization() {
             </CardContent>
           </Card>
         </div>
-      </Card>
-      {/* Route Details - Only shown when a route is selected */}
-      {selectedRoute && (
-        <div className="mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                Route Details: {selectedRoute.name}
-              </CardTitle>
-              <CardDescription>
-                ID: {selectedRoute.id} • Vehicle: {selectedRoute.vehicle} • Driver: {selectedRoute.driver}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RouteDetails route={selectedRoute} onClose={() => setSelectedRoute(null)} />
-            </CardContent>
           </Card>
-        </div>
-      )}
-      
-      {/* Advanced Analytics Section */}
-      <Card className="mb-6 p-6">
+        </TabsContent>
+
+        {/* Insights Tab */}
+        <TabsContent value="insights" className="space-y-4">
+          <Card className="mb-6 p-6">
         <div className="flex flex-col gap-1 mb-6">
           <CardTitle>
             Route Insights
@@ -2033,7 +2289,10 @@ export default function RouteOptimization() {
             </Card>
           </div>
         </div>
-      </Card>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      
       <RoutePlanModal 
         isOpen={isRouteModalOpen}
         onClose={() => setIsRouteModalOpen(false)}
@@ -2043,9 +2302,10 @@ export default function RouteOptimization() {
       {isDetailsModalOpen && selectedRoute && (
         <RouteDetails 
           route={selectedRoute} 
+          isOpen={isDetailsModalOpen}
           onClose={() => {
             setIsDetailsModalOpen(false);
-            setSelectedRoute(null);
+            setSelectedRoute(undefined);
           }} 
         />
       )}

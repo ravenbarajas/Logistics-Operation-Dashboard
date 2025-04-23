@@ -89,7 +89,7 @@ export default function ShipmentStatusMatrix({ period }: ShipmentStatusMatrixPro
             </TabsList>
           </div>
           
-          <ScrollArea className="h-[300px] px-4">
+          <ScrollArea className="h-[380px] px-4">
             <div className="pt-2 space-y-2">
               {shipments.map((shipment) => (
                 <div 

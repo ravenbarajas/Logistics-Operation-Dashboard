@@ -17,7 +17,10 @@ import {
   Package, 
   ArrowUpRight, 
   ArrowDownRight, 
-  Zap 
+  Zap,
+  Activity,
+  TrendingUp,
+  LineChart
 } from "lucide-react";
 
 interface OperationalEfficiencyProps {
@@ -27,8 +30,6 @@ interface OperationalEfficiencyProps {
 export default function OperationalEfficiency({ period }: OperationalEfficiencyProps) {
   const [chartType, setChartType] = useState<"performance" | "utilization" | "cost">("performance");
   const [isLoading, setIsLoading] = useState(true);
-  const chartRef = useRef<HTMLCanvasElement | null>(null);
-  const chartInstance = useRef<any>(null);
   
   // Simulated efficiency metrics
   const metrics = {
@@ -78,300 +79,250 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
     routeOptimizationScore: "89.2%"
   };
   
-  // Unified render function for charts
+  // Resource utilization data for the chart
+  const utilizationData = [
+    { time: '00:00', trucks: 45, vans: 52 },
+    { time: '04:00', trucks: 38, vans: 41 },
+    { time: '08:00', trucks: 65, vans: 79 },
+    { time: '12:00', trucks: 88, vans: 85 },
+    { time: '16:00', trucks: 92, vans: 94 },
+    { time: '20:00', trucks: 68, vans: 76 }
+  ];
+  
+  // Cost data for the chart
+  const costData = [
+    costPerMileData[0], costPerMileData[1], costPerMileData[2],
+    costPerMileData[3], costPerMileData[4], costPerMileData[5]
+  ];
+  
+  // Simulate loading data
   useEffect(() => {
-    if (!chartRef.current || !window.Chart) return;
-    
-    // Clean up existing chart
-    if (chartInstance.current) {
-      chartInstance.current.destroy();
-    }
-    
     setIsLoading(true);
-    
-    // Simulated API call with timeout
     const timer = setTimeout(() => {
-      const ctx = chartRef.current?.getContext('2d');
-      if (!ctx) return;
-      
-      // Chart configuration based on selected type
-      let chartConfig;
-      
-      if (chartType === "performance") {
-        // Performance metrics chart
-        chartConfig = {
-          type: 'radar',
-          data: {
-            labels: [
-              'Delivery Time Adherence',
-              'Resource Utilization',
-              'Fuel Efficiency',
-              'Route Optimization',
-              'Maintenance Compliance',
-              'Cost Efficiency'
-            ],
-            datasets: [{
-              label: 'Current',
-              data: [
-                metrics.deliveryTime.value,
-                metrics.resourceUtilization.value,
-                metrics.fuelEfficiency.value,
-                89.2, // Route Optimization
-                metrics.maintenanceCompliance.value,
-                metrics.costEfficiency.value
-              ],
-              backgroundColor: 'hsla(var(--primary), 0.2)',
-              borderColor: 'hsl(var(--primary))',
-              pointBackgroundColor: 'hsl(var(--primary))',
-              pointBorderColor: '#fff',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: 'hsl(var(--primary))',
-              borderWidth: 2
-            }, {
-              label: 'Target',
-              data: [
-                metrics.deliveryTime.target,
-                metrics.resourceUtilization.target,
-                metrics.fuelEfficiency.target,
-                95.0, // Route Optimization target
-                metrics.maintenanceCompliance.target,
-                metrics.costEfficiency.target
-              ],
-              backgroundColor: 'hsla(var(--muted), 0.1)',
-              borderColor: 'hsl(var(--muted-foreground))',
-              pointBackgroundColor: 'hsl(var(--muted-foreground))',
-              pointBorderColor: '#fff',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: 'hsl(var(--muted-foreground))',
-              borderWidth: 1,
-              borderDash: [5, 5]
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              r: {
-                min: 60,
-                max: 100,
-                ticks: {
-                  display: false
-                },
-                pointLabels: {
-                  color: 'hsl(var(--foreground))',
-                  font: {
-                    size: 10
-                  }
-                },
-                grid: {
-                  color: 'hsla(var(--muted), 0.3)'
-                },
-                angleLines: {
-                  color: 'hsla(var(--muted), 0.3)'
-                }
-              }
-            },
-            plugins: {
-              legend: {
-                position: 'top',
-                labels: {
-                  color: 'hsl(var(--foreground))',
-                  usePointStyle: true,
-                  pointStyleWidth: 8
-                }
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context: any) {
-                    return `${context.dataset.label}: ${context.raw}%`;
-                  }
-                }
-              }
-            }
-          }
-        };
-      } else if (chartType === "utilization") {
-        // Resource utilization chart
-        const utilizationData = [
-          { time: '00:00', trucks: 45, vans: 52 },
-          { time: '04:00', trucks: 38, vans: 41 },
-          { time: '08:00', trucks: 65, vans: 79 },
-          { time: '12:00', trucks: 88, vans: 85 },
-          { time: '16:00', trucks: 92, vans: 94 },
-          { time: '20:00', trucks: 68, vans: 76 }
-        ];
-        
-        chartConfig = {
-          type: 'line',
-          data: {
-            labels: utilizationData.map(d => d.time),
-            datasets: [{
-              label: 'Trucks',
-              data: utilizationData.map(d => d.trucks),
-              borderColor: 'hsl(var(--primary))',
-              backgroundColor: 'hsla(var(--primary), 0.2)',
-              tension: 0.3,
-              fill: true
-            }, {
-              label: 'Vans',
-              data: utilizationData.map(d => d.vans),
-              borderColor: 'hsl(var(--secondary))',
-              backgroundColor: 'hsla(var(--secondary), 0.2)',
-              tension: 0.3,
-              fill: true
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
-                title: {
-                  display: true,
-                  text: 'Utilization %',
-                  color: 'hsl(var(--foreground))'
-                },
-                ticks: {
-                  callback: function(value: any) {
-                    return value + '%';
-                  },
-                  color: 'hsl(var(--foreground))'
-                },
-                grid: {
-                  color: 'hsla(var(--muted), 0.3)'
-                }
-              },
-              x: {
-                ticks: {
-                  color: 'hsl(var(--foreground))'
-                },
-                grid: {
-                  color: 'hsla(var(--muted), 0.3)'
-                }
-              }
-            },
-            plugins: {
-              legend: {
-                position: 'top',
-                labels: {
-                  color: 'hsl(var(--foreground))'
-                }
-              },
-              annotation: {
-                annotations: {
-                  line1: {
-                    type: 'line',
-                    yMin: 85,
-                    yMax: 85,
-                    borderColor: 'hsla(var(--success), 0.5)',
-                    borderWidth: 1,
-                    borderDash: [5, 5],
-                    label: {
-                      display: true,
-                      content: 'Target: 85%',
-                      position: 'end',
-                      color: 'hsla(var(--success), 0.8)',
-                      font: {
-                        size: 10
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        };
-      } else if (chartType === "cost") {
-        // Cost efficiency chart
-        const costData = [
-          costPerMileData[0],
-          costPerMileData[1],
-          costPerMileData[2],
-          costPerMileData[3],
-          costPerMileData[4],
-          costPerMileData[5]
-        ];
-        
-        chartConfig = {
-          type: 'bar',
-          data: {
-            labels: costData.map(d => d.month),
-            datasets: [{
-              label: 'Heavy Truck',
-              data: costData.map(d => d.heavyTruck),
-              backgroundColor: 'hsl(var(--primary))'
-            }, {
-              label: 'Medium Truck',
-              data: costData.map(d => d.mediumTruck),
-              backgroundColor: 'hsl(var(--secondary))'
-            }, {
-              label: 'Delivery Van',
-              data: costData.map(d => d.deliveryVan),
-              backgroundColor: 'hsl(var(--accent))'
-            }, {
-              label: 'Electric',
-              data: costData.map(d => d.electric),
-              backgroundColor: 'hsl(var(--success))'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Cost per Mile ($)',
-                  color: 'hsl(var(--foreground))'
-                },
-                ticks: {
-                  callback: function(value: any) {
-                    return '$' + value.toFixed(2);
-                  },
-                  color: 'hsl(var(--foreground))'
-                },
-                grid: {
-                  color: 'hsla(var(--muted), 0.3)'
-                }
-              },
-              x: {
-                ticks: {
-                  color: 'hsl(var(--foreground))'
-                },
-                grid: {
-                  color: 'hsla(var(--muted), 0.3)'
-                }
-              }
-            },
-            plugins: {
-              legend: {
-                position: 'top',
-                labels: {
-                  color: 'hsl(var(--foreground))'
-                }
-              }
-            }
-          }
-        };
-      }
-      
-      if (chartConfig) {
-        chartInstance.current = new window.Chart(ctx, chartConfig);
-      }
-      
       setIsLoading(false);
     }, 800);
     
-    return () => {
-      clearTimeout(timer);
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
-    };
+    return () => clearTimeout(timer);
   }, [chartType, period]);
+  
+  // Render performance chart
+  const renderPerformanceChart = () => {
+    return (
+      <div className="h-[300px] flex items-center justify-center bg-muted/5 rounded-md p-4">
+        <div className="w-full h-full relative flex">
+          {/* Radar chart visualization */}
+          <div className="w-3/4 h-full flex items-center justify-center">
+            <div className="relative w-64 h-64">
+              {/* Radar background */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-full h-full rounded-full border border-muted/20"></div>
+                <div className="absolute w-3/4 h-3/4 rounded-full border border-muted/20"></div>
+                <div className="absolute w-1/2 h-1/2 rounded-full border border-muted/20"></div>
+                <div className="absolute w-1/4 h-1/4 rounded-full border border-muted/20"></div>
+              </div>
+              
+              {/* Performance metrics */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                <div className="h-20 w-[2px] bg-gradient-to-t from-primary/10 to-primary"></div>
+                <div className="text-xs mt-1">Delivery Time</div>
+                <div className="text-xs font-semibold">{metrics.deliveryTime.value}%</div>
+              </div>
+              
+              <div className="absolute top-1/4 right-0 translate-x-1/2 -translate-y-1/2 flex items-center">
+                <div className="h-[2px] w-16 bg-gradient-to-r from-secondary/10 to-secondary"></div>
+                <div className="ml-1">
+                  <div className="text-xs">Resource</div>
+                  <div className="text-xs font-semibold">{metrics.resourceUtilization.value}%</div>
+                </div>
+              </div>
+              
+              <div className="absolute bottom-1/4 right-0 translate-y-1/2 flex items-center">
+                <div className="h-[2px] w-16 bg-gradient-to-r from-accent/10 to-accent"></div>
+                <div className="ml-1">
+                  <div className="text-xs">Fuel</div>
+                  <div className="text-xs font-semibold">{metrics.fuelEfficiency.value}%</div>
+                </div>
+              </div>
+              
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 flex flex-col items-center">
+                <div className="text-xs mb-1">Route</div>
+                <div className="text-xs font-semibold">89.2%</div>
+                <div className="h-20 w-[2px] bg-gradient-to-b from-primary/10 to-primary"></div>
+              </div>
+              
+              <div className="absolute bottom-1/4 left-0 -translate-x-1/2 translate-y-1/2 flex items-center flex-row-reverse">
+                <div className="h-[2px] w-16 bg-gradient-to-l from-secondary/10 to-secondary"></div>
+                <div className="mr-1">
+                  <div className="text-xs">Maintenance</div>
+                  <div className="text-xs font-semibold">{metrics.maintenanceCompliance.value}%</div>
+                </div>
+              </div>
+              
+              <div className="absolute top-1/4 left-0 -translate-x-1/2 -translate-y-1/2 flex items-center flex-row-reverse">
+                <div className="h-[2px] w-16 bg-gradient-to-l from-accent/10 to-accent"></div>
+                <div className="mr-1">
+                  <div className="text-xs">Cost</div>
+                  <div className="text-xs font-semibold">{metrics.costEfficiency.value}%</div>
+                </div>
+              </div>
+              
+              {/* Radar chart shape */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-[85%] h-[85%] bg-primary/10 rounded-full relative overflow-hidden">
+                  {/* Performance shape */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1/2 w-[2px] bg-primary/50" 
+                       style={{ height: `${(metrics.deliveryTime.value - 60) / 40 * 100}%` }}></div>
+                  <div className="absolute top-1/4 right-0 -translate-y-1/2 w-1/2 h-[2px] bg-secondary/50"
+                       style={{ width: `${(metrics.resourceUtilization.value - 60) / 40 * 100}%` }}></div>
+                  <div className="absolute bottom-1/4 right-0 translate-y-1/2 w-1/2 h-[2px] bg-accent/50"
+                       style={{ width: `${(metrics.fuelEfficiency.value - 60) / 40 * 100}%` }}></div>
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1/2 w-[2px] bg-primary/50"
+                       style={{ height: `${((89.2) - 60) / 40 * 100}%` }}></div>
+                  <div className="absolute bottom-1/4 left-0 translate-y-1/2 w-1/2 h-[2px] bg-secondary/50"
+                       style={{ width: `${(metrics.maintenanceCompliance.value - 60) / 40 * 100}%` }}></div>
+                  <div className="absolute top-1/4 left-0 -translate-y-1/2 w-1/2 h-[2px] bg-accent/50"
+                       style={{ width: `${(metrics.costEfficiency.value - 60) / 40 * 100}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Legend */}
+          <div className="w-1/4 h-full flex flex-col justify-center space-y-3">
+            <div className="text-xs font-semibold">Performance Metrics</div>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-primary mr-2"></div>
+                <div className="text-xs">Current</div>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full border border-muted-foreground mr-2"></div>
+                <div className="text-xs">Target</div>
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground mt-2">
+              Scale: 60% - 100%
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Render utilization chart
+  const renderUtilizationChart = () => {
+    return (
+      <div className="h-[300px] flex flex-col">
+        <div className="flex justify-between px-6 mb-2">
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-primary rounded-full mr-1"></div>
+            <span className="text-xs">Trucks</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-secondary rounded-full mr-1"></div>
+            <span className="text-xs">Vans</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-12 h-0.5 bg-success/50 border-dashed mr-1"></div>
+            <span className="text-xs">Target (85%)</span>
+          </div>
+        </div>
+        
+        <div className="flex-1 grid grid-cols-6 gap-4 px-4">
+          {utilizationData.map((data, index) => (
+            <div key={index} className="flex flex-col h-full">
+              <div className="flex-1 relative flex flex-col-reverse">
+                {/* Target line at 85% */}
+                <div className="absolute left-0 right-0 h-[1px] bg-success/50 border-dashed" style={{ bottom: '85%' }}></div>
+                
+                {/* Trucks bar */}
+                <div 
+                  className="w-full bg-primary/80 rounded-t-sm mr-1"
+                  style={{ height: `${data.trucks}%` }}
+                ></div>
+                
+                {/* Vans bar */}
+                <div 
+                  className="w-full bg-secondary/80 rounded-t-sm absolute -right-2"
+                  style={{ height: `${data.vans}%`, width: '40%' }}
+                ></div>
+              </div>
+              <div className="text-xs text-center mt-2">{data.time}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  
+  // Render cost chart
+  const renderCostChart = () => {
+    return (
+      <div className="h-[300px] w-full">
+        <div className="flex justify-between px-6 mb-2">
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-primary rounded-full mr-1"></div>
+            <span className="text-xs">Heavy Truck</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-secondary rounded-full mr-1"></div>
+            <span className="text-xs">Medium Truck</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-accent rounded-full mr-1"></div>
+            <span className="text-xs">Delivery Van</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-success rounded-full mr-1"></div>
+            <span className="text-xs">Electric</span>
+          </div>
+        </div>
+        
+        <div className="flex-1 grid grid-cols-6 gap-2 px-4 h-[250px]">
+          {costData.map((data, index) => {
+            // Find maximum value to scale the chart
+            const maxValue = Math.max(data.heavyTruck, data.mediumTruck, data.deliveryVan, data.electric);
+            const scale = 200 / maxValue; // 200px is our max bar height
+            
+            return (
+              <div key={index} className="flex flex-col h-full">
+                <div className="flex-1 relative flex items-end justify-center space-x-1">
+                  {/* Heavy Truck bar */}
+                  <div 
+                    className="w-2 bg-primary rounded-t-sm" 
+                    style={{ height: `${data.heavyTruck * scale}px` }}
+                  ></div>
+                  
+                  {/* Medium Truck bar */}
+                  <div 
+                    className="w-2 bg-secondary rounded-t-sm" 
+                    style={{ height: `${data.mediumTruck * scale}px` }}
+                  ></div>
+                  
+                  {/* Delivery Van bar */}
+                  <div 
+                    className="w-2 bg-accent rounded-t-sm" 
+                    style={{ height: `${data.deliveryVan * scale}px` }}
+                  ></div>
+                  
+                  {/* Electric bar */}
+                  <div 
+                    className="w-2 bg-success rounded-t-sm" 
+                    style={{ height: `${data.electric * scale}px` }}
+                  ></div>
+                </div>
+                <div className="text-xs text-center mt-2">{data.month}</div>
+              </div>
+            );
+          })}
+        </div>
+        
+        <div className="flex justify-between px-8">
+          <div className="text-xs text-muted-foreground">Cost per Mile ($)</div>
+        </div>
+      </div>
+    );
+  };
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -537,43 +488,99 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         <CardContent className="pt-2">
           <div className="h-[300px] relative">
             {isLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Skeleton className="h-[300px] w-full" />
+              <div className="absolute inset-0 flex flex-col space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+                  {/* Animated placeholder for chart with data points */}
+                  <div className="col-span-2 h-[200px] rounded-md bg-gradient-to-r from-muted/20 via-muted/10 to-muted/20 animate-pulse flex items-center justify-center">
+                    <div className="text-muted-foreground/60 flex flex-col items-center">
+                      <BarChart className="h-8 w-8 mb-2 opacity-50" />
+                      <span className="text-xs">Loading chart data...</span>
+                    </div>
+                  </div>
+                  
+                  {/* Technical KPI summary placeholder */}
+                  <div className="space-y-2">
+                    <div className="h-8 w-full rounded-sm bg-muted/20 animate-pulse"></div>
+                    <div className="h-8 w-full rounded-sm bg-muted/20 animate-pulse"></div>
+                    <div className="h-8 w-full rounded-sm bg-muted/20 animate-pulse"></div>
+                    <div className="h-8 w-3/4 rounded-sm bg-muted/20 animate-pulse"></div>
+                    <div className="h-8 w-full rounded-sm bg-muted/20 animate-pulse"></div>
+                  </div>
+                </div>
+                
+                {/* Technical metrics placeholder */}
+                <div className="grid grid-cols-4 gap-2 px-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-muted/10 rounded-md p-2 flex flex-col items-center justify-center">
+                      <div className="h-4 w-4 rounded-full bg-muted/20 animate-pulse mb-1"></div>
+                      <div className="h-3 w-16 rounded-sm bg-muted/20 animate-pulse mb-1"></div>
+                      <div className="h-4 w-10 rounded-sm bg-muted/20 animate-pulse"></div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
-              <canvas ref={chartRef} className="w-full h-full" />
+              <>
+                {chartType === "performance" && renderPerformanceChart()}
+                {chartType === "utilization" && renderUtilizationChart()}
+                {chartType === "cost" && renderCostChart()}
+              </>
             )}
           </div>
           
           {/* Key Metrics Highlights */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-            <div className="bg-muted/10 rounded-md p-2 text-center">
+            <div className="bg-muted/10 rounded-md p-2 text-center relative group overflow-hidden transition-all hover:bg-muted/20">
               <div className="flex justify-center mb-1 text-secondary">
                 <Timer className="h-4 w-4" />
               </div>
               <div className="text-xs font-medium">Avg Trip Duration</div>
-              <div className="text-sm font-bold">{detailedMetrics.averageTripDuration}</div>
+              <div className="text-sm font-bold flex items-center justify-center">
+                {detailedMetrics.averageTripDuration}
+                <span className="ml-1 text-[9px] text-success-foreground font-normal bg-success/20 rounded-full px-1">-4.2%</span>
+              </div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-secondary/20">
+                <div className="h-full bg-secondary" style={{ width: '76%' }}></div>
+              </div>
             </div>
-            <div className="bg-muted/10 rounded-md p-2 text-center">
+            <div className="bg-muted/10 rounded-md p-2 text-center relative group overflow-hidden transition-all hover:bg-muted/20">
               <div className="flex justify-center mb-1 text-primary">
                 <Package className="h-4 w-4" />
               </div>
               <div className="text-xs font-medium">Warehouse Utilization</div>
-              <div className="text-sm font-bold">{detailedMetrics.warehouseUtilization}</div>
+              <div className="text-sm font-bold flex items-center justify-center">
+                {detailedMetrics.warehouseUtilization}
+                <span className="ml-1 text-[9px] text-success-foreground font-normal bg-success/20 rounded-full px-1">+1.8%</span>
+              </div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-primary/20">
+                <div className="h-full bg-primary" style={{ width: '82.5%' }}></div>
+              </div>
             </div>
-            <div className="bg-muted/10 rounded-md p-2 text-center">
+            <div className="bg-muted/10 rounded-md p-2 text-center relative group overflow-hidden transition-all hover:bg-muted/20">
               <div className="flex justify-center mb-1 text-accent">
                 <Zap className="h-4 w-4" />
               </div>
               <div className="text-xs font-medium">Route Optimization</div>
-              <div className="text-sm font-bold">{detailedMetrics.routeOptimizationScore}</div>
+              <div className="text-sm font-bold flex items-center justify-center">
+                {detailedMetrics.routeOptimizationScore}
+                <span className="ml-1 text-[9px] text-success-foreground font-normal bg-success/20 rounded-full px-1">+3.5%</span>
+              </div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-accent/20">
+                <div className="h-full bg-accent" style={{ width: '89.2%' }}></div>
+              </div>
             </div>
-            <div className="bg-muted/10 rounded-md p-2 text-center">
+            <div className="bg-muted/10 rounded-md p-2 text-center relative group overflow-hidden transition-all hover:bg-muted/20">
               <div className="flex justify-center mb-1 text-secondary">
                 <Fuel className="h-4 w-4" />
               </div>
               <div className="text-xs font-medium">Fuel Usage/Km</div>
-              <div className="text-sm font-bold">{detailedMetrics.fuelUsagePerKm}</div>
+              <div className="text-sm font-bold flex items-center justify-center">
+                {detailedMetrics.fuelUsagePerKm}
+                <span className="ml-1 text-[9px] text-success-foreground font-normal bg-success/20 rounded-full px-1">-2.3%</span>
+              </div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-secondary/20">
+                <div className="h-full bg-secondary" style={{ width: '62%' }}></div>
+              </div>
             </div>
           </div>
         </CardContent>

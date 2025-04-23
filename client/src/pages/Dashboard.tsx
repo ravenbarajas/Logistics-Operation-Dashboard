@@ -92,6 +92,14 @@ export default function Dashboard() {
     loadExternalScripts();
   }, []);
   
+  // Add console log to check if Chart.js is loaded
+  useEffect(() => {
+    console.log("Is data loaded:", isDataLoaded);
+    if (isDataLoaded) {
+      console.log("Chart.js loaded:", window.Chart ? "YES" : "NO");
+    }
+  }, [isDataLoaded]);
+  
   // Handle period change for data filtering
   const handlePeriodChange = (value: string) => {
     setSelectedPeriod(value);
@@ -129,7 +137,7 @@ export default function Dashboard() {
       
       {/* Tabbed Main Dashboard Interface */}
       <Tabs defaultValue="operations" className="space-y-4">
-        <TabsList className="grid grid-cols-4 md:grid-cols-5 lg:w-[600px]">
+        <TabsList className="grid grid-cols-5 w-full">
           <TabsTrigger value="operations">Operations</TabsTrigger>
           <TabsTrigger value="fleet">Fleet Mgmt</TabsTrigger>
           <TabsTrigger value="delivery">Deliveries</TabsTrigger>

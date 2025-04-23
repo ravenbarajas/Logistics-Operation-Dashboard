@@ -203,12 +203,12 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
               {/* Performance metrics */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                 <div className={`h-20 w-[2px] bg-gradient-to-t ${getStatusColorClass(metricStatuses.deliveryTime)}`}></div>
-                <div className="text-xs mt-1 flex flex-col items-center">
+                <div className="text-sm mt-1 flex flex-col items-center">
                   <div className="font-medium">Delivery Time</div>
                   <div className="flex items-center">
                     <span className={`inline-block h-1.5 w-1.5 rounded-full ${getStatusDotClass(metricStatuses.deliveryTime)} mr-1`}></span>
-                    <span className="text-xs font-bold">{metrics.deliveryTime.value.toFixed(1)}%</span>
-                    <span className={`ml-1 text-[9px] ${metrics.deliveryTime.trend === "up" ? "text-emerald-500" : "text-rose-500"}`}>
+                    <span className="text-sm font-bold">{metrics.deliveryTime.value.toFixed(1)}%</span>
+                    <span className={`ml-1 text-xs ${metrics.deliveryTime.trend === "up" ? "text-emerald-500" : "text-rose-500"}`}>
                       {metrics.deliveryTime.trend === "up" ? "↑" : "↓"}{Math.abs(metrics.deliveryTime.change).toFixed(1)}%
                     </span>
                   </div>
@@ -218,11 +218,11 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
               <div className="absolute top-1/4 right-0 translate-x-1/2 -translate-y-1/2 flex items-center">
                 <div className={`h-[2px] w-16 bg-gradient-to-r ${getStatusColorClass(metricStatuses.resourceUtilization)}`}></div>
                 <div className="ml-1">
-                  <div className="text-xs font-medium">Resource</div>
+                  <div className="text-sm font-medium">Resource</div>
                   <div className="flex items-center">
                     <span className={`inline-block h-1.5 w-1.5 rounded-full ${getStatusDotClass(metricStatuses.resourceUtilization)} mr-1`}></span>
-                    <span className="text-xs font-bold">{metrics.resourceUtilization.value.toFixed(1)}%</span>
-                    <span className={`ml-1 text-[9px] ${metrics.resourceUtilization.trend === "up" ? "text-emerald-500" : "text-rose-500"}`}>
+                    <span className="text-sm font-bold">{metrics.resourceUtilization.value.toFixed(1)}%</span>
+                    <span className={`ml-1 text-xs ${metrics.resourceUtilization.trend === "up" ? "text-emerald-500" : "text-rose-500"}`}>
                       {metrics.resourceUtilization.trend === "up" ? "↑" : "↓"}{Math.abs(metrics.resourceUtilization.change).toFixed(1)}%
                     </span>
                   </div>
@@ -232,11 +232,11 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
               <div className="absolute bottom-1/4 right-0 translate-y-1/2 flex items-center">
                 <div className={`h-[2px] w-16 bg-gradient-to-r ${getStatusColorClass(metricStatuses.fuelEfficiency)}`}></div>
                 <div className="ml-1">
-                  <div className="text-xs font-medium">Fuel</div>
+                  <div className="text-sm font-medium">Fuel</div>
                   <div className="flex items-center">
                     <span className={`inline-block h-1.5 w-1.5 rounded-full ${getStatusDotClass(metricStatuses.fuelEfficiency)} mr-1`}></span>
-                    <span className="text-xs font-bold">{metrics.fuelEfficiency.value.toFixed(1)}%</span>
-                    <span className={`ml-1 text-[9px] ${metrics.fuelEfficiency.trend === "up" ? "text-emerald-500" : "text-rose-500"}`}>
+                    <span className="text-sm font-bold">{metrics.fuelEfficiency.value.toFixed(1)}%</span>
+                    <span className={`ml-1 text-xs ${metrics.fuelEfficiency.trend === "up" ? "text-emerald-500" : "text-rose-500"}`}>
                       {metrics.fuelEfficiency.trend === "up" ? "↑" : "↓"}{Math.abs(metrics.fuelEfficiency.change).toFixed(1)}%
                     </span>
                   </div>
@@ -390,28 +390,13 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
           
           {/* Legend and metrics */}
           <div className="w-1/4 h-full flex flex-col justify-center">
-            <div className="mb-2 pb-2 border-b border-border/20 dark:border-border/10">
-              <div className="text-sm font-semibold">Efficiency Score</div>
-              <div className="mt-1 flex items-center">
-                <div className={`text-xl font-bold ${
-                  overallStatus === "optimal" ? "text-emerald-500" :
-                  overallStatus === "good" ? "text-blue-500" :
-                  overallStatus === "warning" ? "text-amber-500" : "text-rose-500"
-                }`}>
-                  {overallScore.toFixed(1)}%
-                </div>
-                <div className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
-                  overallStatus === "optimal" ? "bg-emerald-500/10 text-emerald-500" :
-                  overallStatus === "good" ? "bg-blue-500/10 text-blue-500" :
-                  overallStatus === "warning" ? "bg-amber-500/10 text-amber-500" : 
-                  "bg-rose-500/10 text-rose-500"
-                }`}>
-                  {overallStatus === "optimal" ? "Excellent" :
-                   overallStatus === "good" ? "Good" :
-                   overallStatus === "warning" ? "Needs Attention" : "Critical"}
-                </div>
-              </div>
+            <div className={`p-3 mb-3 rounded-md ${getStatusBgClass(overallStatus)}`}>
+              <div className="text-sm opacity-80 mb-1">Overall Score</div>
+              <div className="text-2xl font-bold">{overallScore.toFixed(1)}%</div>
+              <div className="text-xs mt-1 opacity-70">Target: 90.0%</div>
             </div>
+            
+            <div className="text-sm opacity-80 mb-2">Metrics</div>
             
             <div className="space-y-3">
               <div className="text-xs font-medium text-muted-foreground">Status</div>
@@ -514,7 +499,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
             <div className="flex items-center gap-4">
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-blue-500/90 dark:bg-blue-500/80 rounded-sm mr-1.5"></div>
-                <div className="text-xs">
+                <div className="text-sm">
                   <span className="text-muted-foreground mr-1">Trucks</span>
                   <span className={`font-bold ${getUtilizationLabelColor(getUtilizationStatus(averageTruckUtilization))}`}>
                     {averageTruckUtilization}%
@@ -523,7 +508,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-emerald-500/90 dark:bg-emerald-500/80 rounded-sm mr-1.5"></div>
-                <div className="text-xs">
+                <div className="text-sm">
                   <span className="text-muted-foreground mr-1">Vans</span>
                   <span className={`font-bold ${getUtilizationLabelColor(getUtilizationStatus(averageVanUtilization))}`}>
                     {averageVanUtilization}%
@@ -533,10 +518,10 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
             </div>
             
             <div className="flex items-center gap-2">
-              <div className="text-[10px] px-2 py-0.5 bg-muted/20 dark:bg-muted/10 rounded-full text-muted-foreground">
+              <div className="text-xs px-2 py-0.5 bg-muted/20 dark:bg-muted/10 rounded-full text-muted-foreground">
                 Target: 85%
               </div>
-              <div className={`text-[10px] px-2 py-0.5 rounded-full ${
+              <div className={`text-xs px-2 py-0.5 rounded-full ${
                 averageTruckUtilization >= 85 || averageVanUtilization >= 85 ? 
                 "bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20" : 
                 "bg-amber-500/10 text-amber-500 dark:bg-amber-500/20"
@@ -549,7 +534,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         
         <div className="flex-1 relative overflow-hidden">
           {/* Y-axis labels */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col justify-between py-4 text-[9px] text-muted-foreground font-mono z-10">
+          <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col justify-between py-4 text-xs text-muted-foreground font-mono z-10">
             <div>100%</div>
             <div>80%</div>
             <div>60%</div>
@@ -572,7 +557,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
             className="absolute left-8 right-0 h-0.5 bg-emerald-500/30 dark:bg-emerald-500/20 z-10"
             style={{ top: `${(1 - 85/100) * 100}%` }}
           >
-            <div className="absolute right-2 -top-6 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-white/80 dark:bg-black/30 py-0.5 px-1.5 rounded shadow-sm border border-emerald-100 dark:border-emerald-900/30">
+            <div className="absolute right-2 -top-6 text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-white/80 dark:bg-black/30 py-0.5 px-1.5 rounded shadow-sm border border-emerald-100 dark:border-emerald-900/30">
               Target: 85%
             </div>
           </div>
@@ -667,7 +652,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         </div>
         
         {/* Insights footer */}
-        <div className="px-4 py-2 border-t border-border/20 dark:border-border/10 text-[10px] text-muted-foreground">
+        <div className="px-4 py-2 border-t border-border/20 dark:border-border/10 text-xs text-muted-foreground">
           <div className="flex flex-wrap gap-x-4 gap-y-1 justify-between">
             <div className="flex items-center">
               <span className="font-medium mr-1">Peak Utilization:</span>
@@ -729,16 +714,16 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         {/* Header with quick stats */}
         <div className="px-4 py-2 border-b border-border/20 dark:border-border/10">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-xs font-medium flex items-center gap-1">
+            <div className="text-sm font-medium flex items-center gap-1">
               Cost Per Mile (USD)
               {isElectricEfficient && (
-                <div className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+                <div className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
                   Electric Cost-Efficient
                 </div>
               )}
             </div>
             
-            <div className="flex items-center gap-3 text-[10px]">
+            <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center">
                 <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm mr-1"></div>
                 <span>Heavy Truck</span>
@@ -777,7 +762,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         
         <div className="flex-1 relative">
           {/* Y-axis labels */}
-          <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col justify-between py-4 text-[9px] text-muted-foreground font-mono z-10">
+          <div className="absolute left-0 top-0 bottom-0 w-10 flex flex-col justify-between py-4 text-xs text-muted-foreground font-mono z-10">
             <div className="mr-1 text-right">${maxValue.toFixed(2)}</div>
             <div className="mr-1 text-right">${(maxValue*0.8).toFixed(2)}</div>
             <div className="mr-1 text-right">${(maxValue*0.6).toFixed(2)}</div>
@@ -800,7 +785,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
             className="absolute left-10 right-0 h-0.5 bg-emerald-500/20 dark:bg-emerald-500/10 z-10"
             style={{ top: `${(1 - costEffectiveType.avg/maxValue) * 100}%` }}
           >
-            <div className="absolute left-2 -top-6 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-white/80 dark:bg-black/30 py-0.5 px-1.5 rounded shadow-sm border border-emerald-100 dark:border-emerald-900/30">
+            <div className="absolute left-2 -top-6 text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-white/80 dark:bg-black/30 py-0.5 px-1.5 rounded shadow-sm border border-emerald-100 dark:border-emerald-900/30">
               Most Efficient: {costEffectiveType.type} (${costEffectiveType.avg})
             </div>
           </div>
@@ -943,7 +928,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         
         {/* Insights footer */}
         <div className="px-4 py-2 border-t border-border/20 dark:border-border/10 flex justify-between items-center">
-          <div className="text-[10px] text-muted-foreground flex items-center">
+          <div className="text-xs text-muted-foreground flex items-center">
             <div className="font-medium mr-2">
               Total Fleet Cost: <span className="text-foreground font-bold">${totalFleetCost}</span>
             </div>
@@ -953,7 +938,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
           </div>
           
           <div className="flex gap-2">
-            <div className={`text-[10px] px-2 py-0.5 rounded-full ${
+            <div className={`text-xs px-2 py-0.5 rounded-full ${
               costEffectiveType.type === "Electric" ? 
               "bg-emerald-500/10 text-emerald-500" : 
               "bg-blue-500/10 text-blue-500"
@@ -961,7 +946,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
               Most Cost-Effective: {costEffectiveType.type}
             </div>
             {electricTrend < 0 && (
-              <div className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+              <div className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
                 Electric Cost ↓ {Math.abs(electricTrend)}%
               </div>
             )}
@@ -1977,35 +1962,36 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         {/* Remove background color but keep decorative elements with reduced opacity */}
         <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/3 rounded-full -mr-16 -mt-16 blur-xl"></div>
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-500/3 rounded-full -ml-16 -mb-16 blur-xl"></div>
-        <h3 className="text-lg font-semibold mb-1">Performance Metrics</h3>
+        <h3 className="text-xl font-semibold mb-1">Performance Metrics</h3>
         <p className="text-sm text-muted-foreground mb-6">Key operational performance indicators</p>
         {renderPerformanceIndicators()}
       </Card>
-
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Performance Chart */}
         <Card className="p-6 shadow-sm overflow-hidden relative">
           {/* Remove the background color but keep decorative elements with reduced opacity */}
           <div className="absolute top-0 right-0 w-40 h-40 bg-primary/3 rounded-full -mr-16 -mt-16 blur-xl"></div>
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-primary/3 rounded-full -ml-16 -mb-16 blur-xl"></div>
-          <h3 className="text-lg font-semibold mb-1">Operational Performance</h3>
+          <h3 className="text-xl font-semibold mb-1">Operational Performance</h3>
           <p className="text-sm text-muted-foreground mb-6">Key performance indicators for the {period.toLowerCase()} period</p>
           {renderPerformanceChart()}
         </Card>
 
         {/* Fuel Efficiency Chart */}
         <Card className="p-6 shadow-sm overflow-hidden relative">
+          {/* Remove background color but keep decorative elements with reduced opacity */}
           {renderFuelEfficiency()}
         </Card>
       </div>
-
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Utilization Chart */}
         <Card className="p-6 shadow-sm overflow-hidden relative">
           {/* Remove background color but keep decorative elements with reduced opacity */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/3 rounded-full -mr-10 -mt-10 blur-xl"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/3 rounded-full -ml-10 -mb-10 blur-xl"></div>
-          <h3 className="text-lg font-semibold mb-1">Resource Utilization</h3>
+          <h3 className="text-xl font-semibold mb-1">Resource Utilization</h3>
           <p className="text-sm text-muted-foreground mb-6">Fleet and equipment usage efficiency</p>
           {renderUtilizationChart()}
         </Card>
@@ -2015,13 +2001,12 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
           {/* Remove background color but keep decorative elements with reduced opacity */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/3 rounded-full -mr-10 -mt-10 blur-xl"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/3 rounded-full -ml-10 -mb-10 blur-xl"></div>
-          <h3 className="text-lg font-semibold mb-1">Cost Analysis</h3>
+          <h3 className="text-xl font-semibold mb-1">Cost Analysis</h3>
           <p className="text-sm text-muted-foreground mb-6">Operational costs and expense tracking</p>
           {renderCostChart()}
         </Card>
       </div>
       
-      {/* Maintenance Indicators */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Maintenance Chart */}
         <Card className="p-0 h-auto">
@@ -2033,8 +2018,6 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
           {renderMaintenanceInsights()}
         </Card>
       </div>
-      
-      
     </div>
   );
 } 

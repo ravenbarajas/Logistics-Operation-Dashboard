@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +33,14 @@ import {
   Users,
   Cloud,
   Truck as TruckIcon,
-  Truck as TruckIcon2
+  Truck as TruckIcon2,
+  RefreshCcw,
+  MoreHorizontal,
+  Star,
+  ChevronRight
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface DeliveryPerformanceMatrixProps {
   isDataLoaded: boolean;
@@ -55,7 +60,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
   const carrierChartRef = useRef<HTMLCanvasElement | null>(null);
   const carrierChartInstance = useRef<any>(null);
   // New chart references
-  const deliveryVolumeChartRef = useRef<HTMLCanvasElement | null>(null);
+  const deliveryVolumeChartRef = useRef<HTMLDivElement>(null);
   const deliveryVolumeChartInstance = useRef<any>(null);
   const regionalComparisonChartRef = useRef<HTMLCanvasElement | null>(null);
   const regionalComparisonChartInstance = useRef<any>(null);
@@ -419,9 +424,29 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
       datasets: [{
         label: 'Delivery Volume',
         data: [42, 78, 126, 145, 132, 108, 64, 28],
-        backgroundColor: 'hsla(var(--primary), 0.7)',
-        borderColor: 'hsl(var(--primary))',
-        borderWidth: 1
+        backgroundColor: [
+          'rgba(99, 102, 241, 0.8)',   // Indigo
+          'rgba(124, 58, 237, 0.8)',   // Purple
+          'rgba(139, 92, 246, 0.8)',   // Violet
+          'rgba(79, 70, 229, 0.8)',    // Indigo darker
+          'rgba(16, 185, 129, 0.8)',   // Emerald
+          'rgba(59, 130, 246, 0.8)',   // Blue
+          'rgba(14, 165, 233, 0.8)',   // Sky
+          'rgba(6, 182, 212, 0.8)'     // Cyan
+        ],
+        borderColor: [
+          'rgb(99, 102, 241)',
+          'rgb(124, 58, 237)',
+          'rgb(139, 92, 246)',
+          'rgb(79, 70, 229)',
+          'rgb(16, 185, 129)',
+          'rgb(59, 130, 246)',
+          'rgb(14, 165, 233)',
+          'rgb(6, 182, 212)'
+        ],
+        borderWidth: 1,
+        hoverBackgroundColor: 'rgba(99, 102, 241, 0.9)',
+        hoverBorderColor: 'rgb(99, 102, 241)'
       }]
     };
     
@@ -435,10 +460,10 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
           y: {
             beginAtZero: true,
             grid: {
-              color: 'hsla(var(--muted), 0.3)'
+              color: 'rgba(160, 160, 160, 0.2)' // Light gray that works in both modes
             },
             ticks: {
-              color: 'hsl(var(--foreground))'
+              color: 'rgba(200, 200, 200, 0.8)' // Light text color for dark mode
             }
           },
           x: {
@@ -446,15 +471,26 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
               display: false
             },
             ticks: {
-              color: 'hsl(var(--foreground))'
+              color: 'rgba(200, 200, 200, 0.8)' // Light text color for dark mode
             }
           }
         },
         plugins: {
           legend: {
-            display: false
+            display: true,
+            labels: {
+              color: 'rgba(200, 200, 200, 0.8)', // Light text for dark mode
+              font: {
+                size: 12
+              }
+            }
           },
           tooltip: {
+            backgroundColor: 'rgba(20, 20, 20, 0.9)', // Dark tooltip background
+            titleColor: 'rgba(240, 240, 240, 1)',     // Light title text
+            bodyColor: 'rgba(240, 240, 240, 1)',      // Light body text
+            borderColor: 'rgba(99, 102, 241, 0.8)',   // Indigo border
+            borderWidth: 1,
             callbacks: {
               label: function(context: any) {
                 return `Volume: ${context.raw} deliveries`;
@@ -529,85 +565,60 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
   
   // Create delivery volume chart
   const createDeliveryVolumeChart = () => {
-    const ctx = deliveryVolumeChartRef.current?.getContext('2d');
-    if (!ctx) return;
-    
-    const labels = dailyDeliveryVolume.map(d => d.hour);
-    const completedData = dailyDeliveryVolume.map(d => d.completed);
-    const scheduledData = dailyDeliveryVolume.map(d => d.scheduled);
-    
-    deliveryVolumeChartInstance.current = new window.Chart(ctx, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Completed',
-            data: completedData,
-            borderColor: 'hsl(var(--primary))',
-            backgroundColor: 'hsla(var(--primary), 0.1)',
-            borderWidth: 2,
-            tension: 0.3,
-            fill: true
-          },
-          {
-            label: 'Scheduled',
-            data: scheduledData,
-            borderColor: 'rgb(14, 165, 233)',
-            borderDash: [3, 3],
-            borderWidth: 2,
-            tension: 0.3,
-            fill: false
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            labels: {
-              usePointStyle: true,
-              boxWidth: 6,
-              color: 'hsl(var(--foreground))',
-              font: {
-                size: 11
-              }
-            }
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false
+    if (deliveryVolumeChartRef.current && window.ApexCharts) {
+      // If there's an existing chart instance, destroy it first
+      if (deliveryVolumeChartInstance.current) {
+        deliveryVolumeChartInstance.current.destroy();
+      }
+      
+      // Create new ApexCharts instance with the div element
+      const options = {
+        series: [{
+          name: 'Completed',
+          data: [423, 465, 512, 387, 425, 489, 523]
+        }, {
+          name: 'In Transit',
+          data: [95, 84, 72, 89, 103, 95, 78]
+        }, {
+          name: 'Delayed',
+          data: [23, 18, 14, 33, 24, 12, 17]
+        }],
+        chart: {
+          type: 'bar',
+          height: 300,
+          stacked: true,
+          toolbar: {
+            show: false
           }
         },
-        scales: {
-          x: {
-            ticks: {
-              color: 'hsl(var(--foreground))',
-              maxRotation: 0,
-              autoSkip: true,
-              autoSkipPadding: 20,
-              font: {
-                size: 10
-              }
-            },
-            grid: {
-              display: false
-            }
+        colors: ['#6366f1', '#f59e0b', '#ef4444'],
+        plotOptions: {
+          bar: {
+            horizontal: false,
+            borderRadius: 2,
+            columnWidth: '55%',
           },
-          y: {
-            ticks: {
-              color: 'hsl(var(--foreground))'
-            },
-            grid: {
-              color: 'hsla(var(--muted), 0.2)'
-            }
-          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        xaxis: {
+          categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        },
+        legend: {
+          position: 'top',
+          horizontalAlign: 'left',
+          offsetY: 0
+        },
+        fill: {
+          opacity: 1
         }
-      }
-    });
+      };
+
+      // Create and store the chart instance
+      deliveryVolumeChartInstance.current = new window.ApexCharts(deliveryVolumeChartRef.current, options);
+      deliveryVolumeChartInstance.current.render();
+    }
   };
   
   // Create delivery trends chart
@@ -1018,6 +1029,12 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
     }
   }, [view]);
   
+  // Function to calculate total volume with proper typing
+  const calculateTotalVolume = (): number => {
+    // Since we're using mock data, create a fixed calculation
+    return 4527; // Total of all delivery volumes across regions
+  };
+  
   return (
     <div className="space-y-4" data-component="delivery-performance-matrix">
       {/* Command Header Bar */}
@@ -1049,11 +1066,9 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
       {/* Delivery KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* On-Time Delivery Rate */}
-        <Card className="shadow-sm border border-border">
-          <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-sm font-medium">On-Time Delivery</CardTitle>
-            </div>
+        <Card>
+          <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium p-0">On-Time Delivery</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-3">
@@ -1098,11 +1113,9 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         </Card>
         
         {/* Average Delivery Time */}
-        <Card className="shadow-sm border border-border">
-          <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-sm font-medium">Delivery Time</CardTitle>
-            </div>
+        <Card>
+          <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium p-0">Delivery Time</CardTitle>
             <Timer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-3">
@@ -1145,11 +1158,9 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         </Card>
         
         {/* Delivery Attempts */}
-        <Card className="shadow-sm border border-border">
-          <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-            </div>
+        <Card>
+          <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium p-0">Success Rate</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-3">
@@ -1196,11 +1207,9 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         </Card>
         
         {/* Customer Satisfaction */}
-        <Card className="shadow-sm border border-border">
-          <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-sm font-medium">Customer Satisfaction</CardTitle>
-            </div>
+        <Card>
+          <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium p-0">Customer Satisfaction</CardTitle>
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-3">
@@ -1254,106 +1263,156 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
       {/* Main Dashboard Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Left Column - Delivery Volume Chart */}
-        <Card className="xl:col-span-2 shadow-sm border border-border">
-          <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-sm font-medium">Daily Delivery Volume</CardTitle>
+        <Card className="md:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between p-4">
+            <div className="flex flex-col space-y-1">
+              <CardTitle>Daily Delivery Volume</CardTitle>
+              <CardDescription>Performance across regions and carriers</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-primary"></div>
-              <span className="text-xs text-muted-foreground">Completed</span>
-              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-              <span className="text-xs text-muted-foreground">Scheduled</span>
+              <Select defaultValue="daily">
+                <SelectTrigger className="w-32 text-xs">
+                  <SelectValue placeholder="View" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <RefreshCcw className="h-4 w-4" />
+              </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-3 pt-2">
-            <div className="h-[280px]">
-              <canvas ref={deliveryVolumeChartRef} className="w-full h-full" />
-            </div>
-            
-            {/* Key insights */}
-            <div className="grid grid-cols-3 gap-2 mt-3">
-              <div className="p-2 bg-muted/10 rounded-md">
-                <div className="flex justify-between items-center">
-                  <div className="text-xs text-muted-foreground">Active Shipments</div>
-                  <Badge className="text-[10px]" variant="secondary">Now</Badge>
-                </div>
-                <div className="text-lg font-medium mt-1">{metrics.activeShipments}</div>
+          <CardContent>
+            <div ref={deliveryVolumeChartRef} className="h-[300px] w-full" />
+            <div className="flex items-center justify-between mt-4 text-sm">
+              <div className="space-y-1">
+                <div className="font-medium">{calculateTotalVolume().toLocaleString()} Deliveries</div>
+                <div className="text-xs text-muted-foreground">Total volume across all regions</div>
               </div>
-              <div className="p-2 bg-muted/10 rounded-md">
-                <div className="flex justify-between items-center">
-                  <div className="text-xs text-muted-foreground">Completed Today</div>
-                  <Badge className="text-[10px]" variant="secondary">Today</Badge>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-primary rounded-full"></div>
+                  <span className="text-xs">Completed</span>
                 </div>
-                <div className="text-lg font-medium mt-1">{metrics.completedToday}</div>
-              </div>
-              <div className="p-2 bg-muted/10 rounded-md">
-                <div className="flex justify-between items-center">
-                  <div className="text-xs text-muted-foreground">Peak Hour</div>
-                  <Badge className="text-[10px]" variant="secondary">Today</Badge>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+                  <span className="text-xs">In Transit</span>
                 </div>
-                <div className="text-lg font-medium mt-1">14:00-15:00</div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
+                  <span className="text-xs">Delayed</span>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
         
         {/* Right Column - Live Alerts */}
-        <Card className="xl:col-span-1 shadow-sm border border-border">
-          <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-sm font-medium">Live Delivery Alerts</CardTitle>
+        <Card className="md:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between p-4">
+            <div className="flex flex-col space-y-1">
+              <CardTitle>Delivery Performance Analysis</CardTitle>
+              <CardDescription>Key metrics and insights</CardDescription>
             </div>
-            <Badge variant={liveDeliveryAlerts.some(a => a.severity === "critical") ? "destructive" : "outline"} className="text-[10px]">
-              {liveDeliveryAlerts.length} Active
-            </Badge>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <RefreshCcw className="h-4 w-4" />
+            </Button>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="max-h-[290px] overflow-y-auto">
-              <div className="p-2 bg-card/60">
-                {liveDeliveryAlerts.map((alert, i) => (
-                  <div key={i} className="mb-2 last:mb-0 p-2 bg-muted/10 rounded-md">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium text-xs flex items-center">
-                        {getAlertIcon(alert.severity)}
-                        <span className="ml-1">{alert.id}</span>
-                      </div>
-                      <Badge variant={
-                        alert.severity === "critical" ? "destructive" : 
-                        alert.severity === "warning" ? "default" : 
-                        "secondary"
-                      } className="text-[10px] py-0 px-1.5 h-4">
-                        {alert.severity}
-                      </Badge>
-                    </div>
-                    <div className="text-sm">{alert.alert}</div>
-                    <div className="text-xs text-muted-foreground flex items-center justify-between mt-1">
-                      <span>{alert.location}</span>
-                      <span>{alert.time}</span>
-                    </div>
+          <CardContent>
+            <div className="space-y-5">
+              {/* On-Time Delivery Rate */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-medium">On-Time Delivery Rate</span>
+                  <div className="flex items-center text-xs font-medium text-emerald-500">
+                    <ArrowUpRight className="h-3 w-3 mr-0.5" />
+                    1.2%
                   </div>
-                ))}
-                
-                <div className="p-2 mt-3 border-t border-border/30 pt-3">
-                  <h4 className="text-xs font-medium mb-2">Status Summary</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="p-2 bg-muted/10 rounded-md">
-                      <div className="text-xs text-muted-foreground">In Transit</div>
-                      <div className="text-sm font-medium">184</div>
-                    </div>
-                    <div className="p-2 bg-muted/10 rounded-md">
-                      <div className="text-xs text-muted-foreground">Out for Delivery</div>
-                      <div className="text-sm font-medium">64</div>
-                    </div>
-                    <div className="p-2 bg-muted/10 rounded-md">
-                      <div className="text-xs text-muted-foreground">Pending Pickup</div>
-                      <div className="text-sm font-medium">37</div>
-                    </div>
-                    <div className="p-2 bg-muted/10 rounded-md">
-                      <div className="text-xs text-muted-foreground">Delayed</div>
-                      <div className="text-sm font-medium text-amber-500">12</div>
-                    </div>
+                </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-2xl font-bold">94.2%</span>
+                  <span className="text-xs text-muted-foreground">Target: 95%</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-emerald-500 rounded-full"
+                    style={{ width: `${94.2}%` }}
+                  />
+                </div>
+              </div>
+              
+              {/* Average Delivery Time */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-medium">Average Delivery Time</span>
+                  <div className="flex items-center text-xs font-medium text-emerald-500">
+                    <ArrowDownRight className="h-3 w-3 mr-0.5" />
+                    5m
                   </div>
+                </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-2xl font-bold">1h 24m</span>
+                  <span className="text-xs text-muted-foreground">Target: 1h 30m</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-indigo-500 rounded-full"
+                    style={{ width: `${(84/90) * 100}%` }}
+                  />
+                </div>
+              </div>
+              
+              {/* First Attempt Success */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-medium">First Attempt Success</span>
+                  <div className="flex items-center text-xs font-medium text-emerald-500">
+                    <ArrowUpRight className="h-3 w-3 mr-0.5" />
+                    0.8%
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-2xl font-bold">92.5%</span>
+                  <span className="text-xs text-muted-foreground">Target: 90%</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500 rounded-full"
+                    style={{ width: `${(92.5/90) * 100}%` }}
+                  />
+                </div>
+              </div>
+              
+              {/* Customer Satisfaction */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-medium">Customer Satisfaction</span>
+                  <div className="flex items-center text-xs font-medium text-emerald-500">
+                    <ArrowUpRight className="h-3 w-3 mr-0.5" />
+                    0.1
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-2xl font-bold">4.6/5</span>
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star 
+                        key={star} 
+                        className={`h-3 w-3 ${star <= Math.floor(4.6) ? 'fill-yellow-500 text-yellow-500' : 
+                                             star === Math.ceil(4.6) && star > Math.floor(4.6) ? 'fill-yellow-500/50 text-yellow-500/50' : 
+                                             'text-muted'}`} 
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-yellow-500 rounded-full"
+                    style={{ width: `${(4.6/5) * 100}%` }}
+                  />
                 </div>
               </div>
             </div>
@@ -1364,216 +1423,251 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
       {/* Delivery Performance Dashboard */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Performance Metrics */}
-        <Card className="lg:col-span-1 shadow-sm border border-border">
-          <CardHeader className="bg-muted/20 p-3 pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Performance Metrics</CardTitle>
-              <Badge variant="outline" className="text-[10px]">Last 30 Days</Badge>
+        <Card className="lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between p-4">
+            <div className="flex flex-col space-y-1">
+              <CardTitle>Performance Metrics</CardTitle>
+              <CardDescription>Last 30 days summary</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-0">Last 30 Days</Badge>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <RefreshCcw className="h-4 w-4" />
+              </Button>
             </div>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* On-Time Delivery */}
               <div>
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span>On-Time Delivery</span>
-                  <span className="font-medium">{metrics.onTimeDelivery}%</span>
-                </div>
-                <Progress value={metrics.onTimeDelivery} max={100} className="h-2" />
-                <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                  <span>Target: 95%</span>
-                  <div className="flex items-center text-emerald-500">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-medium">On-Time Delivery</span>
+                  <div className="flex items-center text-xs font-medium text-emerald-500">
                     <ArrowUpRight className="h-3 w-3 mr-0.5" />
-                    <span>0.8%</span>
+                    0.8%
                   </div>
+                </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-2xl font-bold">{metrics.onTimeDelivery}%</span>
+                  <span className="text-xs text-muted-foreground">Target: 95%</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-emerald-500 rounded-full" 
+                    style={{ width: `${metrics.onTimeDelivery}%` }}
+                  />
                 </div>
               </div>
               
               {/* First Attempt Success */}
               <div>
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span>First Attempt Success</span>
-                  <span className="font-medium">{metrics.firstAttemptSuccess}%</span>
-                </div>
-                <Progress value={metrics.firstAttemptSuccess} max={100} className="h-2" />
-                <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                  <span>Target: 98%</span>
-                  <div className="flex items-center text-rose-500">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-medium">First Attempt Success</span>
+                  <div className="flex items-center text-xs font-medium text-rose-500">
                     <ArrowDownRight className="h-3 w-3 mr-0.5" />
-                    <span>0.2%</span>
+                    0.2%
                   </div>
+                </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-2xl font-bold">{metrics.firstAttemptSuccess}%</span>
+                  <span className="text-xs text-muted-foreground">Target: 98%</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500 rounded-full" 
+                    style={{ width: `${metrics.firstAttemptSuccess}%` }}
+                  />
                 </div>
               </div>
               
               {/* Delivery Time */}
               <div>
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span>Avg. Delivery Time</span>
-                  <span className="font-medium">{metrics.avgDeliveryTime}</span>
-                </div>
-                <Progress value={75} max={100} className="h-2" />
-                <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                  <span>Target: 2h 30m</span>
-                  <div className="flex items-center text-rose-500">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-medium">Avg. Delivery Time</span>
+                  <div className="flex items-center text-xs font-medium text-rose-500">
                     <ArrowUpRight className="h-3 w-3 mr-0.5" />
-                    <span>8m</span>
+                    8m
                   </div>
+                </div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-2xl font-bold">{metrics.avgDeliveryTime}</span>
+                  <span className="text-xs text-muted-foreground">Target: 2h 30m</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-indigo-500 rounded-full" 
+                    style={{ width: "75%" }}
+                  />
                 </div>
               </div>
             </div>
             
-            <div className="mt-4 pt-4 border-t border-border">
-              <h4 className="text-sm font-medium mb-3">Delivery Status Breakdown</h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+            {/* Delivery Status Breakdown */}
+            <div className="mt-6 pt-4 border-t">
+              <h3 className="text-sm font-medium mb-3">Delivery Status Breakdown</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-muted/20 rounded-lg p-3 flex flex-col">
+                  <div className="flex items-center mb-1">
                     <div className="w-3 h-3 rounded-full bg-emerald-500 mr-2"></div>
                     <span className="text-sm">On Time</span>
                   </div>
-                  <span className="text-sm font-medium">{metrics.onTimeDelivery}%</span>
+                  <span className="text-xl font-bold">{metrics.onTimeDelivery}%</span>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                <div className="bg-muted/20 rounded-lg p-3 flex flex-col">
+                  <div className="flex items-center mb-1">
                     <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
                     <span className="text-sm">Early</span>
                   </div>
-                  <span className="text-sm font-medium">{metrics.earlyDeliveries}%</span>
+                  <span className="text-xl font-bold">{metrics.earlyDeliveries}%</span>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                <div className="bg-muted/20 rounded-lg p-3 flex flex-col">
+                  <div className="flex items-center mb-1">
                     <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
                     <span className="text-sm">Late</span>
                   </div>
-                  <span className="text-sm font-medium">{metrics.lateDeliveries}%</span>
+                  <span className="text-xl font-bold">{metrics.lateDeliveries}%</span>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                <div className="bg-muted/20 rounded-lg p-3 flex flex-col">
+                  <div className="flex items-center mb-1">
                     <div className="w-3 h-3 rounded-full bg-rose-500 mr-2"></div>
                     <span className="text-sm">Failed</span>
                   </div>
-                  <span className="text-sm font-medium">{metrics.failedDeliveries}%</span>
+                  <span className="text-xl font-bold">{metrics.failedDeliveries}%</span>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        {/* Delivery Time Distribution */}
-        <Card className="lg:col-span-2 shadow-sm border border-border">
-          <CardHeader className="bg-muted/20 p-3 pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Delivery Performance Analysis</CardTitle>
-              <div className="flex items-center space-x-2">
-                <Select defaultValue="time">
-                  <SelectTrigger className="h-7 w-[140px] text-xs">
-                    <SelectValue placeholder="View" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="time">Time Distribution</SelectItem>
-                    <SelectItem value="status">Status Distribution</SelectItem>
-                    <SelectItem value="region">Regional Performance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* Delivery Performance Analysis */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between p-4">
+            <div className="flex flex-col space-y-1">
+              <CardTitle>Delivery Performance Analysis</CardTitle>
+              <CardDescription>Time distribution and regional metrics</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Select defaultValue="time">
+                <SelectTrigger className="w-[130px] text-xs">
+                  <SelectValue placeholder="View" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="time">Time Distribution</SelectItem>
+                  <SelectItem value="status">Status Distribution</SelectItem>
+                  <SelectItem value="region">Regional Performance</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <RefreshCcw className="h-4 w-4" />
+              </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-1 gap-6">
+          <CardContent>
+            <div className="space-y-6">
               {/* Main Chart */}
-              <div className="h-[280px] relative">
+              <div className="h-[280px]">
                 <canvas ref={timeframeChartRef} className="w-full h-full" />
               </div>
               
               {/* Regional Performance */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Regional Performance</h4>
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium">Regional Performance</h3>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
+                    View All
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {regionalPerformance.map((region) => (
-                    <div key={region.region} className="p-2 bg-muted/10 rounded-md">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{region.region}</span>
-                        <Badge variant={region.onTime >= 95 ? "success" : region.onTime >= 90 ? "outline" : "destructive"} className="text-[10px]">
-                          {region.onTime}%
-                        </Badge>
-                      </div>
-                      <Progress 
-                        value={region.onTime} 
-                        max={100} 
-                        className={`h-1 mt-2 ${
-                          region.onTime >= 95 
-                            ? "bg-success" 
-                            : region.onTime >= 90 
-                              ? "bg-primary" 
-                              : "bg-destructive"
-                        }`}
-                      />
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {region.volume} packages
-                      </div>
-                    </div>
+                    <Card key={region.region} className="border-0 shadow-sm">
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">{region.region}</span>
+                          <Badge 
+                            variant="outline" 
+                            className={`${
+                              region.onTime >= 95 ? 'bg-emerald-500/10 text-emerald-500' : 
+                              region.onTime >= 90 ? 'bg-blue-500/10 text-blue-500' : 
+                              'bg-amber-500/10 text-amber-500'
+                            } border-0 text-xs`}
+                          >
+                            {region.onTime}%
+                          </Badge>
+                        </div>
+                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-2">
+                          <div 
+                            className={`h-full ${
+                              region.onTime >= 95 ? 'bg-emerald-500' : 
+                              region.onTime >= 90 ? 'bg-blue-500' : 
+                              'bg-amber-500'
+                            } rounded-full`}
+                            style={{ width: `${region.onTime}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{region.volume.toLocaleString()} packages</span>
+                          <div className="flex items-center">
+                            {region.onTime >= regionalPerformance[2].onTime ? (
+                              <span className="text-emerald-500 flex items-center">
+                                <ArrowUpRight className="h-3 w-3 mr-0.5" />
+                                2.1%
+                              </span>
+                            ) : (
+                              <span className="text-rose-500 flex items-center">
+                                <ArrowDownRight className="h-3 w-3 mr-0.5" />
+                                1.8%
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </div>
             </div>
             
             {/* Key Insights */}
-            <div className="mt-4 pt-4 border-t border-border grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="p-3 bg-muted/10 rounded-md">
-                <div className="flex items-center text-sm font-medium">
-                  <Clock className="h-4 w-4 mr-1.5 text-primary" />
-                  Peak Delivery Time
+            <div className="mt-6 pt-4 border-t">
+              <h3 className="text-sm font-medium mb-3">Key Insights</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-muted/20 rounded-lg p-3">
+                  <div className="flex items-center text-sm font-medium">
+                    <Clock className="h-4 w-4 mr-1.5 text-primary" />
+                    Peak Delivery Time
+                  </div>
+                  <div className="mt-1 text-xl font-bold">14:00-15:00</div>
+                  <div className="text-xs text-muted-foreground">82 deliveries (highest)</div>
                 </div>
-                <div className="mt-1 text-xl font-bold">14:00-15:00</div>
-                <div className="text-xs text-muted-foreground">Highest volume: 82 deliveries</div>
-              </div>
-              
-              <div className="p-3 bg-muted/10 rounded-md">
-                <div className="flex items-center text-sm font-medium">
-                  <AlertTriangle className="h-4 w-4 mr-1.5 text-amber-500" />
-                  Delayed Hotspot
+                
+                <div className="bg-muted/20 rounded-lg p-3">
+                  <div className="flex items-center text-sm font-medium">
+                    <AlertTriangle className="h-4 w-4 mr-1.5 text-amber-500" />
+                    Delayed Hotspot
+                  </div>
+                  <div className="mt-1 text-xl font-bold">Northeast</div>
+                  <div className="text-xs text-muted-foreground">8.2% late delivery rate</div>
                 </div>
-                <div className="mt-1 text-xl font-bold">Northeast</div>
-                <div className="text-xs text-muted-foreground">8.2% late delivery rate</div>
-              </div>
-              
-              <div className="p-3 bg-muted/10 rounded-md">
-                <div className="flex items-center text-sm font-medium">
-                  <TrendingUp className="h-4 w-4 mr-1.5 text-emerald-500" />
-                  Most Improved
+                
+                <div className="bg-muted/20 rounded-lg p-3">
+                  <div className="flex items-center text-sm font-medium">
+                    <TrendingUp className="h-4 w-4 mr-1.5 text-emerald-500" />
+                    Most Improved
+                  </div>
+                  <div className="mt-1 text-xl font-bold">West Region</div>
+                  <div className="text-xs text-muted-foreground">+2.8% on-time performance</div>
                 </div>
-                <div className="mt-1 text-xl font-bold">West Region</div>
-                <div className="text-xs text-muted-foreground">+2.8% on-time performance</div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Command Center Footer */}
-      <div className="bg-card rounded-lg flex items-center justify-between p-2 text-xs text-muted-foreground border border-border">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></div>
-            <span>Delivery System Online</span>
-          </div>
-          <div className="flex items-center">
-            <Package className="h-3.5 w-3.5 mr-1" />
-            <span>Active Shipments: {metrics.activeShipments}</span>
-          </div>
-          <div className="flex items-center">
-            <AlertTriangle className="h-3.5 w-3.5 mr-1" />
-            <span>Open Alerts: {metrics.alertCount}</span>
-          </div>
-        </div>
-        
-        <div className="flex items-center">
-          <Command className="h-3.5 w-3.5 mr-1" />
-          <span className="font-mono">DELIVERY CONTROL v1.2.8</span>
-        </div>
-      </div>
+      
     </div>
   );
 }

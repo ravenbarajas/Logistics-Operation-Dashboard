@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { 
   Leaf, 
   BarChart3, 
@@ -12,7 +13,10 @@ import {
   Trees,
   Factory,
   BarChart4, 
-  CircleDollarSign
+  CircleDollarSign,
+  ArrowUpRight,
+  ArrowDownRight,
+  RefreshCcw
 } from "lucide-react";
 import { sustainabilityData, carbonOffsetProjects, emissionsByVehicleData } from "@/data/mock-data";
 
@@ -22,8 +26,7 @@ interface SustainabilityMetricsProps {
 }
 
 export default function SustainabilityMetrics({ period, isDataLoaded }: SustainabilityMetricsProps) {
-  const [metricsLoaded, setMetricsLoaded] = useState(false);
-  
+  const [activeTab, setActiveTab] = useState("emissions");
   const emissionsTrendChartRef = useRef<HTMLDivElement>(null);
   const emissionsByVehicleChartRef = useRef<HTMLDivElement>(null);
   const efficiencyTrendChartRef = useRef<HTMLDivElement>(null);
@@ -43,14 +46,109 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
   const evPercentage = currentPeriod.electricVehicles;
   const evChange = currentPeriod.electricVehicles - previousPeriod.electricVehicles;
   
+  // Format currency
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+  
+  // Helper functions for consistent styling
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case "positive":
+        return "text-emerald-500";
+      case "neutral":
+        return "text-blue-500";
+      case "negative":
+        return "text-amber-500";
+      case "critical":
+        return "text-rose-500";
+      default:
+        return "text-gray-500";
+    }
+  };
+  
+  const getStatusTextColor = (status: string): string => {
+    switch (status) {
+      case "positive":
+        return "text-emerald-500";
+      case "neutral":
+        return "text-blue-500";
+      case "negative":
+        return "text-amber-500";
+      case "critical":
+        return "text-rose-500";
+      default:
+        return "text-muted-foreground";
+    }
+  };
+  
+  const getStatusBgClass = (status: string): string => {
+    switch (status) {
+      case "positive":
+        return "bg-emerald-500/10";
+      case "neutral":
+        return "bg-blue-500/10";
+      case "negative":
+        return "bg-amber-500/10";
+      case "critical":
+        return "bg-rose-500/10";
+      default:
+        return "bg-gray-500/10";
+    }
+  };
+  
+  const renderTrendIndicator = (trend: string | number, isPositiveGood: boolean = true) => {
+    const isPositive = typeof trend === 'string' 
+      ? trend.startsWith("+") 
+      : trend > 0;
+    
+    const isNeutral = typeof trend === 'string' 
+      ? trend === "0%" || trend === "0" 
+      : trend === 0;
+    
+    if (isNeutral) {
+      return (
+        <span className="text-muted-foreground text-xs font-medium">
+          No change
+        </span>
+      );
+    }
+    
+    const isGood = isPositiveGood ? isPositive : !isPositive;
+    
+    return (
+      <span className={`text-xs font-medium inline-flex items-center ${isGood ? 'text-emerald-500' : 'text-rose-500'}`}>
+        {isPositive ? (
+          <ArrowUpRight className="h-3 w-3 mr-0.5" />
+        ) : (
+          <ArrowDownRight className="h-3 w-3 mr-0.5" />
+        )}
+        {typeof trend === 'string' ? trend.replace("+", "") : `${Math.abs(trend)}%`}
+      </span>
+    );
+  };
+  
   // Initialize charts
   useEffect(() => {
+    let emissionsTrendChart: any;
+    let emissionsByVehicleChart: any;
+    let efficiencyTrendChart: any;
+    
     if (isDataLoaded && window.ApexCharts) {
-      setMetricsLoaded(true);
-      
-      // Emissions trend chart
-      if (emissionsTrendChartRef.current) {
-        const chart = new window.ApexCharts(emissionsTrendChartRef.current, {
+      // Initialize all charts based on the active tab
+      if (activeTab === "emissions" && emissionsTrendChartRef.current) {
+        // Destroy any existing chart
+        if (emissionsTrendChart) {
+          emissionsTrendChart.destroy();
+        }
+        
+        // Emissions trend chart
+        emissionsTrendChart = new window.ApexCharts(emissionsTrendChartRef.current, {
           series: [{
             name: 'Carbon Emissions',
             data: sustainabilityData.map(d => d.carbonEmissions)
@@ -62,7 +160,8 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
               show: false
             },
             animations: {
-              enabled: true
+              enabled: true,
+              speed: 500
             }
           },
           dataLabels: {
@@ -92,58 +191,44 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
             }
           },
           yaxis: {
-            title: {
-              text: 'Tonnes CO2'
-            },
             labels: {
               formatter: function(val: number) {
                 return val.toFixed(0);
+              },
+              style: {
+                fontSize: '12px',
+                fontFamily: 'inherit',
               }
             }
           },
           tooltip: {
             theme: 'dark',
+            shared: true,
+            intersect: false,
             y: {
               formatter: function(val: number) {
                 return val.toFixed(0) + ' tonnes';
               }
             }
           },
-          annotations: {
-            points: [
-              {
-                x: sustainabilityData.length - 1,
-                y: sustainabilityData[sustainabilityData.length - 1].carbonEmissions,
-                marker: {
-                  size: 6,
-                  fillColor: '#fff',
-                  strokeColor: '#10b981',
-                  strokeWidth: 2,
-                  radius: 2
-                },
-                label: {
-                  text: 'Current',
-                  borderColor: '#10b981',
-                  offsetY: 0,
-                  style: {
-                    color: '#fff',
-                    background: '#10b981'
-                  }
-                }
-              }
-            ]
+          legend: {
+            position: 'top',
+            horizontalAlign: 'right',
+            fontSize: '12px',
+            fontFamily: 'inherit'
           }
         });
-        chart.render();
-        
-        return () => {
-          chart.destroy();
-        };
+        emissionsTrendChart.render();
       }
       
       // Emissions by vehicle type chart
-      if (emissionsByVehicleChartRef.current) {
-        const chart = new window.ApexCharts(emissionsByVehicleChartRef.current, {
+      if (activeTab === "fleet" && emissionsByVehicleChartRef.current) {
+        // Destroy any existing chart
+        if (emissionsByVehicleChart) {
+          emissionsByVehicleChart.destroy();
+        }
+        
+        emissionsByVehicleChart = new window.ApexCharts(emissionsByVehicleChartRef.current, {
           series: [{
             name: 'Carbon Emissions',
             data: emissionsByVehicleData.map(d => d.emissions)
@@ -153,6 +238,9 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
             height: 280,
             toolbar: {
               show: false
+            },
+            animations: {
+              speed: 500
             }
           },
           plotOptions: {
@@ -212,16 +300,17 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
             }
           }
         });
-        chart.render();
-        
-        return () => {
-          chart.destroy();
-        };
+        emissionsByVehicleChart.render();
       }
       
       // Efficiency trend chart
-      if (efficiencyTrendChartRef.current) {
-        const chart = new window.ApexCharts(efficiencyTrendChartRef.current, {
+      if (activeTab === "efficiency" && efficiencyTrendChartRef.current) {
+        // Destroy any existing chart
+        if (efficiencyTrendChart) {
+          efficiencyTrendChart.destroy();
+        }
+        
+        efficiencyTrendChart = new window.ApexCharts(efficiencyTrendChartRef.current, {
           series: [
             {
               name: 'Fuel Efficiency',
@@ -245,11 +334,15 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
             stacked: false,
             toolbar: {
               show: false
+            },
+            animations: {
+              speed: 500
             }
           },
           plotOptions: {
             bar: {
-              columnWidth: '50%'
+              columnWidth: '50%',
+              borderRadius: 4
             }
           },
           stroke: {
@@ -257,7 +350,13 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
           },
           colors: ['#10b981', '#3b82f6', '#f59e0b'],
           xaxis: {
-            categories: sustainabilityData.map(d => d.quarter)
+            categories: sustainabilityData.map(d => d.quarter),
+            labels: {
+              style: {
+                fontSize: '12px',
+                fontFamily: 'inherit',
+              }
+            }
           },
           yaxis: [
             {
@@ -268,7 +367,13 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
               min: 7.5,
               max: 9,
               tickAmount: 4,
-              decimalsInFloat: 1
+              decimalsInFloat: 1,
+              labels: {
+                style: {
+                  fontSize: '12px',
+                  fontFamily: 'inherit',
+                }
+              }
             },
             {
               seriesName: 'Electric Vehicles',
@@ -281,11 +386,19 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
               },
               min: 0,
               max: 35,
-              seriesName: 'Renewable Energy'
+              seriesName: 'Renewable Energy',
+              labels: {
+                style: {
+                  fontSize: '12px',
+                  fontFamily: 'inherit',
+                }
+              }
             }
           ],
           tooltip: {
             theme: 'dark',
+            shared: true,
+            intersect: false,
             fixed: {
               enabled: true,
               position: 'topLeft',
@@ -296,59 +409,69 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
           legend: {
             position: 'top',
             horizontalAlign: 'right',
-            fontSize: '13px',
+            fontSize: '12px',
             fontFamily: 'inherit'
           }
         });
-        chart.render();
-        
-        return () => {
-          chart.destroy();
-        };
+        efficiencyTrendChart.render();
       }
     }
-  }, [isDataLoaded, metricsLoaded]);
+    
+    // Cleanup function
+    return () => {
+      if (emissionsTrendChart) {
+        emissionsTrendChart.destroy();
+      }
+      if (emissionsByVehicleChart) {
+        emissionsByVehicleChart.destroy();
+      }
+      if (efficiencyTrendChart) {
+        efficiencyTrendChart.destroy();
+      }
+    };
+  }, [isDataLoaded, period, activeTab]);
   
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <Leaf className="h-5 w-5 mr-2 text-primary" />
+          <h2 className="text-xl font-bold">Sustainability Metrics</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-xs text-muted-foreground bg-muted/50 py-1 px-2 rounded-md flex items-center">
+            <RefreshCcw className="h-3 w-3 mr-1" />
+            <span>Period: {period}</span>
+          </div>
+        </div>
+      </div>
+
       {/* Sustainability KPI cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Carbon Emissions Card */}
         <Card>
-          <CardContent className="p-5">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Carbon Emissions</p>
-                <h3 className="text-2xl font-bold mt-1">{currentPeriod.carbonEmissions.toLocaleString()} tonnes</h3>
-                <div className="flex items-center text-xs mt-1">
-                  <Badge variant={emissionChange < 0 ? "success" : "destructive"} className="font-mono ml-0">
-                    {emissionChange < 0 ? <TrendingDown className="mr-1 h-3 w-3" /> : <TrendingUp className="mr-1 h-3 w-3" />}
-                    {Math.abs(emissionChange).toFixed(1)}%
-                  </Badge>
-                  <span className="text-muted-foreground ml-2">vs. previous quarter</span>
-                </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Carbon Emissions</CardTitle>
+            <Leaf className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{currentPeriod.carbonEmissions.toLocaleString()} tonnes</div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              {renderTrendIndicator(emissionChange, false)}
+              <span className="ml-1">from previous quarter</span>
+            </p>
+            <div className="mt-3">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-emerald-500 rounded-full" 
+                  style={{ width: `${Math.min(100, (currentPeriod.carbonEmissions * 0.85) / currentPeriod.carbonEmissions * 100)}%` }}
+                />
               </div>
-              <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-500">
-                <Leaf className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-4 space-y-1">
-              <div className="flex justify-between text-xs">
-                <span>Target: {(currentPeriod.carbonEmissions * 0.85).toFixed(0)} tonnes</span>
-                <span className="font-medium">
-                  {Math.round((currentPeriod.carbonEmissions * 0.85) / currentPeriod.carbonEmissions * 100)}% of target
+              <div className="flex justify-between mt-1">
+                <span className="text-xs text-muted-foreground">Target: {(currentPeriod.carbonEmissions * 0.85).toFixed(0)} tonnes</span>
+                <span className="text-xs font-medium">
+                  {Math.round((currentPeriod.carbonEmissions * 0.85) / currentPeriod.carbonEmissions * 100)}% of goal
                 </span>
-              </div>
-              <Progress 
-                value={Math.min(100, (currentPeriod.carbonEmissions * 0.85) / currentPeriod.carbonEmissions * 100)} 
-                className="h-1" 
-              />
-              <div className="flex justify-between text-xs mt-2">
-                <div className="flex items-center">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>
-                  <span className="text-muted-foreground">Net Zero 2030 Plan</span>
-                </div>
-                <span className="font-medium text-emerald-500">On track</span>
               </div>
             </div>
           </CardContent>
@@ -356,193 +479,153 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
 
         {/* Carbon Offset Card */}
         <Card>
-          <CardContent className="p-5">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Carbon Offset</p>
-                <h3 className="text-2xl font-bold mt-1">{totalOffsets.toLocaleString()} tonnes</h3>
-                <div className="flex items-center text-xs mt-1">
-                  <Badge variant="success" className="font-mono ml-0">
-                    {offsetPercentage.toFixed(1)}%
-                  </Badge>
-                  <span className="text-muted-foreground ml-2">of total emissions</span>
-                </div>
-              </div>
-              <div className="p-2 rounded-full bg-green-700/10 text-green-700">
-                <Trees className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-4 space-y-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Carbon Offset</CardTitle>
+            <Trees className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalOffsets.toLocaleString()} tonnes</div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              <span className="text-emerald-500 font-medium">{offsetPercentage.toFixed(1)}%</span>
+              <span className="ml-1">of total emissions</span>
+            </p>
+            <div className="mt-3 space-y-3">
               {carbonOffsetProjects.slice(0, 2).map((project, index) => (
                 <div key={index} className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span>{project.project}</span>
                     <span className="font-medium">{project.offset} tonnes</span>
                   </div>
-                  <Progress 
-                    value={project.offset / totalOffsets * 100} 
-                    className="h-1" 
-                    indicatorColor={project.status === "active" ? "bg-green-600" : "bg-amber-500"}
-                  />
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${project.status === "active" ? "bg-emerald-500" : "bg-amber-500"} rounded-full`} 
+                      style={{ width: `${project.offset / totalOffsets * 100}%` }}
+                    />
+                  </div>
                 </div>
               ))}
-              <div className="text-xs text-muted-foreground">
-                {carbonOffsetProjects.length - 2} more projects
-              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Electric Fleet Card */}
         <Card>
-          <CardContent className="p-5">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Electric Fleet</p>
-                <h3 className="text-2xl font-bold mt-1">{evPercentage}%</h3>
-                <div className="flex items-center text-xs mt-1">
-                  <Badge variant="success" className="font-mono ml-0">
-                    <TrendingUp className="mr-1 h-3 w-3" />+{evChange}%
-                  </Badge>
-                  <span className="text-muted-foreground ml-2">vs. previous quarter</span>
-                </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Electric Fleet</CardTitle>
+            <Truck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{evPercentage}%</div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              {renderTrendIndicator(evChange)}
+              <span className="ml-1">from previous quarter</span>
+            </p>
+            <div className="mt-3">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500 rounded-full" 
+                  style={{ width: `${Math.round(evPercentage / 40 * 100)}%` }}
+                />
               </div>
-              <div className="p-2 rounded-full bg-blue-500/10 text-blue-500">
-                <Truck className="h-5 w-5" />
+              <div className="flex justify-between mt-1">
+                <span className="text-xs text-muted-foreground">2025 Target: 40%</span>
+                <span className="text-xs font-medium">{Math.round(evPercentage / 40 * 100)}% complete</span>
               </div>
             </div>
-            <div className="mt-4 space-y-1">
-              <div className="flex justify-between text-xs">
-                <span>2025 Target: 40%</span>
-                <span className="font-medium">{Math.round(evPercentage / 40 * 100)}% of target</span>
-              </div>
-              <Progress value={Math.round(evPercentage / 40 * 100)} className="h-1" />
-              <div className="text-xs text-muted-foreground mt-2">
-                Current transition rate: +3% per quarter
-              </div>
-              <div className="grid grid-cols-5 gap-1 mt-2">
-                <div className="text-center px-1 py-0.5 bg-blue-500/10 rounded text-xs">
-                  <div className="font-medium">Q2'23</div>
-                  <div className="text-[10px] text-muted-foreground">{evPercentage}%</div>
+            <div className="grid grid-cols-5 gap-1 mt-3">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div key={i} className="text-center px-1 py-0.5 bg-blue-500/10 rounded text-xs">
+                  <div className="font-medium">Q{i+2}'23</div>
+                  <div className="text-[10px] text-muted-foreground">{evPercentage + (i*3)}%</div>
                 </div>
-                <div className="text-center px-1 py-0.5 bg-blue-500/10 rounded text-xs">
-                  <div className="font-medium">Q3'23</div>
-                  <div className="text-[10px] text-muted-foreground">{evPercentage + 3}%</div>
-                </div>
-                <div className="text-center px-1 py-0.5 bg-blue-500/10 rounded text-xs">
-                  <div className="font-medium">Q4'23</div>
-                  <div className="text-[10px] text-muted-foreground">{evPercentage + 6}%</div>
-                </div>
-                <div className="text-center px-1 py-0.5 bg-blue-500/10 rounded text-xs">
-                  <div className="font-medium">Q1'24</div>
-                  <div className="text-[10px] text-muted-foreground">{evPercentage + 9}%</div>
-                </div>
-                <div className="text-center px-1 py-0.5 bg-blue-500/10 rounded text-xs">
-                  <div className="font-medium">Q2'24</div>
-                  <div className="text-[10px] text-muted-foreground">{evPercentage + 12}%</div>
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
 
         {/* Renewable Energy Card */}
         <Card>
-          <CardContent className="p-5">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Renewable Energy</p>
-                <h3 className="text-2xl font-bold mt-1">{currentPeriod.renewableEnergy}%</h3>
-                <div className="flex items-center text-xs mt-1">
-                  <Badge variant="success" className="font-mono ml-0">
-                    <TrendingUp className="mr-1 h-3 w-3" />+{currentPeriod.renewableEnergy - previousPeriod.renewableEnergy}%
-                  </Badge>
-                  <span className="text-muted-foreground ml-2">vs. previous quarter</span>
-                </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Renewable Energy</CardTitle>
+            <Factory className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{currentPeriod.renewableEnergy}%</div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              {renderTrendIndicator(currentPeriod.renewableEnergy - previousPeriod.renewableEnergy)}
+              <span className="ml-1">from previous quarter</span>
+            </p>
+            <div className="mt-3">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-amber-500 rounded-full" 
+                  style={{ width: `${Math.round(currentPeriod.renewableEnergy / 75 * 100)}%` }}
+                />
               </div>
-              <div className="p-2 rounded-full bg-amber-500/10 text-amber-500">
-                <Factory className="h-5 w-5" />
+              <div className="flex justify-between mt-1">
+                <span className="text-xs text-muted-foreground">2025 Target: 75%</span>
+                <span className="text-xs font-medium">{Math.round(currentPeriod.renewableEnergy / 75 * 100)}% complete</span>
               </div>
             </div>
-            <div className="mt-4 space-y-1">
-              <div className="flex justify-between text-xs">
-                <span>2025 Target: 75%</span>
-                <span className="font-medium">{Math.round(currentPeriod.renewableEnergy / 75 * 100)}% of target</span>
-              </div>
-              <Progress value={Math.round(currentPeriod.renewableEnergy / 75 * 100)} className="h-1" />
-              <div className="text-xs text-muted-foreground mt-2">
-                Solar: {Math.round(currentPeriod.renewableEnergy * 0.6)}% | Wind: {Math.round(currentPeriod.renewableEnergy * 0.35)}% | Other: {Math.round(currentPeriod.renewableEnergy * 0.05)}%
-              </div>
-              <div className="flex justify-between text-xs mt-2">
-                <div className="flex items-center">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 mr-1"></span>
-                  <span className="text-muted-foreground">Facility coverage</span>
-                </div>
-                <span className="font-medium">14 of 18 facilities</span>
-              </div>
+            <div className="text-xs text-muted-foreground mt-3">
+              Solar: {Math.round(currentPeriod.renewableEnergy * 0.6)}% | Wind: {Math.round(currentPeriod.renewableEnergy * 0.35)}% | Other: {Math.round(currentPeriod.renewableEnergy * 0.05)}%
             </div>
           </CardContent>
         </Card>
       </div>
       
       {/* Tabs for detailed metrics */}
-      <Tabs defaultValue="emissions" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="emissions">Emissions</TabsTrigger>
-          <TabsTrigger value="fleet">Fleet Analysis</TabsTrigger>
-          <TabsTrigger value="efficiency">Efficiency Trends</TabsTrigger>
+      <Tabs defaultValue="emissions" className="space-y-4" onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-3 w-full md:w-auto">
+          <TabsTrigger value="emissions" className="flex items-center gap-1">
+            <BarChart3 className="h-4 w-4" />
+            <span>Emissions</span>
+          </TabsTrigger>
+          <TabsTrigger value="fleet" className="flex items-center gap-1">
+            <Truck className="h-4 w-4" />
+            <span>Fleet Analysis</span>
+          </TabsTrigger>
+          <TabsTrigger value="efficiency" className="flex items-center gap-1">
+            <BarChart4 className="h-4 w-4" />
+            <span>Efficiency</span>
+          </TabsTrigger>
         </TabsList>
         
         {/* Emissions Tab */}
-        <TabsContent value="emissions" className="m-0">
+        <TabsContent value="emissions" className="space-y-4">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold flex items-center">
-                <BarChart3 className="h-5 w-5 mr-2" />
-                Carbon Emissions Trend
-              </CardTitle>
-              <CardDescription>
-                Quarterly CO2 emissions with year-over-year comparison
-              </CardDescription>
+            <CardHeader>
+              <CardTitle>Carbon Emissions Trend</CardTitle>
+              <CardDescription>Quarterly CO2 emissions with year-over-year comparison</CardDescription>
             </CardHeader>
             <CardContent>
-              <div ref={emissionsTrendChartRef} className="w-full h-[280px]" />
+              <div ref={emissionsTrendChartRef} className="h-[280px]" />
             </CardContent>
           </Card>
         </TabsContent>
         
         {/* Fleet Analysis Tab */}
-        <TabsContent value="fleet" className="m-0">
+        <TabsContent value="fleet" className="space-y-4">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold flex items-center">
-                <Truck className="h-5 w-5 mr-2" />
-                Emissions by Vehicle Type
-              </CardTitle>
-              <CardDescription>
-                Carbon intensity per kilometer by vehicle classification
-              </CardDescription>
+            <CardHeader>
+              <CardTitle>Emissions by Vehicle Type</CardTitle>
+              <CardDescription>Carbon intensity per kilometer by vehicle classification</CardDescription>
             </CardHeader>
             <CardContent>
-              <div ref={emissionsByVehicleChartRef} className="w-full h-[280px]" />
+              <div ref={emissionsByVehicleChartRef} className="h-[280px]" />
             </CardContent>
           </Card>
         </TabsContent>
         
         {/* Efficiency Trends Tab */}
-        <TabsContent value="efficiency" className="m-0">
+        <TabsContent value="efficiency" className="space-y-4">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold flex items-center">
-                <BarChart4 className="h-5 w-5 mr-2" />
-                Sustainability Initiatives
-              </CardTitle>
-              <CardDescription>
-                Quarterly progress on key sustainability metrics
-              </CardDescription>
+            <CardHeader>
+              <CardTitle>Sustainability Initiatives</CardTitle>
+              <CardDescription>Quarterly progress on key sustainability metrics</CardDescription>
             </CardHeader>
             <CardContent>
-              <div ref={efficiencyTrendChartRef} className="w-full h-[280px]" />
+              <div ref={efficiencyTrendChartRef} className="h-[280px]" />
             </CardContent>
           </Card>
         </TabsContent>
@@ -550,14 +633,9 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
       
       {/* ESG Impact & Reporting */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold flex items-center">
-            <CircleDollarSign className="h-5 w-5 mr-2" />
-            ESG Impact & Carbon Credits
-          </CardTitle>
-          <CardDescription>
-            Financial and environmental sustainability metrics
-          </CardDescription>
+        <CardHeader>
+          <CardTitle>ESG Impact & Carbon Credits</CardTitle>
+          <CardDescription>Financial and environmental sustainability metrics</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -569,21 +647,27 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
                     <span>Credits Purchased</span>
                     <span className="font-medium">1,240 tCO2e</span>
                   </div>
-                  <Progress value={65} className="h-1" />
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '65%' }} />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span>Credits Utilized</span>
                     <span className="font-medium">830 tCO2e</span>
                   </div>
-                  <Progress value={42} className="h-1" />
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '42%' }} />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span>Credits Available</span>
                     <span className="font-medium">410 tCO2e</span>
                   </div>
-                  <Progress value={23} className="h-1" />
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '23%' }} />
+                  </div>
                 </div>
               </div>
               <div className="flex items-center justify-between text-xs mt-2">
@@ -595,25 +679,25 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
             <div className="space-y-4">
               <h4 className="text-sm font-semibold">ESG Reporting Performance</h4>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-muted rounded-md">
+                <div className="p-3 bg-muted/30 rounded-md">
                   <div className="text-xs text-muted-foreground">CDP Rating</div>
                   <div className="text-lg font-bold">B+</div>
-                  <Badge variant="outline" className="text-[10px] mt-1">+1 from 2022</Badge>
+                  <Badge variant="outline" className="text-[10px] mt-1 bg-blue-500/10 text-blue-500 border-0">+1 from 2022</Badge>
                 </div>
-                <div className="p-3 bg-muted rounded-md">
+                <div className="p-3 bg-muted/30 rounded-md">
                   <div className="text-xs text-muted-foreground">MSCI ESG</div>
                   <div className="text-lg font-bold">AA</div>
-                  <Badge variant="outline" className="text-[10px] mt-1">Stable</Badge>
+                  <Badge variant="outline" className="text-[10px] mt-1 bg-blue-500/10 text-blue-500 border-0">Stable</Badge>
                 </div>
-                <div className="p-3 bg-muted rounded-md">
+                <div className="p-3 bg-muted/30 rounded-md">
                   <div className="text-xs text-muted-foreground">GRI Compliance</div>
                   <div className="text-lg font-bold">92%</div>
-                  <Badge variant="success" className="text-[10px] mt-1">+5%</Badge>
+                  <Badge variant="outline" className="text-[10px] mt-1 bg-emerald-500/10 text-emerald-500 border-0">+5%</Badge>
                 </div>
-                <div className="p-3 bg-muted rounded-md">
+                <div className="p-3 bg-muted/30 rounded-md">
                   <div className="text-xs text-muted-foreground">TCFD</div>
                   <div className="text-lg font-bold">Full</div>
-                  <Badge variant="outline" className="text-[10px] mt-1">Complete</Badge>
+                  <Badge variant="outline" className="text-[10px] mt-1 bg-emerald-500/10 text-emerald-500 border-0">Complete</Badge>
                 </div>
               </div>
             </div>
@@ -624,30 +708,38 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span>Cost Savings (Fuel)</span>
-                    <span className="font-medium">$142,500</span>
+                    <span className="font-medium">{formatCurrency(142500)}</span>
                   </div>
-                  <Progress value={78} className="h-1" indicatorColor="bg-emerald-500" />
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '78%' }} />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span>Maintenance Savings (EV)</span>
-                    <span className="font-medium">$87,200</span>
+                    <span className="font-medium">{formatCurrency(87200)}</span>
                   </div>
-                  <Progress value={62} className="h-1" indicatorColor="bg-emerald-500" />
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '62%' }} />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span>Tax Incentives</span>
-                    <span className="font-medium">$215,000</span>
+                    <span className="font-medium">{formatCurrency(215000)}</span>
                   </div>
-                  <Progress value={85} className="h-1" indicatorColor="bg-emerald-500" />
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '85%' }} />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span>Brand Value Increase</span>
                     <span className="font-medium">+4.2%</span>
                   </div>
-                  <Progress value={42} className="h-1" indicatorColor="bg-blue-500" />
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: '42%' }} />
+                  </div>
                 </div>
               </div>
             </div>

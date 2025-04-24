@@ -932,17 +932,121 @@ export default function CostAnalyticsDashboard({ period, isDataLoaded }: CostAna
         
         <TabsContent value="trends" className="space-y-4">
           {/* Trends Tab Content */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Cost Trend Analysis</CardTitle>
-              <CardDescription>Historical cost trends and forecast</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="w-full h-[400px]">
-                <CostTrendChart data={costAnalysisData} />
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle>Cost Trend Analysis</CardTitle>
+                <CardDescription>Historical cost trends and forecast</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="w-full h-[280px]">
+                  <CostTrendChart data={costAnalysisData} />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle>Category Trend Summary</CardTitle>
+                <CardDescription>Comparison of major cost categories</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Fuel Trend */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                        <span className="text-sm font-medium">Fuel</span>
+                      </div>
+                      <span className={`text-xs ${costPerformanceMetrics.categories.fuel.change > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        {costPerformanceMetrics.categories.fuel.change > 0 ? '↑' : '↓'} 
+                        {Math.abs(costPerformanceMetrics.categories.fuel.change).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-muted rounded-full">
+                      <div 
+                        className="h-full bg-blue-400 rounded-full" 
+                        style={{ width: `${Math.min(Math.abs(costPerformanceMetrics.categories.fuel.change) * 2, 100)}%` }}
+                      />
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Current: {formatCurrency(costPerformanceMetrics.categories.fuel.cost)}
+                    </div>
+                  </div>
+                  
+                  {/* Maintenance Trend */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                        <span className="text-sm font-medium">Maintenance</span>
+                      </div>
+                      <span className={`text-xs ${costPerformanceMetrics.categories.maintenance.change > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        {costPerformanceMetrics.categories.maintenance.change > 0 ? '↑' : '↓'} 
+                        {Math.abs(costPerformanceMetrics.categories.maintenance.change).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-muted rounded-full">
+                      <div 
+                        className="h-full bg-purple-400 rounded-full" 
+                        style={{ width: `${Math.min(Math.abs(costPerformanceMetrics.categories.maintenance.change) * 2, 100)}%` }}
+                      />
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Current: {formatCurrency(costPerformanceMetrics.categories.maintenance.cost)}
+                    </div>
+                  </div>
+                  
+                  {/* Labor Trend */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                        <span className="text-sm font-medium">Labor</span>
+                      </div>
+                      <span className={`text-xs ${costPerformanceMetrics.categories.labor.change > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        {costPerformanceMetrics.categories.labor.change > 0 ? '↑' : '↓'} 
+                        {Math.abs(costPerformanceMetrics.categories.labor.change).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-muted rounded-full">
+                      <div 
+                        className="h-full bg-emerald-400 rounded-full" 
+                        style={{ width: `${Math.min(Math.abs(costPerformanceMetrics.categories.labor.change) * 2, 100)}%` }}
+                      />
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Current: {formatCurrency(costPerformanceMetrics.categories.labor.cost)}
+                    </div>
+                  </div>
+                  
+                  {/* Insurance Trend */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+                        <span className="text-sm font-medium">Insurance</span>
+                      </div>
+                      <span className={`text-xs ${costPerformanceMetrics.categories.insurance.change > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        {costPerformanceMetrics.categories.insurance.change > 0 ? '↑' : '↓'} 
+                        {Math.abs(costPerformanceMetrics.categories.insurance.change).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-muted rounded-full">
+                      <div 
+                        className="h-full bg-amber-400 rounded-full" 
+                        style={{ width: `${Math.min(Math.abs(costPerformanceMetrics.categories.insurance.change) * 2, 100)}%` }}
+                      />
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Current: {formatCurrency(costPerformanceMetrics.categories.insurance.cost)}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
         <TabsContent value="anomalies" className="space-y-4">
@@ -997,148 +1101,116 @@ export default function CostAnalyticsDashboard({ period, isDataLoaded }: CostAna
   );
 }
 
-// Cost Trend Chart Component
+// Cost Trend Chart Component - Streamlined version
 const CostTrendChart: React.FC<{ data: typeof costAnalysisData }> = ({ data }) => {
   const trendData = data.map(month => ({
     month: month.month,
+    total: month.fuel + month.maintenance + month.labor + month.insurance + month.other,
     fuel: month.fuel,
     maintenance: month.maintenance,
-    labor: month.labor,
-    insurance: month.insurance,
-    other: month.other,
-    total: month.fuel + month.maintenance + month.labor + month.insurance + month.other
+    labor: month.labor
   }));
-  
-  // Calculate min and max values to create a more dynamic range
-  const maxTotal = Math.max(...trendData.map(d => d.total));
-  const minTotal = Math.min(...trendData.map(d => d.total));
-  
-  // Set baseline to 80% of the minimum to create more visual variation
-  const baseline = Math.floor(minTotal * 0.8);
-  const range = maxTotal - baseline;
-  
-  // Function to calculate visual height based on baseline
-  const getVisualHeight = (value: number) => {
-    return ((value - baseline) / range) * 100;
-  };
   
   return (
     <div className="w-full h-full">
-      {/* Chart legend */}
-      <div className="flex justify-end mb-4 gap-4">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-          <span className="text-xs">Total</span>
+      {/* Compact legend */}
+      <div className="flex justify-end mb-2 gap-2 text-[10px]">
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+          <span>Total</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span className="text-xs">Fuel</span>
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+          <span>Fuel</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-violet-500"></div>
-          <span className="text-xs">Maintenance</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-          <span className="text-xs">Labor</span>
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+          <span>Maintenance</span>
         </div>
       </div>
       
-      <div className="flex h-[300px] mt-4">
-        {/* Y-axis labels */}
-        <div className="flex flex-col justify-between pr-2 text-right">
-          {[0, 1, 2, 3, 4].map(i => {
-            const value = Math.round(baseline + (range / 4) * (4 - i));
-            return (
-              <div key={i} className="text-xs text-muted-foreground">
-                ${value.toLocaleString()}
-              </div>
-            );
-          })}
-        </div>
-        
-        {/* Chart grid and bars */}
-        <div className="flex-1 relative">
-          {/* Baseline indicator */}
-          <div className="absolute bottom-0 left-0 w-full border-t border-dashed border-amber-500/40 z-10">
-            <div className="absolute -top-4 -left-2 text-[10px] text-amber-500">Baseline: ${baseline.toLocaleString()}</div>
-          </div>
-          
-          {/* Grid lines */}
-          <div className="absolute inset-0">
-            {[0, 1, 2, 3, 4].map(i => (
-              <div 
-                key={i} 
-                className="absolute border-t border-dashed border-muted w-full" 
-                style={{ top: `${(i * 25)}%` }}
-              />
+      {/* Chart area */}
+      <div className="h-[240px] w-full">
+        {/* We're using a simple approach for visualization */}
+        <div className="relative h-full w-full">
+          {/* Background grid */}
+          <div className="absolute inset-0 grid grid-rows-4 w-full h-full">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="w-full border-t border-dashed border-muted"></div>
             ))}
           </div>
           
-          {/* Data points and connecting lines */}
-          <div className="absolute inset-0">
-            <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
-              <polyline
-                points={trendData.map((month, i) => {
-                  // Calculate x position based on index and total width
-                  const x = (i / (trendData.length - 1)) * 100;
-                  // Calculate y position based on value
-                  const y = 100 - getVisualHeight(month.total);
-                  return `${x}% ${y}%`;
-                }).join(' ')}
-                fill="none"
-                stroke="rgb(99, 102, 241)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              
-              {/* Add dots at each data point */}
-              {trendData.map((month, i) => {
-                const x = (i / (trendData.length - 1)) * 100;
-                const y = 100 - getVisualHeight(month.total);
-                return (
-                  <circle
-                    key={i}
-                    cx={`${x}%`}
-                    cy={`${y}%`}
-                    r="4"
-                    fill="rgb(99, 102, 241)"
-                    className="hover:r-5 transition-all duration-200"
-                  />
-                );
-              })}
-            </svg>
-          </div>
-          
-          {/* Stacked bars */}
-          <div className="absolute inset-0 flex">
-            {trendData.map((month, index) => {
-              // Calculate heights based on baseline
-              const totalHeight = getVisualHeight(month.total);
-              const fuelHeight = getVisualHeight(month.fuel);
-              const maintenanceHeight = getVisualHeight(month.maintenance);
-              const laborHeight = getVisualHeight(month.labor);
+          {/* Chart content */}
+          <div className="absolute inset-0 flex items-end">
+            {trendData.map((month, idx) => {
+              // Calculate relative heights
+              const maxValue = Math.max(...trendData.map(d => d.total)) * 1.1;
+              const totalHeight = (month.total / maxValue) * 100;
+              const fuelHeight = (month.fuel / maxValue) * 100;
+              const maintenanceHeight = (month.maintenance / maxValue) * 100;
               
               return (
-                <div key={index} className="flex-1 flex flex-col justify-end relative">
-                  {/* Stacked bar */}
-                  <div className="relative w-full flex flex-col-reverse items-center">  
-                    {/* Cost bars - reduced width to better see the trend line */}
-                    <div className="w-1/3 flex flex-col-reverse z-0">
-                      <div className="bg-blue-500/70 rounded-t-sm w-full" style={{ height: `${fuelHeight}%` }} />
-                      <div className="bg-violet-500/70 w-full" style={{ height: `${maintenanceHeight}%` }} />
-                      <div className="bg-emerald-500/70 w-full" style={{ height: `${laborHeight}%` }} />
+                <div key={idx} className="flex-1 flex flex-col items-center">
+                  {/* Data point */}
+                  <div className="relative w-full flex justify-center mb-5">
+                    {/* Simplified small bar */}
+                    <div className="w-[6px] bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[6px] bg-indigo-500 rounded-full"
+                        style={{ height: `${totalHeight}%` }}>
+                      </div>
+                    </div>
+                    
+                    {/* Line connecting points */}
+                    {idx < trendData.length - 1 && (
+                      <div className="absolute top-0 right-0 h-0.5 bg-indigo-500/40 w-full transform -translate-y-1/2"
+                        style={{ 
+                          width: '50%', 
+                          right: 0,
+                          top: `${100 - totalHeight}%`
+                        }}>
+                      </div>
+                    )}
+                    {idx > 0 && (
+                      <div className="absolute top-0 left-0 h-0.5 bg-indigo-500/40 w-full transform -translate-y-1/2"
+                        style={{ 
+                          width: '50%', 
+                          left: 0,
+                          top: `${100 - totalHeight}%`
+                        }}>
+                      </div>
+                    )}
+                    
+                    {/* Data point marker */}
+                    <div className="absolute w-2 h-2 rounded-full bg-indigo-500 border-2 border-white dark:border-gray-900"
+                      style={{ bottom: `${totalHeight}%`, transform: 'translateY(50%)' }}>
+                    </div>
+                    
+                    {/* Tooltip on hover */}
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 transform translate-y-full
+                                  opacity-0 hover:opacity-100 bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded text-[10px] 
+                                  shadow pointer-events-none transition-opacity z-10 whitespace-nowrap"
+                      style={{ bottom: `${totalHeight}%` }}>
+                      ${month.total.toLocaleString()}
                     </div>
                   </div>
                   
-                  {/* Value tooltip on hover */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 opacity-0 hover:opacity-100 bg-white dark:bg-gray-800 p-1 rounded shadow text-[10px] pointer-events-none transition-opacity">
-                    ${month.total.toLocaleString()}
-                  </div>
-                  
                   {/* X-axis label */}
-                  <div className="text-[10px] text-center mt-2">{month.month}</div>
+                  <div className="text-[9px] text-center text-muted-foreground mt-1">
+                    {month.month}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Y-axis labels (simplified) */}
+          <div className="absolute left-0 top-0 h-full flex flex-col justify-between py-1 text-right pr-1">
+            {[0, 1, 2].map(i => {
+              const maxValue = Math.max(...trendData.map(d => d.total));
+              const value = Math.round(maxValue * (1 - (i / 2)));
+              return (
+                <div key={i} className="text-[9px] text-muted-foreground">
+                  {i === 0 ? `$${value.toLocaleString()}` : `$${value.toLocaleString()}`}
                 </div>
               );
             })}
@@ -1146,25 +1218,17 @@ const CostTrendChart: React.FC<{ data: typeof costAnalysisData }> = ({ data }) =
         </div>
       </div>
       
-      {/* Trend indicators */}
-      <div className="flex justify-between mt-4 text-xs">
-        <div className="flex items-center">
-          <span className="text-muted-foreground mr-2">Change from first month:</span>
+      {/* Quick stats summary */}
+      <div className="flex justify-between items-center mt-2 text-[10px] text-muted-foreground">
+        <span>
           {trendData[trendData.length - 1].total > trendData[0].total ? (
-            <span className="text-rose-500 flex items-center">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              +{((trendData[trendData.length - 1].total - trendData[0].total) / trendData[0].total * 100).toFixed(1)}%
-            </span>
+            <span className="text-rose-500">↑ {((trendData[trendData.length - 1].total - trendData[0].total) / trendData[0].total * 100).toFixed(1)}%</span>
           ) : (
-            <span className="text-emerald-500 flex items-center">
-              <ArrowDownRight className="h-3 w-3 mr-1" />
-              {((trendData[trendData.length - 1].total - trendData[0].total) / trendData[0].total * 100).toFixed(1)}%
-            </span>
+            <span className="text-emerald-500">↓ {((trendData[trendData.length - 1].total - trendData[0].total) / trendData[0].total * 100).toFixed(1)}%</span>
           )}
-        </div>
-        <div className="text-muted-foreground">
-          Min: ${minTotal.toLocaleString()} | Max: ${maxTotal.toLocaleString()}
-        </div>
+          <span> from start</span>
+        </span>
+        <span>Last: ${trendData[trendData.length - 1].total.toLocaleString()}</span>
       </div>
     </div>
   );

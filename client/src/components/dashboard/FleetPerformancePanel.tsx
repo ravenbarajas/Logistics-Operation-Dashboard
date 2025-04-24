@@ -1047,11 +1047,9 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
         {/* Top Metrics Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Fleet Status Panel */}
-          <Card className="shadow-sm border border-border">
-            <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle className="text-sm font-medium">Fleet Status</CardTitle>
-              </div>
+          <Card>
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium p-0">Fleet Status</CardTitle>
               <Truck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-3 pt-2">
@@ -1087,11 +1085,9 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
           </Card>
           
           {/* Fleet Utilization Panel */}
-          <Card className="overflow-hidden shadow-sm border-border/10">
-            <CardHeader className="bg-muted/20 p-3 flex flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle className="text-sm font-medium">Fleet Utilization</CardTitle>
-              </div>
+          <Card>
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium p-0">Fleet Utilization</CardTitle>
               <Gauge className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-3">
@@ -1127,11 +1123,9 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
           </Card>
           
           {/* Maintenance Status Panel */}
-          <Card className="overflow-hidden shadow-sm border-border/10">
-            <CardHeader className="bg-muted/20 p-3 flex flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle className="text-sm font-medium">Maintenance Status</CardTitle>
-              </div>
+          <Card>
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium p-0">Maintenance Status</CardTitle>
               <Wrench className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-3">
@@ -1168,11 +1162,9 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
           </Card>
           
           {/* Driver Status Panel */}
-          <Card className="overflow-hidden shadow-sm border-border/10">
-            <CardHeader className="bg-muted/20 p-3 flex flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle className="text-sm font-medium">Driver Status</CardTitle>
-              </div>
+          <Card>
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium p-0">Driver Status</CardTitle>
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-3">

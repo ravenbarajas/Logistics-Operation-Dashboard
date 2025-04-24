@@ -1071,9 +1071,9 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* On-Time Delivery */}
-        <div className="relative p-4 bg-card/60 dark:bg-card/20 rounded-md overflow-hidden group">
+        <div className="relative p-0 bg-card/60 dark:bg-card/20 rounded-md overflow-hidden group">
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-full -mr-6 -mt-6 blur-lg"></div>
+          <div className="absolute top-0 right-0 w-16 h-16 rounded-full -mr-6 -mt-6 blur-lg"></div>
           
           <div className="flex flex-col h-full justify-between gap-2">
             <div className="text-xs text-muted-foreground font-medium">On-Time Delivery</div>
@@ -1125,9 +1125,9 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         </div>
         
         {/* Idle Time */}
-        <div className="relative p-4 bg-card/60 dark:bg-card/20 rounded-md overflow-hidden group">
+        <div className="relative p-0 bg-card/60 dark:bg-card/20 rounded-md overflow-hidden group">
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/5 rounded-full -mr-6 -mt-6 blur-lg"></div>
+          <div className="absolute top-0 right-0 w-16 h-16 rounded-full -mr-6 -mt-6 blur-lg"></div>
           
           <div className="flex flex-col h-full justify-between gap-2">
             <div className="text-xs text-muted-foreground font-medium">Idle Time</div>
@@ -1183,9 +1183,9 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         </div>
         
         {/* Fuel Efficiency */}
-        <div className="relative p-4 bg-card/60 dark:bg-card/20 rounded-md overflow-hidden group">
+        <div className="relative p-0 bg-card/60 dark:bg-card/20 rounded-md overflow-hidden group">
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 rounded-full -mr-6 -mt-6 blur-lg"></div>
+          <div className="absolute top-0 right-0 w-16 h-16 rounded-full -mr-6 -mt-6 blur-lg"></div>
           
           <div className="flex flex-col h-full justify-between gap-2">
             <div className="text-xs text-muted-foreground font-medium">Fuel Efficiency</div>
@@ -1242,9 +1242,9 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
         </div>
         
         {/* Driver Safety Score */}
-        <div className="relative p-4 bg-card/60 dark:bg-card/20 rounded-md overflow-hidden group">
+        <div className="relative p-0 bg-card/60 dark:bg-card/20 rounded-md overflow-hidden group">
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-500/5 rounded-full -mr-6 -mt-6 blur-lg"></div>
+          <div className="absolute top-0 right-0 w-16 h-16 rounded-full -mr-6 -mt-6 blur-lg"></div>
           
           <div className="flex flex-col h-full justify-between gap-2">
             <div className="text-xs text-muted-foreground font-medium">Driver Safety Score</div>

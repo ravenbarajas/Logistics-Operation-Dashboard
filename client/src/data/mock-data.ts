@@ -407,32 +407,226 @@ export const fuelConsumptionData = [
 
 // Cost analysis data
 export const costAnalysisData = [
-  { month: "Jan", fuel: 42500, maintenance: 18400, labor: 65200, insurance: 12500, other: 8300 },
-  { month: "Feb", fuel: 40100, maintenance: 22300, labor: 64800, insurance: 12500, other: 7800 },
-  { month: "Mar", fuel: 45600, maintenance: 16700, labor: 66100, insurance: 12500, other: 9100 },
-  { month: "Apr", fuel: 48800, maintenance: 25600, labor: 65400, insurance: 12500, other: 8600 },
-  { month: "May", fuel: 46200, maintenance: 19800, labor: 67300, insurance: 12500, other: 9400 },
-  { month: "Jun", fuel: 32400, maintenance: 21900, labor: 68700, insurance: 12500, other: 7800 },
-  { month: "Jul", fuel: 29000, maintenance: 17400, labor: 67600, insurance: 12500, other: 7200 }
+  {
+    month: 'Jan',
+    fuel: 45000,
+    maintenance: 22000,
+    labor: 35000,
+    insurance: 12000,
+    other: 8000
+  },
+  {
+    month: 'Feb',
+    fuel: 42000,
+    maintenance: 25000,
+    labor: 36000,
+    insurance: 12000,
+    other: 7500
+  },
+  {
+    month: 'Mar',
+    fuel: 48000,
+    maintenance: 23000,
+    labor: 37000,
+    insurance: 12000,
+    other: 9000
+  },
+  {
+    month: 'Apr',
+    fuel: 50000,
+    maintenance: 18000,
+    labor: 38000,
+    insurance: 12000,
+    other: 8500
+  },
+  {
+    month: 'May',
+    fuel: 52000,
+    maintenance: 20000,
+    labor: 39000,
+    insurance: 12000,
+    other: 9500
+  },
+  {
+    month: 'Jun',
+    fuel: 55000,
+    maintenance: 19000,
+    labor: 39000,
+    insurance: 12000,
+    other: 10000
+  },
+  {
+    month: 'Jul',
+    fuel: 58000,
+    maintenance: 21000,
+    labor: 40000,
+    insurance: 12000,
+    other: 10500
+  },
+  {
+    month: 'Aug',
+    fuel: 56000,
+    maintenance: 26000,
+    labor: 41000,
+    insurance: 12000,
+    other: 9800
+  },
+  {
+    month: 'Sep',
+    fuel: 54000,
+    maintenance: 22000,
+    labor: 42000,
+    insurance: 12000,
+    other: 9200
+  },
+  {
+    month: 'Oct',
+    fuel: 52000,
+    maintenance: 20000,
+    labor: 42000,
+    insurance: 12000,
+    other: 8800
+  },
+  {
+    month: 'Nov',
+    fuel: 50000,
+    maintenance: 24000,
+    labor: 43000,
+    insurance: 12000,
+    other: 8500
+  },
+  {
+    month: 'Dec',
+    fuel: 48000,
+    maintenance: 26000,
+    labor: 44000,
+    insurance: 12000,
+    other: 8000
+  }
 ];
 
 // Maintenance cost breakdown by vehicle type
 export const maintenanceCostByVehicleType = [
-  { type: "Heavy Truck", preventive: 45, corrective: 32, emergency: 23 },
-  { type: "Medium Truck", preventive: 52, corrective: 28, emergency: 20 },
-  { type: "Delivery Van", preventive: 58, corrective: 25, emergency: 17 },
-  { type: "Electric Vehicle", preventive: 68, corrective: 22, emergency: 10 }
+  {
+    type: 'Heavy Trucks',
+    cost: 52000,
+    percentage: 38
+  },
+  {
+    type: 'Medium Trucks',
+    cost: 38000,
+    percentage: 28
+  },
+  {
+    type: 'Delivery Vans',
+    cost: 25000,
+    percentage: 18
+  },
+  {
+    type: 'Electric Vehicles',
+    cost: 21000,
+    percentage: 16
+  }
 ];
 
 // Cost per mile trends
 export const costPerMileData = [
-  { month: "Jan", heavyTruck: 1.72, mediumTruck: 1.45, deliveryVan: 0.95, electric: 0.62 },
-  { month: "Feb", heavyTruck: 1.68, mediumTruck: 1.43, deliveryVan: 0.94, electric: 0.60 },
-  { month: "Mar", heavyTruck: 1.76, mediumTruck: 1.46, deliveryVan: 0.98, electric: 0.61 },
-  { month: "Apr", heavyTruck: 1.81, mediumTruck: 1.49, deliveryVan: 1.02, electric: 0.65 },
-  { month: "May", heavyTruck: 1.78, mediumTruck: 1.47, deliveryVan: 1.00, electric: 0.64 },
-  { month: "Jun", heavyTruck: 1.65, mediumTruck: 1.41, deliveryVan: 0.92, electric: 0.60 },
-  { month: "Jul", heavyTruck: 1.58, mediumTruck: 1.38, deliveryVan: 0.90, electric: 0.59 }
+  { 
+    month: 'Jan', 
+    costPerMile: 1.92,
+    heavyTruck: 2.35,
+    mediumTruck: 1.98,
+    deliveryVan: 1.75,
+    electric: 1.60
+  },
+  { 
+    month: 'Feb', 
+    costPerMile: 1.90,
+    heavyTruck: 2.32,
+    mediumTruck: 1.95,
+    deliveryVan: 1.73,
+    electric: 1.58
+  },
+  { 
+    month: 'Mar', 
+    costPerMile: 1.94,
+    heavyTruck: 2.37,
+    mediumTruck: 2.02,
+    deliveryVan: 1.78,
+    electric: 1.62
+  },
+  { 
+    month: 'Apr', 
+    costPerMile: 1.95,
+    heavyTruck: 2.39,
+    mediumTruck: 2.05,
+    deliveryVan: 1.80,
+    electric: 1.63
+  },
+  { 
+    month: 'May', 
+    costPerMile: 1.91,
+    heavyTruck: 2.34,
+    mediumTruck: 1.97,
+    deliveryVan: 1.74,
+    electric: 1.59
+  },
+  { 
+    month: 'Jun', 
+    costPerMile: 1.89,
+    heavyTruck: 2.30,
+    mediumTruck: 1.94,
+    deliveryVan: 1.72,
+    electric: 1.56
+  },
+  { 
+    month: 'Jul', 
+    costPerMile: 1.88,
+    heavyTruck: 2.28,
+    mediumTruck: 1.93,
+    deliveryVan: 1.70,
+    electric: 1.55
+  },
+  { 
+    month: 'Aug', 
+    costPerMile: 1.87,
+    heavyTruck: 2.27,
+    mediumTruck: 1.92,
+    deliveryVan: 1.69,
+    electric: 1.54
+  },
+  { 
+    month: 'Sep', 
+    costPerMile: 1.85,
+    heavyTruck: 2.25,
+    mediumTruck: 1.90,
+    deliveryVan: 1.68,
+    electric: 1.52
+  },
+  { 
+    month: 'Oct', 
+    costPerMile: 1.84,
+    heavyTruck: 2.24,
+    mediumTruck: 1.89,
+    deliveryVan: 1.67,
+    electric: 1.51
+  },
+  { 
+    month: 'Nov', 
+    costPerMile: 1.83,
+    heavyTruck: 2.23,
+    mediumTruck: 1.88,
+    deliveryVan: 1.66,
+    electric: 1.50
+  },
+  { 
+    month: 'Dec', 
+    costPerMile: 1.82,
+    heavyTruck: 2.22,
+    mediumTruck: 1.87,
+    deliveryVan: 1.65,
+    electric: 1.49
+  }
 ];
 
 // Sustainability metrics
@@ -653,4 +847,34 @@ export const logisticsPerformanceData = {
     { area: "Driver Training Program", potential: 6, effort: 4, priority: 7 },
     { area: "Warehouse Layout Redesign", potential: 8, effort: 8, priority: 6 }
   ]
+};
+
+// Mock data for Predictive Analytics
+export const predictiveMockData = {
+  costPrediction: {
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    predictedValues: [138000, 142000, 147000, 152000, 158000, 163000],
+    lowerBound: [135000, 138000, 142000, 146000, 151000, 156000],
+    upperBound: [141000, 146000, 152000, 158000, 165000, 170000]
+  },
+  maintenancePrediction: {
+    components: ['Engines', 'Transmissions', 'Brakes', 'Electrical', 'Suspension'],
+    current: [22000, 18000, 12000, 9000, 8000],
+    predicted: [25000, 17000, 14000, 9500, 8500]
+  },
+  anomalyDetection: {
+    timePoints: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    normalRangeMin: [45000, 46000, 47000, 48000],
+    normalRangeMax: [55000, 56000, 57000, 58000],
+    actualValues: [50000, 52000, 60000, 62000],
+    anomalyPoints: [false, false, true, true]
+  }
+};
+
+export const forecastData = {
+  months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+  actual: [135000, 138000, 142000, 146000, null, null],
+  predicted: [134000, 137000, 141000, 145000, 150000, 155000],
+  lowerBound: [130000, 133000, 137000, 141000, 145000, 150000],
+  upperBound: [138000, 141000, 145000, 149000, 155000, 160000]
 };

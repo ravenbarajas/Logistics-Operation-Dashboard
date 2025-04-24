@@ -27,6 +27,15 @@ interface OperationalEfficiencyProps {
   period: string;
 }
 
+interface CostDataItem {
+  month: string;
+  costPerMile: number;
+  heavyTruck: number;
+  mediumTruck: number;
+  deliveryVan: number;
+  electric: number;
+}
+
 export default function OperationalEfficiency({ period }: OperationalEfficiencyProps) {
   const [chartType, setChartType] = useState<"performance" | "utilization" | "cost">("performance");
   const [isLoading, setIsLoading] = useState(true);
@@ -90,7 +99,7 @@ export default function OperationalEfficiency({ period }: OperationalEfficiencyP
   ];
   
   // Cost data for the chart
-  const costData = [
+  const costData: CostDataItem[] = [
     costPerMileData[0], costPerMileData[1], costPerMileData[2],
     costPerMileData[3], costPerMileData[4], costPerMileData[5]
   ];

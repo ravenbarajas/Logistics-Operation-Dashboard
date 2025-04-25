@@ -1037,37 +1037,11 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
   
   return (
     <div className="space-y-4" data-component="delivery-performance-matrix">
-      {/* Command Header Bar */}
-      <div className="bg-card rounded-lg p-3 flex items-center justify-between shadow-sm border border-border">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 text-right text-xs text-muted-foreground">
-            <div>
-              <span className="font-semibold text-foreground">Status: </span>
-              {renderDeliveryStatusBadge()}
-            </div>
-            <div className="text-[10px] font-mono">
-              Last Updated: {timestamp.toLocaleTimeString()}
-            </div>
-          </div>
-          
-          <Select defaultValue={trendsTimeframe} onValueChange={(value) => setTrendsTimeframe(value as any)}>
-            <SelectTrigger className="w-32 h-8 text-xs">
-              <SelectValue placeholder="Time Range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
       {/* Delivery KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* On-Time Delivery Rate */}
         <Card>
-          <CardHeader className="p-3">
+          <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium p-0">On-Time Delivery</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -1114,7 +1088,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         
         {/* Average Delivery Time */}
         <Card>
-          <CardHeader className="p-3">
+          <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium p-0">Delivery Time</CardTitle>
             <Timer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -1159,7 +1133,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         
         {/* Delivery Attempts */}
         <Card>
-          <CardHeader className="p-3">
+          <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium p-0">Success Rate</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -1208,7 +1182,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         
         {/* Customer Satisfaction */}
         <Card>
-          <CardHeader className="p-3">
+          <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium p-0">Customer Satisfaction</CardTitle>
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -1266,7 +1240,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         <Card className="md:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between p-4">
             <div className="flex flex-col space-y-1">
-              <CardTitle>Daily Delivery Volume</CardTitle>
+              <CardTitle className="text-lg font-semibold">Daily Delivery Volume</CardTitle>
               <CardDescription>Performance across regions and carriers</CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -1314,7 +1288,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         <Card className="md:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between p-4">
             <div className="flex flex-col space-y-1">
-              <CardTitle>Delivery Performance Analysis</CardTitle>
+              <CardTitle className="text-lg font-semibold">Delivery Performance Analysis</CardTitle>
               <CardDescription>Key metrics and insights</CardDescription>
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -1333,7 +1307,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
                   </div>
                 </div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-2xl font-bold">94.2%</span>
+                  <span className="text-xl font-bold">94.2%</span>
                   <span className="text-xs text-muted-foreground">Target: 95%</span>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -1354,7 +1328,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
                   </div>
                 </div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-2xl font-bold">1h 24m</span>
+                  <span className="text-xl font-bold">1h 24m</span>
                   <span className="text-xs text-muted-foreground">Target: 1h 30m</span>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -1375,7 +1349,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
                   </div>
                 </div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-2xl font-bold">92.5%</span>
+                  <span className="text-xl font-bold">92.5%</span>
                   <span className="text-xs text-muted-foreground">Target: 90%</span>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -1396,7 +1370,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
                   </div>
                 </div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-2xl font-bold">4.6/5</span>
+                  <span className="text-xl font-bold">4.6/5</span>
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star 
@@ -1426,7 +1400,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         <Card className="lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between p-4">
             <div className="flex flex-col space-y-1">
-              <CardTitle>Performance Metrics</CardTitle>
+              <CardTitle className="text-lg font-semibold">Performance Metrics</CardTitle>
               <CardDescription>Last 30 days summary</CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -1448,7 +1422,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
                   </div>
                 </div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-2xl font-bold">{metrics.onTimeDelivery}%</span>
+                  <span className="text-xl font-bold">{metrics.onTimeDelivery}%</span>
                   <span className="text-xs text-muted-foreground">Target: 95%</span>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -1469,7 +1443,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
                   </div>
                 </div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-2xl font-bold">{metrics.firstAttemptSuccess}%</span>
+                  <span className="text-xl font-bold">{metrics.firstAttemptSuccess}%</span>
                   <span className="text-xs text-muted-foreground">Target: 98%</span>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -1490,7 +1464,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
                   </div>
                 </div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-2xl font-bold">{metrics.avgDeliveryTime}</span>
+                  <span className="text-xl font-bold">{metrics.avgDeliveryTime}</span>
                   <span className="text-xs text-muted-foreground">Target: 2h 30m</span>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -1546,7 +1520,7 @@ export default function DeliveryPerformanceMatrix({ isDataLoaded, period }: Deli
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between p-4">
             <div className="flex flex-col space-y-1">
-              <CardTitle>Delivery Performance Analysis</CardTitle>
+              <CardTitle className="text-lg font-semibold">Delivery Performance Analysis</CardTitle>
               <CardDescription>Time distribution and regional metrics</CardDescription>
             </div>
             <div className="flex items-center gap-2">

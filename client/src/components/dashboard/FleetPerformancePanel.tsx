@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { fleetData } from "@/data/mock-data";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Truck, 
   BarChart, 
@@ -53,14 +54,10 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
   const [isLoading, setIsLoading] = useState(true);
   const fleetChartRef = useRef<HTMLCanvasElement | null>(null);
   const driverChartRef = useRef<HTMLCanvasElement | null>(null);
-  const utilizationChartRef = useRef<HTMLCanvasElement | null>(null);
-  const fuelEfficiencyChartRef = useRef<HTMLCanvasElement | null>(null);
   const maintenanceChartRef = useRef<HTMLCanvasElement | null>(null);
   const incidentChartRef = useRef<HTMLCanvasElement | null>(null);
   const fleetChartInstance = useRef<any>(null);
   const driverChartInstance = useRef<any>(null);
-  const utilizationChartInstance = useRef<any>(null);
-  const fuelEfficiencyChartInstance = useRef<any>(null);
   const maintenanceChartInstance = useRef<any>(null);
   const incidentChartInstance = useRef<any>(null);
   
@@ -275,7 +272,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
     { month: 'Jun', mpg: 8.0, cost: 21250 },
     { month: 'Jul', mpg: 8.1, cost: 20640 },
     { month: 'Aug', mpg: 8.0, cost: 20980 },
-    { month: 'Sep', mpg: 7.9, cost: 21340 },
+    { month: 'Sep', mpg: 7.9, cost: 25340 },
     { month: 'Oct', mpg: 7.7, cost: 22450 },
     { month: 'Nov', mpg: 7.6, cost: 23120 },
     { month: 'Dec', mpg: 7.4, cost: 24890 }
@@ -445,100 +442,6 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
   useEffect(() => {
     if (!isDataLoaded || isLoading) return;
     
-    // Create utilization chart
-    if (utilizationChartRef.current && window.Chart && !utilizationChartInstance.current) {
-      const ctx = utilizationChartRef.current.getContext('2d');
-      if (!ctx) return;
-      
-      // Prepare data
-      const labels = utilizationData.map(d => d.time);
-      const truckData = utilizationData.map(d => d.trucks);
-      const vanData = utilizationData.map(d => d.vans);
-      const totalData = utilizationData.map(d => d.total);
-      
-      // Define chart
-      utilizationChartInstance.current = new window.Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Fleet Average',
-              data: totalData,
-              borderColor: 'hsl(var(--primary))',
-              backgroundColor: 'hsla(var(--primary), 0.1)',
-              borderWidth: 2,
-              tension: 0.3,
-              fill: true
-            },
-            {
-              label: 'Trucks',
-              data: truckData,
-              borderColor: 'rgb(14, 165, 233)',
-              borderDash: [3, 3],
-              pointRadius: 0,
-              borderWidth: 2,
-              tension: 0.3,
-              fill: false
-            },
-            {
-              label: 'Vans',
-              data: vanData,
-              borderColor: 'rgb(245, 158, 11)',
-              borderDash: [3, 3],
-              pointRadius: 0,
-              borderWidth: 2,
-              tension: 0.3,
-              fill: false
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top',
-              labels: {
-                usePointStyle: true,
-                boxWidth: 6,
-                color: 'hsl(var(--foreground))'
-              }
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false
-            }
-          },
-          scales: {
-            x: {
-              ticks: {
-                color: 'hsl(var(--foreground))',
-                maxRotation: 0,
-                autoSkip: true,
-                autoSkipPadding: 20
-              },
-              grid: {
-                display: false
-              }
-            },
-            y: {
-              min: 0,
-              max: 100,
-              ticks: {
-                color: 'hsl(var(--foreground))',
-                callback: (value: number) => `${value}%`
-              },
-              grid: {
-                color: 'hsla(var(--muted), 0.2)'
-              }
-            }
-          }
-        }
-      });
-    }
-    
     // Create fleet composition chart
     if (fleetChartRef.current && window.Chart && !fleetChartInstance.current) {
       const ctx = fleetChartRef.current.getContext('2d');
@@ -691,111 +594,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
       });
     }
     
-    // Create fuel efficiency chart
-    if (fuelEfficiencyChartRef.current && window.Chart && !fuelEfficiencyChartInstance.current) {
-      const ctx = fuelEfficiencyChartRef.current.getContext('2d');
-      if (!ctx) return;
-      
-      const labels = fuelEfficiencyData.map(d => d.month);
-      const mpgData = fuelEfficiencyData.map(d => d.mpg);
-      const costData = fuelEfficiencyData.map(d => d.cost / 1000); // Divide by 1000 for better scaling
-      
-      fuelEfficiencyChartInstance.current = new window.Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'MPG',
-              data: mpgData,
-              yAxisID: 'y',
-              borderColor: 'rgb(14, 165, 233)',
-              backgroundColor: 'hsla(196, 83%, 48%, 0.1)',
-              borderWidth: 2,
-              tension: 0.3,
-              fill: true
-            },
-            {
-              label: 'Cost (K$)',
-              data: costData,
-              yAxisID: 'y1',
-              borderColor: 'rgb(245, 158, 11)',
-              backgroundColor: 'transparent',
-              borderWidth: 2,
-              tension: 0.3,
-              borderDash: [4, 4],
-              fill: false
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: {
-                usePointStyle: true,
-                boxWidth: 6,
-                color: 'hsl(var(--foreground))'
-              }
-            }
-          },
-          scales: {
-            x: {
-              ticks: {
-                color: 'hsl(var(--foreground))'
-              },
-              grid: {
-                display: false
-              }
-            },
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: {
-                display: true,
-                text: 'MPG',
-                color: 'rgb(14, 165, 233)'
-              },
-              ticks: {
-                color: 'hsl(var(--foreground))'
-              },
-              grid: {
-                color: 'hsla(var(--muted), 0.2)'
-              }
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              title: {
-                display: true,
-                text: 'Cost (K$)',
-                color: 'rgb(245, 158, 11)'
-              },
-              ticks: {
-                color: 'hsl(var(--foreground))'
-              },
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      });
-    }
-    
     return () => {
-      if (utilizationChartInstance.current) {
-        utilizationChartInstance.current.destroy();
-        utilizationChartInstance.current = null;
-      }
       if (fleetChartInstance.current) {
         fleetChartInstance.current.destroy();
         fleetChartInstance.current = null;
@@ -803,10 +602,6 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
       if (driverChartInstance.current) {
         driverChartInstance.current.destroy();
         driverChartInstance.current = null;
-      }
-      if (fuelEfficiencyChartInstance.current) {
-        fuelEfficiencyChartInstance.current.destroy();
-        fuelEfficiencyChartInstance.current = null;
       }
       if (maintenanceChartInstance.current) {
         maintenanceChartInstance.current.destroy();
@@ -1017,38 +812,11 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
   const renderCommandCenter = () => {
     return (
       <div className="space-y-4">
-        {/* Command Header Bar */}
-        <div className="bg-card rounded-lg p-3 flex items-center justify-between shadow-sm border border-border">
-          <div className="flex items-center gap-3">
-            <div className="flex-1 text-right text-xs text-muted-foreground">
-              <div>
-                <span className="font-semibold text-foreground">Status: </span>
-                {renderFleetStatusBadge()}
-              </div>
-              <div className="text-[10px] font-mono">
-                Last Updated: {timestamp.toLocaleTimeString()}
-              </div>
-            </div>
-            
-            <Select value={timeRange} onValueChange={(value) => setTimeRange(value as "day" | "week" | "month" | "quarter")}>
-              <SelectTrigger className="w-32 h-8 text-xs">
-                <SelectValue placeholder="Time Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="day">Last 24 Hours</SelectItem>
-                <SelectItem value="week">Last 7 Days</SelectItem>
-                <SelectItem value="month">Last 30 Days</SelectItem>
-                <SelectItem value="quarter">Last Quarter</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      
         {/* Top Metrics Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Fleet Status Panel */}
           <Card>
-            <CardHeader className="p-3">
+            <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium p-0">Fleet Status</CardTitle>
               <Truck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -1086,7 +854,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
           
           {/* Fleet Utilization Panel */}
           <Card>
-            <CardHeader className="p-3">
+            <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium p-0">Fleet Utilization</CardTitle>
               <Gauge className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -1124,7 +892,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
           
           {/* Maintenance Status Panel */}
           <Card>
-            <CardHeader className="p-3">
+            <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium p-0">Maintenance Status</CardTitle>
               <Wrench className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -1163,7 +931,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
           
           {/* Driver Status Panel */}
           <Card>
-            <CardHeader className="p-3">
+            <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium p-0">Driver Status</CardTitle>
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -1213,7 +981,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Left Column - Fleet Utilization Chart */}
           <Card className="xl:col-span-2 shadow-sm border border-border">
-            <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle className="text-sm font-medium">Fleet Utilization <span className="text-xs text-muted-foreground">(24 hours)</span></CardTitle>
               </div>
@@ -1236,7 +1004,155 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
                     </div>
                   </div>
                 ) : (
-                  <canvas ref={utilizationChartRef} className="w-full h-full" />
+                  <div className="w-full h-full">
+                    <div className="flex flex-col h-full">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>100%</span>
+                        <span>Utilization Rate</span>
+                        <span>0%</span>
+                      </div>
+                      
+                      <div className="flex-1 relative">
+                        {/* Time markers */}
+                        <div className="absolute left-0 right-0 bottom-0 flex justify-between text-xs text-muted-foreground">
+                          {['00:00', '06:00', '12:00', '18:00', '23:00'].map((time) => (
+                            <span key={time}>{time}</span>
+                          ))}
+                        </div>
+                        
+                        {/* Grid lines */}
+                        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                          {[0, 25, 50, 75, 100].map((value) => (
+                            <div key={value} className="w-full h-px bg-muted/30" style={{ top: `${100 - value}%` }} />
+                          ))}
+                        </div>
+                        
+                        {/* Data lines */}
+                        <div className="absolute inset-0 pt-4 pb-6">
+                          {/* Fleet Average Line */}
+                          <svg className="w-full h-full overflow-visible">
+                            <defs>
+                              <linearGradient id="fleetGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
+                                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.01" />
+                              </linearGradient>
+                            </defs>
+                            <path
+                              d={`
+                                M0,${100 - utilizationData[0].total}
+                                ${utilizationData.map((d, i) => 
+                                  `L${(i / (utilizationData.length - 1)) * 950},${100 - d.total}`
+                                ).join(' ')}
+                              `}
+                              fill="none"
+                              stroke="hsl(var(--primary))"
+                              strokeWidth="2"
+                              className="transition-all duration-500"
+                            />
+                            <path
+                              d={`
+                                M0,${100 - utilizationData[0].total}
+                                ${utilizationData.map((d, i) => 
+                                  `L${(i / (utilizationData.length - 1)) * 100},${100 - d.total}`
+                                ).join(' ')}
+                                L100,100 L0,100 Z
+                              `}
+                              fill="url(#fleetGradient)"
+                              className="transition-all duration-500"
+                            />
+                            
+                            {/* Data points */}
+                            {utilizationData.map((d, i) => {
+                              // Display points evenly across the graph
+                              if (i % 4 === 0 || i === utilizationData.length - 1) {
+                                return (
+                                  <circle
+                                    key={i}
+                                    cx={`${(i / (utilizationData.length - 1)) * 100}%`}
+                                    cy={`${100 - d.total}%`}
+                                    r="3"
+                                    fill="hsl(var(--primary))"
+                                    className="transition-all duration-500"
+                                  />
+                                );
+                              }
+                              return null;
+                            })}
+                          </svg>
+                          
+                          {/* Trucks Line */}
+                          <svg className="w-full h-full overflow-visible absolute inset-0">
+                            <path
+                              d={`
+                                M0,${100 - utilizationData[0].trucks}
+                                ${utilizationData.map((d, i) => 
+                                  `L${(i / (utilizationData.length - 1)) * 950},${100 - d.trucks}`
+                                ).join(' ')}
+                              `}
+                              fill="none"
+                              stroke="rgb(14, 165, 233)"
+                              strokeWidth="1.5"
+                              strokeDasharray="3,3"
+                              className="transition-all duration-500"
+                            />
+
+                            {/* Add data points */}
+                            {utilizationData.map((d, i) => {
+                              // Display fewer points for cleaner look
+                              if (i % 6 === 0 || i === utilizationData.length - 1) {
+                                return (
+                                  <circle
+                                    key={i}
+                                    cx={`${(i / (utilizationData.length - 1)) * 100}%`}
+                                    cy={`${100 - d.trucks}%`}
+                                    r="2"
+                                    fill="rgb(14, 165, 233)"
+                                    className="transition-all duration-500"
+                                  />
+                                );
+                              }
+                              return null;
+                            })}
+                          </svg>
+                          
+                          {/* Vans Line */}
+                          <svg className="w-full h-full overflow-visible absolute inset-0">
+                            <path
+                              d={`
+                                M0,${100 - utilizationData[0].vans}
+                                ${utilizationData.map((d, i) => 
+                                  `L${(i / (utilizationData.length - 1)) * 950},${100 - d.vans}`
+                                ).join(' ')}
+                              `}
+                              fill="none"
+                              stroke="rgb(245, 158, 11)"
+                              strokeWidth="1.5"
+                              strokeDasharray="3,3"
+                              className="transition-all duration-500"
+                            />
+
+                            {/* Add data points */}
+                            {utilizationData.map((d, i) => {
+                              // Display fewer points for cleaner look
+                              if (i % 6 === 0 || i === utilizationData.length - 1) {
+                                return (
+                                  <circle
+                                    key={i}
+                                    cx={`${(i / (utilizationData.length - 1)) * 100}%`}
+                                    cy={`${100 - d.vans}%`}
+                                    r="2"
+                                    fill="rgb(245, 158, 11)"
+                                    className="transition-all duration-500"
+                                  />
+                                );
+                              }
+                              return null;
+                            })}
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
               
@@ -1269,7 +1185,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
           
           {/* Right Column - Live Alerts */}
           <Card className="xl:col-span-1 shadow-sm border border-border">
-            <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle className="text-sm font-medium">Live Alerts</CardTitle>
               </div>
@@ -1278,59 +1194,66 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
               </Badge>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="max-h-[290px] overflow-y-auto">
-                <div className="p-2 bg-card/60 border-b border-border/20">
-                  <div className="text-xs font-semibold mb-1 text-muted-foreground">Vehicle Alerts</div>
-                  {liveFleetAlerts.map((alert, i) => (
-                    <div key={i} className="mb-2 last:mb-0 p-2 bg-muted/10 rounded-md">
-                      <div className="flex items-center justify-between">
-                        <div className="font-medium text-xs flex items-center">
-                          {getAlertIcon(alert.severity)}
-                          <span className="ml-1">{alert.id}</span>
+              <ScrollArea className="h-[330px] px-4">
+                <div className="pt-2 space-y-2">
+                  <div className="p-2 bg-card/60 border-b border-border/20">
+                    <div className="text-xs font-semibold mb-1 text-muted-foreground">Vehicle Alerts</div>
+                      {liveFleetAlerts.map((alert, i) => (
+                        <div key={i} className="mb-2 last:mb-0 p-2 bg-muted/10 rounded-md">
+                          <div className="flex items-center justify-between">
+                            <div className="font-medium text-xs flex items-center">
+                              {getAlertIcon(alert.severity)}
+                              <span className="ml-1">{alert.id}</span>
+                            </div>
+                            <Badge variant={
+                              alert.severity === "critical" ? "destructive" : 
+                              alert.severity === "warning" ? "default" : 
+                              "secondary"
+                            } className="text-[10px] py-0 px-1.5 h-4">
+                              {alert.severity}
+                            </Badge>
+                          </div>
+                          <div className="text-sm">{alert.alert}</div>
+                          <div className="text-xs text-muted-foreground flex items-center justify-between mt-1">
+                            <span>{alert.location}</span>
+                            <span>{alert.time}</span>
+                          </div>
                         </div>
-                        <Badge variant={
-                          alert.severity === "critical" ? "destructive" : 
-                          alert.severity === "warning" ? "default" : 
-                          "secondary"
-                        } className="text-[10px] py-0 px-1.5 h-4">
-                          {alert.severity}
-                        </Badge>
-                      </div>
-                      <div className="text-sm">{alert.alert}</div>
-                      <div className="text-xs text-muted-foreground flex items-center justify-between mt-1">
-                        <span>{alert.location}</span>
-                        <span>{alert.time}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="p-2 bg-card/60">
-                  <div className="text-xs font-semibold mb-1 text-muted-foreground">Driver Alerts</div>
-                  {liveDriverAlerts.map((alert, i) => (
-                    <div key={i} className="mb-2 last:mb-0 p-2 bg-muted/10 rounded-md">
-                      <div className="flex items-center justify-between">
-                        <div className="font-medium text-xs flex items-center">
-                          {getAlertIcon(alert.severity)}
-                          <span className="ml-1">{alert.id}</span>
+                      ))}
+                  </div>
+                  
+                  <div className="p-2 bg-card/60">
+                    <div className="text-xs font-semibold mb-1 text-muted-foreground">Driver Alerts</div>
+                    {liveDriverAlerts.map((alert, i) => (
+                      <div key={i} className="mb-2 last:mb-0 p-2 bg-muted/10 rounded-md">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium text-xs flex items-center">
+                            {getAlertIcon(alert.severity)}
+                            <span className="ml-1">{alert.id}</span>
+                          </div>
+                          <Badge variant={
+                            alert.severity === "critical" ? "destructive" : 
+                            alert.severity === "warning" ? "default" : 
+                            "secondary"
+                          } className="text-[10px] py-0 px-1.5 h-4">
+                            {alert.severity}
+                          </Badge>
                         </div>
-                        <Badge variant={
-                          alert.severity === "critical" ? "destructive" : 
-                          alert.severity === "warning" ? "default" : 
-                          "secondary"
-                        } className="text-[10px] py-0 px-1.5 h-4">
-                          {alert.severity}
-                        </Badge>
+                        <div className="text-sm">{alert.alert}</div>
+                        <div className="text-xs text-muted-foreground flex items-center justify-between mt-1">
+                          <span>{alert.location}</span>
+                          <span>{alert.time}</span>
+                        </div>
                       </div>
-                      <div className="text-sm">{alert.alert}</div>
-                      <div className="text-xs text-muted-foreground flex items-center justify-between mt-1">
-                        <span>{alert.location}</span>
-                        <span>{alert.time}</span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
+              </ScrollArea>
+              <div className="flex justify-between items-center p-3 border-t mt-1">
+              <div className="text-xs text-muted-foreground">
+                Updated 2 minutes ago
               </div>
+            </div>
             </CardContent>
           </Card>
         </div>
@@ -1339,7 +1262,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Fuel Efficiency Performance */}
           <Card className="shadow-sm border border-border">
-            <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle className="text-sm font-medium">Fuel Efficiency</CardTitle>
               </div>
@@ -1374,7 +1297,111 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
                     </div>
                   </div>
                 ) : (
-                  <canvas ref={fuelEfficiencyChartRef} className="w-full h-full" />
+                  <div className="w-full h-full">
+                    <div className="flex flex-col h-full">
+                      <div className="flex-1 relative">
+                        {/* Axis labels and grid */}
+                        <div className="absolute left-0 bottom-0 top-0 flex flex-col justify-between items-start text-xs text-muted-foreground">
+                          <span>9</span>
+                          <span>8</span>
+                          <span>7</span>
+                          <span>6</span>
+                        </div>
+                        
+                        <div className="absolute right-0 bottom-0 top-0 flex flex-col justify-between items-end text-xs text-muted-foreground">
+                          <span>30K</span>
+                          <span>25K</span>
+                          <span>20K</span>
+                          <span>15K</span>
+                        </div>
+                        
+                        {/* Month labels */}
+                        <div className="absolute left-8 right-8 bottom-0 flex justify-between text-xs text-muted-foreground">
+                          {fuelEfficiencyData.filter((_, i) => i % 2 === 0).map((d) => (
+                            <span key={d.month}>{d.month}</span>
+                          ))}
+                        </div>
+                        
+                        {/* Grid lines */}
+                        <div className="absolute inset-x-8 inset-y-4 flex flex-col justify-between pointer-events-none">
+                          {[0, 1, 2, 3].map((value) => (
+                            <div key={value} className="w-full h-px bg-muted/30" />
+                          ))}
+                        </div>
+                        
+                        {/* Chart content */}
+                        <div className="absolute inset-x-8 inset-y-4">
+                          {/* MPG Bar Chart */}
+                          <div className="absolute inset-0 flex items-end justify-between">
+                            {fuelEfficiencyData.map((d, i) => {
+                              // Normalize MPG value between 0-100% (using 6-9 MPG range)
+                              const mpgPercentage = ((d.mpg - 6) / 3) * 100;
+                              return (
+                                <div key={i} className="flex-1 h-full flex items-end mx-0.5">
+                                  <div 
+                                    className="w-full bg-blue-500/80 rounded-t transition-all duration-500"
+                                    style={{ height: `${mpgPercentage}%` }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Cost Line Chart */}
+                          <svg className="w-full h-full overflow-visible absolute inset-0">
+                            <path
+                              d={`
+                                M0,${100 - ((fuelEfficiencyData[0].cost - 20000) / 10000) * 100}
+                                ${fuelEfficiencyData.map((d, i) => {
+                                  // Normalize cost between 0-100% (using 20K-30K range)
+                                  const costPercentage = ((d.cost - 20000) / 10000) * 100;
+                                  return `L${(i / (fuelEfficiencyData.length - 1)) * 650},${100 - costPercentage}`;
+                                }).join(' ')}
+                              `}
+                              fill="none"
+                              stroke="rgb(245, 158, 11)"
+                              strokeWidth="2"
+                              strokeDasharray="4,4"
+                              className="transition-all duration-500"
+                            />
+                            
+                            {/* Data points */}
+                            {fuelEfficiencyData.map((d, i) => {
+                              // Display points at more regular intervals for better visualization
+                              if (i % 2 === 0 || i === fuelEfficiencyData.length - 1) {
+                                const costPercentage = ((d.cost - 20000) / 10000) * 100;
+                                return (
+                                  <circle
+                                    key={i}
+                                    cx={`${(i / (fuelEfficiencyData.length - 1)) * 100}%`}
+                                    cy={`${100 - costPercentage}%`}
+                                    r="3"
+                                    fill="rgb(245, 158, 11)"
+                                    className="transition-all duration-500"
+                                  />
+                                );
+                              }
+                              return null;
+                            })}
+                          </svg>
+                        </div>
+                        
+                        {/* Legend */}
+                        <div className="absolute top-1 left-0 right-0 flex justify-center">
+                          <div className="flex items-center gap-4 text-xs">
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 rounded-sm bg-blue-500 mr-1"></div>
+                              <span className="text-muted-foreground">MPG</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 rounded-full bg-amber-500 mr-1"></div>
+                              <span className="text-muted-foreground">Cost</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -1382,7 +1409,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
           
           {/* Top Fleet Insights */}
           <Card className="shadow-sm border border-border">
-            <CardHeader className="bg-muted/20 p-3 pb-2 flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle className="text-sm font-medium">Key Insights</CardTitle>
               </div>
@@ -1449,29 +1476,7 @@ export default function FleetPerformancePanel({ isDataLoaded, period }: FleetPer
             </CardContent>
           </Card>
         </div>
-        
-        {/* Command Center Footer */}
-        <div className="bg-card rounded-lg flex items-center justify-between p-2 text-xs text-muted-foreground border border-border">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></div>
-              <span>System Online</span>
-            </div>
-            <div className="flex items-center">
-              <Phone className="h-3.5 w-3.5 mr-1" />
-              <span>24/7 Support: (555) 123-4567</span>
-            </div>
-            <div className="flex items-center">
-              <MessageCircle className="h-3.5 w-3.5 mr-1" />
-              <span>Open Tickets: 3</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center">
-            <Terminal className="h-3.5 w-3.5 mr-1" />
-            <span className="font-mono">LOGITRACK SYSTEM v1.4.2.103</span>
-          </div>
-        </div>
+      
       </div>
     );
   };

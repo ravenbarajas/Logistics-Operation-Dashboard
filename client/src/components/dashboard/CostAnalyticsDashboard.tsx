@@ -785,13 +785,7 @@ export default function CostAnalyticsDashboard({ period, isDataLoaded }: CostAna
                     <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 text-[10px] border-0">ALL CLEAR</Badge>
                   )}
                 </p>
-                <div className="mt-3">
-                  <Separator />
-                  <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                    <span>Last scan: 2 min ago</span>
-                    <RotateCw className="h-3 w-3" />
-                  </div>
-                </div>
+
               </CardContent>
             </Card>
           </div>

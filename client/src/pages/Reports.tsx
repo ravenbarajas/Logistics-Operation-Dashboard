@@ -58,19 +58,33 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Pencil,
-  Trash2
+  Trash2,
+  Activity as ActivityIcon,
+  BarChart3,
+  Ruler,
+  FileCode,
+  CheckSquare,
+  Eye,
+  Save,
+  RotateCcw,
+  ChevronDown
 } from "lucide-react";
 import {
+  LineChart, 
+  Line,
   AreaChart,
   Area,
-  LineChart,
-  Line,
-  XAxis,
+  CartesianGrid, 
+  XAxis, 
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart as RechartsBarChart,
+  Bar
 } from 'recharts';
 import {
   DropdownMenu,
@@ -81,6 +95,11 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { useLocation } from "wouter";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 // Dummy report data
 const reports = [
@@ -1653,6 +1672,238 @@ export default function Reports() {
         
         {/* Recent Reports Tab - Updated */}
         <TabsContent value="recent">
+          {/* Additional components for Custom Report Builder - goes between TabsList and TabsContent */}
+          <Card className="mb-6">
+              <div className="col-span-1 md:col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Builder Presets</CardTitle>
+                  <CardDescription>Quick-start templates for custom reports</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                    <div className="bg-muted/30 hover:bg-muted/50 rounded-md p-3 cursor-pointer transition-colors">
+                      <div className="flex flex-col items-center text-center">
+                        <TrendingUp className="h-8 w-8 mb-2 text-blue-500" />
+                        <h4 className="text-sm font-medium mb-1">Performance Dashboard</h4>
+                        <p className="text-xs text-muted-foreground">Operations KPIs and metrics</p>
+                      </div>
+                    </div>
+                    <div className="bg-muted/30 hover:bg-muted/50 rounded-md p-3 cursor-pointer transition-colors">
+                      <div className="flex flex-col items-center text-center">
+                        <Truck className="h-8 w-8 mb-2 text-green-500" />
+                        <h4 className="text-sm font-medium mb-1">Fleet Analysis</h4>
+                        <p className="text-xs text-muted-foreground">Vehicle utilization metrics</p>
+                      </div>
+                    </div>
+                    <div className="bg-muted/30 hover:bg-muted/50 rounded-md p-3 cursor-pointer transition-colors">
+                      <div className="flex flex-col items-center text-center">
+                        <Users className="h-8 w-8 mb-2 text-amber-500" />
+                        <h4 className="text-sm font-medium mb-1">Customer Insights</h4>
+                        <p className="text-xs text-muted-foreground">Satisfaction and engagement</p>
+                      </div>
+                    </div>
+                    <div className="bg-muted/30 hover:bg-muted/50 rounded-md p-3 cursor-pointer transition-colors">
+                      <div className="flex flex-col items-center text-center">
+                        <ActivityIcon className="h-8 w-8 mb-2 text-red-500" />
+                        <h4 className="text-sm font-medium mb-1">Delivery Metrics</h4>
+                        <p className="text-xs text-muted-foreground">On-time delivery analysis</p>
+                      </div>
+                    </div>
+                    <div className="bg-muted/30 hover:bg-muted/50 rounded-md p-3 cursor-pointer transition-colors">
+                      <div className="flex flex-col items-center text-center">
+                        <BarChart3 className="h-8 w-8 mb-2 text-purple-500" />
+                        <h4 className="text-sm font-medium mb-1">Financial Overview</h4>
+                        <p className="text-xs text-muted-foreground">Cost and revenue metrics</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </div>
+          </Card>
+          {/* Additional visualization for Recent Reports - goes between TabsList and TabsContent */}
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Report Generation Trends</CardTitle>
+                <CardDescription>Weekly report generation activity</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[220px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsBarChart
+                    data={[
+                      { day: 'Mon', reports: 12, downloaded: 10 },
+                      { day: 'Tue', reports: 18, downloaded: 14 },
+                      { day: 'Wed', reports: 15, downloaded: 12 },
+                      { day: 'Thu', reports: 21, downloaded: 18 },
+                      { day: 'Fri', reports: 16, downloaded: 13 },
+                      { day: 'Sat', reports: 8, downloaded: 6 },
+                      { day: 'Sun', reports: 5, downloaded: 4 }
+                    ]}
+                    margin={{ top: 20, right: 15, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} width={30} />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-background border rounded-md shadow-sm p-2">
+                              <p className="font-medium text-xs">{payload[0].payload.day}</p>
+                              <p className="text-xs">
+                                Generated: <span className="font-medium">{payload[0].value}</span>
+                              </p>
+                              <p className="text-xs">
+                                Downloaded: <span className="font-medium">{payload[1].value}</span>
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar name="Generated" dataKey="reports" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Bar name="Downloaded" dataKey="downloaded" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Legend 
+                      verticalAlign="top"
+                      height={30}
+                      iconType="circle"
+                      iconSize={8}
+                      formatter={(value) => <span className="text-xs font-medium">{value}</span>}
+                    />
+                  </RechartsBarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Report Categories</CardTitle>
+                <CardDescription>Distribution by report type</CardDescription>
+              </CardHeader>
+              <CardContent className="h-[220px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Operations', value: 35, color: '#3b82f6' },
+                        { name: 'Fleet', value: 25, color: '#10b981' },
+                        { name: 'Delivery', value: 20, color: '#f59e0b' },
+                        { name: 'Customer', value: 15, color: '#f43f5e' },
+                        { name: 'Other', value: 5, color: '#6b7280' }
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {[
+                        { name: 'Operations', value: 35, color: '#3b82f6' },
+                        { name: 'Fleet', value: 25, color: '#10b981' },
+                        { name: 'Delivery', value: 20, color: '#f59e0b' },
+                        { name: 'Customer', value: 15, color: '#f43f5e' },
+                        { name: 'Other', value: 5, color: '#6b7280' }
+                      ].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-background border rounded-md shadow-sm p-2">
+                              <p className="font-medium text-xs">{payload[0].name}</p>
+                              <p className="text-xs">
+                                <span className="font-medium">{payload[0].value}%</span> of reports
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Legend 
+                      layout="vertical"
+                      verticalAlign="middle"
+                      align="right"
+                      iconType="circle"
+                      iconSize={8}
+                      formatter={(value) => <span className="text-xs font-medium">{value}</span>}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Report Metrics</CardTitle>
+                <CardDescription>Performance summary</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="text-sm">Generation Time</div>
+                      <div className="text-sm font-medium">3.5s avg</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-green-500 rounded-full" style={{ width: '75%' }}></div>
+                    </div>
+                    <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                      <div>0s</div>
+                      <div>10s</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="text-sm">Download Rate</div>
+                      <div className="text-sm font-medium">82%</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '82%' }}></div>
+                    </div>
+                    <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                      <div>0%</div>
+                      <div>100%</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="text-sm">File Size</div>
+                      <div className="text-sm font-medium">2.7 MB avg</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-amber-500 rounded-full" style={{ width: '54%' }}></div>
+                    </div>
+                    <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                      <div>0 MB</div>
+                      <div>5 MB</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="text-sm">User Satisfaction</div>
+                      <div className="text-sm font-medium">94%</div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full" style={{ width: '94%' }}></div>
+                    </div>
+                    <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                      <div>0%</div>
+                      <div>100%</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
           <Card>
             <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
               <div>
@@ -2607,132 +2858,402 @@ export default function Reports() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Report Type</label>
-                  <Select defaultValue="performance" onValueChange={setSelectedReportType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select report type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="performance">Performance Analysis</SelectItem>
-                      <SelectItem value="fleet">Fleet Utilization</SelectItem>
-                      <SelectItem value="delivery">Delivery Metrics</SelectItem>
-                      <SelectItem value="cost">Cost Analysis</SelectItem>
-                      <SelectItem value="customer">Customer Satisfaction</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2">Date Range</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="relative">
-                      <Input type="text" placeholder="From date" value="01/08/2023" readOnly />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Report Configuration - Left Column */}
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Report Configuration</h3>
+                    
+                    {/* Report Type */}
+                    <div className="space-y-2">
+                      <Label htmlFor="report-type">Report Type</Label>
+                      <Select defaultValue="operations">
+                        <SelectTrigger id="report-type">
+                          <SelectValue placeholder="Select report type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="operations">Operations Report</SelectItem>
+                          <SelectItem value="fleet">Fleet Management</SelectItem>
+                          <SelectItem value="delivery">Delivery Performance</SelectItem>
+                          <SelectItem value="customer">Customer Analytics</SelectItem>
+                          <SelectItem value="financial">Financial Summary</SelectItem>
+                          <SelectItem value="inventory">Inventory Status</SelectItem>
+                          <SelectItem value="custom">Custom SQL Query</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="relative">
-                      <Input type="text" placeholder="To date" value="31/08/2023" readOnly />
+                    
+                    {/* Date Range */}
+                    <div className="space-y-2">
+                      <Label>Date Range</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="from-date" className="text-xs">From</Label>
+                          <Input id="from-date" type="date" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="to-date" className="text-xs">To</Label>
+                          <Input id="to-date" type="date" />
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <Button variant="outline" size="sm">Today</Button>
+                        <Button variant="outline" size="sm">This Week</Button>
+                        <Button variant="outline" size="sm">This Month</Button>
+                        <Button variant="outline" size="sm">This Quarter</Button>
+                        <Button variant="outline" size="sm">Year to Date</Button>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2">Format</label>
-                  <Select defaultValue="pdf" onValueChange={setSelectedFormat}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pdf">PDF Document</SelectItem>
-                      <SelectItem value="csv">CSV File</SelectItem>
-                      <SelectItem value="json">JSON Data</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="md:col-span-3">
-                  <label className="block text-sm font-medium mb-2">Data Sections</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
-                        id="overview" 
-                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        defaultChecked
-                      />
-                      <label htmlFor="overview" className="text-sm">Executive Overview</label>
+                    
+                    {/* Format Options */}
+                    <div className="space-y-2">
+                      <Label>Export Format</Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="format-pdf" />
+                          <Label htmlFor="format-pdf" className="text-sm">PDF</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="format-excel" defaultChecked />
+                          <Label htmlFor="format-excel" className="text-sm">Excel</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="format-csv" />
+                          <Label htmlFor="format-csv" className="text-sm">CSV</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="format-json" />
+                          <Label htmlFor="format-json" className="text-sm">JSON</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="format-html" />
+                          <Label htmlFor="format-html" className="text-sm">HTML</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="format-image" />
+                          <Label htmlFor="format-image" className="text-sm">Image</Label>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
-                        id="metrics" 
-                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        defaultChecked
-                      />
-                      <label htmlFor="metrics" className="text-sm">Key Metrics</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
-                        id="trends" 
-                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        defaultChecked
-                      />
-                      <label htmlFor="trends" className="text-sm">Trend Analysis</label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
-                        id="recommendations" 
-                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        defaultChecked
-                      />
-                      <label htmlFor="recommendations" className="text-sm">Recommendations</label>
-                    </div>
-                  </div>
-                </div>
+                    
+                    {/* Advanced Options */}
+                    <Collapsible className="w-full">
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="flex w-full justify-between p-0">
+                          <span>Advanced Options</span>
+                          <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-4 space-y-4">
+                        {/* Aggregation */}
+                        <div className="space-y-2">
+                          <Label>Data Aggregation</Label>
+                          <Select defaultValue="none">
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select aggregation" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">No Aggregation</SelectItem>
+                              <SelectItem value="daily">Daily</SelectItem>
+                              <SelectItem value="weekly">Weekly</SelectItem>
+                              <SelectItem value="monthly">Monthly</SelectItem>
+                              <SelectItem value="quarterly">Quarterly</SelectItem>
+                              <SelectItem value="yearly">Yearly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Sorting */}
+                        <div className="space-y-2">
+                          <Label>Sort By</Label>
+                          <div className="grid grid-cols-2 gap-4">
+                            <Select defaultValue="date">
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select field" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="date">Date</SelectItem>
+                                <SelectItem value="name">Name</SelectItem>
+                                <SelectItem value="value">Value</SelectItem>
+                                <SelectItem value="status">Status</SelectItem>
+                                <SelectItem value="location">Location</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Select defaultValue="desc">
+                              <SelectTrigger>
+                                <SelectValue placeholder="Order" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="asc">Ascending</SelectItem>
+                                <SelectItem value="desc">Descending</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        {/* Limit Results */}
+                        <div className="space-y-2">
+                          <Label htmlFor="limit-results">Limit Results</Label>
+                          <Input id="limit-results" type="number" placeholder="1000" />
+                        </div>
+                        
+                        {/* Include Historical Data */}
+                        <div className="flex items-center space-x-2">
+                          <Switch id="historical-data" />
+                          <Label htmlFor="historical-data">Include Historical Comparison</Label>
+                        </div>
 
+                        {/* Schedule */}
+                        <div className="flex items-center space-x-2">
+                          <Switch id="schedule-report" />
+                          <Label htmlFor="schedule-report">Schedule this Report</Label>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                </div>
+                
+                {/* Data Selection - Right Column */}
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Data Selection</h3>
+                    
+                    {/* Data Sections */}
+                    <div className="space-y-2">
+                      <Label>Include Sections</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="include-summary" defaultChecked />
+                            <Label htmlFor="include-summary">Executive Summary</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="include-charts" defaultChecked />
+                            <Label htmlFor="include-charts">Charts & Visualizations</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="include-tables" defaultChecked />
+                            <Label htmlFor="include-tables">Data Tables</Label>
+                          </div>
+                        </div>
+                          <div className="space-y-3">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="include-trends" />
+                            <Label htmlFor="include-trends">Trend Analysis</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="include-forecasts" />
+                            <Label htmlFor="include-forecasts">Forecasts & Predictions</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox id="include-anomalies" />
+                            <Label htmlFor="include-anomalies">Anomaly Detection</Label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Visualization Types */}
+                    <div className="space-y-2">
+                      <Label>Visualization Types</Label>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="viz-bar" defaultChecked />
+                          <Label htmlFor="viz-bar" className="text-sm">Bar Charts</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="viz-line" defaultChecked />
+                          <Label htmlFor="viz-line" className="text-sm">Line Charts</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="viz-pie" />
+                          <Label htmlFor="viz-pie" className="text-sm">Pie Charts</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="viz-scatter" />
+                          <Label htmlFor="viz-scatter" className="text-sm">Scatter Plots</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="viz-map" />
+                          <Label htmlFor="viz-map" className="text-sm">Geographic Maps</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="viz-heat" />
+                          <Label htmlFor="viz-heat" className="text-sm">Heat Maps</Label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Data Filters */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label>Data Filters</Label>
+                        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                          <Plus className="h-3.5 w-3.5 mr-1" />
+                          Add Filter
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-3 border rounded-md p-3">
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-5">
+                            <Select defaultValue="status">
+                              <SelectTrigger>
+                                <SelectValue placeholder="Field" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="status">Status</SelectItem>
+                                <SelectItem value="location">Location</SelectItem>
+                                <SelectItem value="vehicle">Vehicle Type</SelectItem>
+                                <SelectItem value="driver">Driver</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="col-span-3">
+                            <Select defaultValue="equals">
+                              <SelectTrigger>
+                                <SelectValue placeholder="Operator" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="equals">Equals</SelectItem>
+                                <SelectItem value="contains">Contains</SelectItem>
+                                <SelectItem value="starts">Starts with</SelectItem>
+                                <SelectItem value="ends">Ends with</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="col-span-4">
+                            <Input placeholder="Value" defaultValue="Completed" />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-5">
+                            <Select defaultValue="vehicle">
+                              <SelectTrigger>
+                                <SelectValue placeholder="Field" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="status">Status</SelectItem>
+                                <SelectItem value="location">Location</SelectItem>
+                                <SelectItem value="vehicle">Vehicle Type</SelectItem>
+                                <SelectItem value="driver">Driver</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="col-span-3">
+                            <Select defaultValue="equals">
+                              <SelectTrigger>
+                                <SelectValue placeholder="Operator" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="equals">Equals</SelectItem>
+                                <SelectItem value="contains">Contains</SelectItem>
+                                <SelectItem value="starts">Starts with</SelectItem>
+                                <SelectItem value="ends">Ends with</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="col-span-4">
+                            <Input placeholder="Value" defaultValue="Truck" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {selectedReportType && (
-                <div className="mt-8 border rounded-md p-4">
-                  <h4 className="text-sm font-medium mb-2">Report Preview</h4>
-                  <div className="bg-muted p-4 rounded-md">
-                    <div className="flex items-center mb-4">
-                      <div className={`h-10 w-10 rounded-md mr-3 flex items-center justify-center ${
-                        selectedFormat === 'pdf' ? 'bg-red-100 text-red-700' :
-                        selectedFormat === 'csv' ? 'bg-blue-100 text-blue-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {selectedFormat === 'pdf' ? <FileText className="h-6 w-6" /> :
-                         selectedFormat === 'csv' ? <FileText className="h-6 w-6" /> :
-                         <Database className="h-6 w-6" />
-                        }
-                      </div>
-                      <div>
-                        <p className="font-medium">
-                          {selectedReportType === 'performance' ? 'Performance Analysis Report' :
-                           selectedReportType === 'fleet' ? 'Fleet Utilization Report' :
-                           selectedReportType === 'delivery' ? 'Delivery Metrics Report' :
-                           selectedReportType === 'cost' ? 'Cost Analysis Report' :
-                           'Customer Satisfaction Report'
-                          }
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {selectedFormat.toUpperCase()} format • Data from 01/08/2023 to 31/08/2023
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-3 bg-muted-foreground/20 rounded w-full"></div>
-                      <div className="h-3 bg-muted-foreground/20 rounded w-4/5"></div>
-                      <div className="h-3 bg-muted-foreground/20 rounded w-5/6"></div>
-                      <div className="h-3 bg-muted-foreground/20 rounded w-3/4"></div>
+              {/* Advanced SQL Query */}
+              <div className="mt-6 border-t pt-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Custom SQL Query</h3>
+                    <Switch id="enable-sql" />
+                  </div>
+                  <Textarea 
+                    className="font-mono text-sm h-32" 
+                    placeholder="SELECT * FROM deliveries WHERE status = 'completed' AND delivery_date BETWEEN '2023-01-01' AND '2023-12-31'" 
+                  />
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm">
+                      <FileCode className="h-4 w-4 mr-1" />
+                      Load Template
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <CheckSquare className="h-4 w-4 mr-1" />
+                      Validate Query
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Report Preview */}
+              <div className="mt-6 border-t pt-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Report Preview</h3>
+                  <div className="rounded-md border overflow-hidden h-[300px] flex items-center justify-center bg-muted/50">
+                    <div className="text-center">
+                      <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Configure your report and click "Generate" to preview</p>
+                      <Button variant="outline" size="sm" className="mt-4">
+                        <Eye className="h-4 w-4 mr-1" />
+                        Quick Preview
+                      </Button>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Additional Report Options */}
+              <div className="mt-6 border-t pt-6">
+                <div className="flex flex-wrap gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Switch id="watermark" />
+                    <Label htmlFor="watermark">Add Company Watermark</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch id="encrypt" />
+                    <Label htmlFor="encrypt">Encrypt Report</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch id="save-template" />
+                    <Label htmlFor="save-template">Save as Template</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch id="email" defaultChecked />
+                    <Label htmlFor="email">Email when Complete</Label>
+                  </div>
+                </div>
+              </div>
             </CardContent>
+            <CardFooter className="bg-muted/10 justify-between">
+              <div>
+                <Button variant="outline" size="sm">
+                  <Save className="h-4 w-4 mr-1" />
+                  Save Draft
+                </Button>
+              </div>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  Reset
+                </Button>
+                <Button size="sm" onClick={handleGenerateReport} disabled={isGenerating}>
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Generate Report
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

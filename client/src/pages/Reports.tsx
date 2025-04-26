@@ -52,7 +52,13 @@ import {
   Package,
   ArrowUp,
   ArrowDown,
-  RefreshCw
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Pencil,
+  Trash2
 } from "lucide-react";
 import {
   AreaChart,
@@ -417,6 +423,90 @@ const incidentData = [
   { month: "Aug", incidents: 3 }
 ];
 
+// Add scheduled reports data array
+const scheduledReports = [
+  {
+    id: "SCH-2023-1001",
+    name: "Weekly Operations Summary",
+    type: "Operations",
+    frequency: "Weekly (Monday)",
+    nextRun: "Aug 28, 2023",
+    recipients: "5 recipients",
+    format: "PDF",
+    status: "active"
+  },
+  {
+    id: "SCH-2023-1002",
+    name: "Monthly Fleet Report",
+    type: "Fleet",
+    frequency: "Monthly (1st)",
+    nextRun: "Sep 1, 2023",
+    recipients: "3 recipients",
+    format: "PDF, CSV",
+    status: "active"
+  },
+  {
+    id: "SCH-2023-1003",
+    name: "Daily Delivery Exceptions",
+    type: "Delivery",
+    frequency: "Daily (6PM)",
+    nextRun: "Today",
+    recipients: "7 recipients",
+    format: "PDF",
+    status: "active"
+  },
+  {
+    id: "SCH-2023-1004",
+    name: "Customer Satisfaction Summary",
+    type: "Customer",
+    frequency: "Bi-weekly",
+    nextRun: "Sep 5, 2023",
+    recipients: "4 recipients",
+    format: "PDF, Excel",
+    status: "paused"
+  },
+  {
+    id: "SCH-2023-1005",
+    name: "Route Optimization Analysis",
+    type: "Route",
+    frequency: "Weekly (Friday)",
+    nextRun: "Sep 1, 2023",
+    recipients: "2 recipients",
+    format: "PDF, JSON",
+    status: "active"
+  },
+  {
+    id: "SCH-2023-1006",
+    name: "Warehouse Inventory Report",
+    type: "Inventory",
+    frequency: "Daily (9AM)",
+    nextRun: "Tomorrow",
+    recipients: "6 recipients",
+    format: "CSV",
+    status: "active"
+  },
+  {
+    id: "SCH-2023-1007",
+    name: "Driver Performance Report",
+    type: "Personnel",
+    frequency: "Monthly (15th)",
+    nextRun: "Sep 15, 2023",
+    recipients: "3 recipients",
+    format: "PDF",
+    status: "active"
+  },
+  {
+    id: "SCH-2023-1008",
+    name: "Cost Analysis Report",
+    type: "Finance",
+    frequency: "Quarterly",
+    nextRun: "Oct 1, 2023",
+    recipients: "2 recipients",
+    format: "Excel",
+    status: "paused"
+  }
+];
+
 export default function Reports() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState("all");
@@ -444,6 +534,18 @@ export default function Reports() {
   
   // Add state for the main tab navigation (matching the sidebar navigation)
   const [mainTab, setMainTab] = React.useState("recent");
+  
+  // Add pagination state
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(5);
+  const [selectedReports, setSelectedReports] = React.useState<string[]>([]);
+  
+  // Add pagination and selection state for scheduled reports
+  const [currentScheduledPage, setCurrentScheduledPage] = React.useState(1);
+  const [scheduledPageSize, setScheduledPageSize] = React.useState(5);
+  const [selectedScheduledReports, setSelectedScheduledReports] = React.useState<string[]>([]);
+  const [scheduledStatusFilter, setScheduledStatusFilter] = React.useState("all");
+  const [scheduledSearchTerm, setScheduledSearchTerm] = React.useState("");
   
   // Set the active tab based on the current URL path
   useEffect(() => {
@@ -485,6 +587,7 @@ export default function Reports() {
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
   };
   
   // Filter reports based on search term and category
@@ -509,6 +612,20 @@ export default function Reports() {
     }
     
     return filtered;
+  };
+  
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+  
+  // Handle report selection
+  const handleToggleReportSelection = (reportId: string) => {
+    if (selectedReports.includes(reportId)) {
+      setSelectedReports(selectedReports.filter(id => id !== reportId));
+    } else {
+      setSelectedReports([...selectedReports, reportId]);
+    }
   };
   
   // Filter operations reports by department
@@ -594,7 +711,49 @@ export default function Reports() {
     
     return filtered;
   };
-
+  
+  // Add filter function for scheduled reports
+  const getFilteredScheduledReports = () => {
+    let filtered = scheduledReports;
+    
+    // Apply search filter
+    if (scheduledSearchTerm) {
+      filtered = filtered.filter(report => 
+        report.id.toLowerCase().includes(scheduledSearchTerm.toLowerCase()) ||
+        report.name.toLowerCase().includes(scheduledSearchTerm.toLowerCase()) ||
+        report.type.toLowerCase().includes(scheduledSearchTerm.toLowerCase()) ||
+        report.frequency.toLowerCase().includes(scheduledSearchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply status filter
+    if (scheduledStatusFilter !== 'all') {
+      filtered = filtered.filter(report => report.status === scheduledStatusFilter);
+    }
+    
+    return filtered;
+  };
+  
+  // Handle scheduled reports page change
+  const handleScheduledPageChange = (page: number) => {
+    setCurrentScheduledPage(page);
+  };
+  
+  // Handle scheduled report selection
+  const handleToggleScheduledReportSelection = (reportId: string) => {
+    if (selectedScheduledReports.includes(reportId)) {
+      setSelectedScheduledReports(selectedScheduledReports.filter(id => id !== reportId));
+    } else {
+      setSelectedScheduledReports([...selectedScheduledReports, reportId]);
+    }
+  };
+  
+  // Handle scheduled report search
+  const handleScheduledSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setScheduledSearchTerm(e.target.value);
+    setCurrentScheduledPage(1); // Reset to first page on search
+  };
+  
   // Handle report download for all report tables
   const handleReportDownload = (report: any) => {
     // Determine format based on file extension or defaulting to PDF
@@ -937,6 +1096,270 @@ export default function Reports() {
     }
   };
 
+  // Inside the render block, replace References to paginatedReports with the following calculation:
+  const renderReportsList = () => {
+    const filteredReports = getFilteredReports(reports);
+    const totalReports = filteredReports.length;
+    const totalPages = Math.ceil(totalReports / pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const paginatedReports = filteredReports.slice(startIndex, startIndex + pageSize);
+
+    if (paginatedReports.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 p-6">
+          <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
+          <h3 className="text-lg font-medium text-center mb-2">No reports found</h3>
+          <p className="text-sm text-muted-foreground text-center mb-4">
+            {searchTerm || selectedCategory !== "all" 
+              ? "Try adjusting your search filters to find what you're looking for." 
+              : "No reports have been generated yet."}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <div className="overflow-auto">
+          <table className="w-full">
+            <thead className="bg-muted/50 text-sm">
+              <tr>
+                <th className="py-3 px-4 text-left font-medium w-[40px]">
+                  <input
+                    type="checkbox"
+                    checked={selectedReports.length === paginatedReports.length && paginatedReports.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedReports(paginatedReports.map(r => r.id.toString()));
+                      } else {
+                        setSelectedReports([]);
+                      }
+                    }}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                </th>
+                <th className="py-3 px-4 text-left font-medium w-[120px]">Report ID</th>
+                <th className="py-3 px-4 text-left font-medium">Report Name</th>
+                <th className="py-3 px-4 text-left font-medium">Category</th>
+                <th className="py-3 px-4 text-left font-medium">Date</th>
+                <th className="py-3 px-4 text-left font-medium">Size</th>
+                <th className="py-3 px-4 text-left font-medium">Author</th>
+                <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {paginatedReports.map((report) => (
+                <tr 
+                  key={report.id} 
+                  className="hover:bg-muted/50 transition-colors"
+                >
+                  <td className="py-3 px-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedReports.includes(report.id.toString())}
+                      onChange={() => handleToggleReportSelection(report.id.toString())}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                  </td>
+                  <td className="py-3 px-4 text-sm">{report.id}</td>
+                  <td className="py-3 px-4">
+                    <div className="font-medium flex items-center">
+                      <FileText className="h-4 w-4 mr-2 text-primary" />
+                      {report.name}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <Badge variant={
+                      report.category === 'operations' ? 'default' : 
+                      report.category === 'fleet' ? 'secondary' : 
+                      report.category === 'customer' ? 'success' : 
+                      'warning'
+                    }>
+                      {report.category.charAt(0).toUpperCase() + report.category.slice(1)}
+                    </Badge>
+                  </td>
+                  <td className="py-3 px-4 text-sm">{report.date}</td>
+                  <td className="py-3 px-4 text-sm">{report.size}</td>
+                  <td className="py-3 px-4 text-sm">{report.author}</td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="flex items-center justify-end space-x-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleReportDownload(report)} 
+                        className="h-8 w-8"
+                        title="Download Report"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => {}} 
+                        className="h-8 w-8"
+                        title="View Report"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => {}} 
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        title="Delete Report"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="border-t">
+          <div className="flex items-center justify-between py-4 px-6">
+            <div className="flex-1 text-sm text-muted-foreground">
+              Showing {Math.min((currentPage - 1) * pageSize + 1, totalReports)} to {Math.min(currentPage * pageSize, totalReports)} of {totalReports} {totalReports === 1 ? 'report' : 'reports'}
+            </div>
+            
+            <div className="flex-1 flex justify-center">
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                  className="h-8 w-8"
+                  aria-label="First page"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="h-8 w-8"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                {totalPages <= 5 ? (
+                  // Show all pages if 5 or fewer
+                  [...Array(totalPages)].map((_, i) => (
+                    <Button
+                      key={`page-${i+1}`}
+                      variant={currentPage === i+1 ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => handlePageChange(i+1)}
+                      className="h-8 w-8"
+                      aria-label={`Page ${i+1}`}
+                      aria-current={currentPage === i+1 ? "page" : undefined}
+                    >
+                      {i+1}
+                    </Button>
+                  ))
+                ) : (
+                  // Show limited pages with ellipsis
+                  <>
+                    <Button
+                      variant={currentPage === 1 ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => handlePageChange(1)}
+                      className="h-8 w-8"
+                      aria-label="Page 1"
+                    >
+                      1
+                    </Button>
+                    
+                    {currentPage > 3 && <span className="mx-1">...</span>}
+                    
+                    {currentPage > 2 && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        className="h-8 w-8"
+                        aria-label={`Page ${currentPage - 1}`}
+                      >
+                        {currentPage - 1}
+                      </Button>
+                    )}
+                    
+                    {currentPage !== 1 && currentPage !== totalPages && (
+                      <Button
+                        variant="default"
+                        size="icon"
+                        onClick={() => handlePageChange(currentPage)}
+                        className="h-8 w-8"
+                        aria-label={`Page ${currentPage}`}
+                        aria-current="page"
+                      >
+                        {currentPage}
+                      </Button>
+                    )}
+                    
+                    {currentPage < totalPages - 1 && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className="h-8 w-8"
+                        aria-label={`Page ${currentPage + 1}`}
+                      >
+                        {currentPage + 1}
+                      </Button>
+                    )}
+                    
+                    {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                    
+                    <Button
+                      variant={currentPage === totalPages ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => handlePageChange(totalPages)}
+                      className="h-8 w-8"
+                      aria-label={`Page ${totalPages}`}
+                    >
+                      {totalPages}
+                    </Button>
+                  </>
+                )}
+                
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="h-8 w-8"
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="h-8 w-8"
+                  aria-label="Last page"
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex-1 flex justify-end">
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -1228,7 +1651,7 @@ export default function Reports() {
           </TabsTrigger>
         </TabsList>
         
-        {/* Recent Reports Tab */}
+        {/* Recent Reports Tab - Updated */}
         <TabsContent value="recent">
           <Card>
             <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
@@ -1237,6 +1660,32 @@ export default function Reports() {
                 <CardDescription>Recently generated reports with download links</CardDescription>
               </div>
               <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search reports..."
+                    className="w-[200px] pl-8"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
+                </div>
+                <Select 
+                  value={pageSize.toString()} 
+                  onValueChange={(value) => {
+                    setPageSize(parseInt(value));
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Rows per page" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 per page</SelectItem>
+                    <SelectItem value="10">10 per page</SelectItem>
+                    <SelectItem value="15">15 per page</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select defaultValue="all" onValueChange={setSelectedCategory}>
                   <SelectTrigger className="w-[150px]">
                     <SelectValue placeholder="Category" />
@@ -1251,70 +1700,20 @@ export default function Reports() {
                 </Select>
               </div>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Report ID</TableHead>
-                    <TableHead>Report Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead>Author</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredReports(reports).length > 0 ? (
-                    getFilteredReports(reports).map((report) => (
-                      <TableRow key={report.id}>
-                        <TableCell className="font-medium">{report.id}</TableCell>
-                        <TableCell>{report.name}</TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            report.category === 'operations' ? 'default' : 
-                            report.category === 'fleet' ? 'secondary' : 
-                            report.category === 'customer' ? 'success' : 
-                            'warning'
-                          }>
-                            {report.category.charAt(0).toUpperCase() + report.category.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{report.date}</TableCell>
-                        <TableCell>{report.size}</TableCell>
-                        <TableCell>{report.author}</TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" onClick={() => handleReportDownload(report)}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6">
-                        No reports found matching your criteria
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+            <CardContent className="p-0">
+              {renderReportsList()}
             </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredReports(reports).length} of {reports.length} reports
-              </div>
-            </CardFooter>
           </Card>
         </TabsContent>
         
         {/* Report Templates Tab */}
         <TabsContent value="templates">
           <Card>
-            <CardHeader>
-              <CardTitle>Report Templates</CardTitle>
-              <CardDescription>Standard report templates for quick generation</CardDescription>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>Report Templates</CardTitle>
+                <CardDescription>Standard report templates for quick generation</CardDescription>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1415,121 +1814,337 @@ export default function Reports() {
                 <CardTitle>Scheduled Reports</CardTitle>
                 <CardDescription>Automatically generated reports on schedule</CardDescription>
               </div>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Schedule New Report
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Frequency</TableHead>
-                    <TableHead>Next Run</TableHead>
-                    <TableHead>Recipients</TableHead>
-                    <TableHead>Format</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Weekly Operations Summary</TableCell>
-                    <TableCell>Operations</TableCell>
-                    <TableCell>Weekly (Monday)</TableCell>
-                    <TableCell>Aug 28, 2023</TableCell>
-                    <TableCell>5 recipients</TableCell>
-                    <TableCell>PDF</TableCell>
-                    <TableCell>
-                      <Badge variant="success">Active</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Edit schedule</DropdownMenuItem>
-                          <DropdownMenuItem>View recipients</DropdownMenuItem>
-                          <DropdownMenuItem>Run now</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">Disable schedule</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Monthly Fleet Report</TableCell>
-                    <TableCell>Fleet</TableCell>
-                    <TableCell>Monthly (1st)</TableCell>
-                    <TableCell>Sep 1, 2023</TableCell>
-                    <TableCell>3 recipients</TableCell>
-                    <TableCell>PDF, CSV</TableCell>
-                    <TableCell>
-                      <Badge variant="success">Active</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Edit schedule</DropdownMenuItem>
-                          <DropdownMenuItem>View recipients</DropdownMenuItem>
-                          <DropdownMenuItem>Run now</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">Disable schedule</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Daily Delivery Exceptions</TableCell>
-                    <TableCell>Delivery</TableCell>
-                    <TableCell>Daily (6PM)</TableCell>
-                    <TableCell>Today</TableCell>
-                    <TableCell>7 recipients</TableCell>
-                    <TableCell>PDF</TableCell>
-                    <TableCell>
-                      <Badge variant="success">Active</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Edit schedule</DropdownMenuItem>
-                          <DropdownMenuItem>View recipients</DropdownMenuItem>
-                          <DropdownMenuItem>Run now</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">Disable schedule</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing 3 scheduled reports
+              <div className="flex gap-2">
+                <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="search"
+                        placeholder="Search scheduled..."
+                        className="w-[200px] pl-8"
+                        value={scheduledSearchTerm}
+                        onChange={handleScheduledSearch}
+                      />
+                </div>
+                <Select 
+                  value={scheduledPageSize.toString()} 
+                  onValueChange={(value) => {
+                    setScheduledPageSize(parseInt(value));
+                    setCurrentScheduledPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Rows per page" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 per page</SelectItem>
+                    <SelectItem value="10">10 per page</SelectItem>
+                    <SelectItem value="15">15 per page</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select 
+                  value={scheduledStatusFilter} 
+                  onValueChange={setScheduledStatusFilter}
+                >
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Schedule New Report
+                </Button>
               </div>
-            </CardFooter>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="px-0 pb-0">
+                {(() => {
+                  const filteredReports = getFilteredScheduledReports();
+                  const totalReports = filteredReports.length;
+                  const totalPages = Math.ceil(totalReports / scheduledPageSize);
+                  const startIndex = (currentScheduledPage - 1) * scheduledPageSize;
+                  const paginatedReports = filteredReports.slice(startIndex, startIndex + scheduledPageSize);
+
+                  if (paginatedReports.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center h-64 p-6">
+                        <CalendarIcon className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                        <h3 className="text-lg font-medium text-center mb-2">No scheduled reports found</h3>
+                        <p className="text-sm text-muted-foreground text-center mb-4">
+                          {scheduledSearchTerm || scheduledStatusFilter !== "all" 
+                            ? "Try adjusting your search filters to find what you're looking for." 
+                            : "Get started by scheduling your first report."}
+                        </p>
+                        {!scheduledSearchTerm && scheduledStatusFilter === "all" && (
+                          <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Schedule New Report
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div>
+                      <div className="overflow-auto">
+                        <table className="w-full">
+                          <thead className="bg-muted/50 text-sm">
+                            <tr>
+                              <th className="py-3 px-4 text-left font-medium w-[40px]">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedScheduledReports.length === paginatedReports.length && paginatedReports.length > 0}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedScheduledReports(paginatedReports.map((r: {id: string}) => r.id.toString()));
+                                    } else {
+                                      setSelectedScheduledReports([]);
+                                    }
+                                  }}
+                                  className="h-4 w-4 rounded border-gray-300"
+                                />
+                              </th>
+                              <th className="py-3 px-4 text-left font-medium w-[100px]">ID</th>
+                              <th className="py-3 px-4 text-left font-medium">Name</th>
+                              <th className="py-3 px-4 text-left font-medium">Type</th>
+                              <th className="py-3 px-4 text-left font-medium">Frequency</th>
+                              <th className="py-3 px-4 text-left font-medium">Next Run</th>
+                              <th className="py-3 px-4 text-left font-medium">Recipients</th>
+                              <th className="py-3 px-4 text-left font-medium">Format</th>
+                              <th className="py-3 px-4 text-left font-medium">Status</th>
+                              <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {paginatedReports.map((report: {
+                               id: string;
+                               name: string;
+                               type: string;
+                               frequency: string;
+                               nextRun: string;
+                               recipients: string;
+                               format: string;
+                               status: string;
+                             }) => {
+                              const statusColor = report.status === 'active' ? 'green' : 'amber';
+                              const statusLabel = report.status.charAt(0).toUpperCase() + report.status.slice(1);
+                              
+                              return (
+                                <tr 
+                                  key={report.id} 
+                                  className="hover:bg-muted/50 transition-colors"
+                                >
+                                  <td className="py-3 px-4">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedScheduledReports.includes(report.id.toString())}
+                                      onChange={() => handleToggleScheduledReportSelection(report.id.toString())}
+                                      className="h-4 w-4 rounded border-gray-300"
+                                    />
+                                  </td>
+                                  <td className="py-3 px-4 text-sm">{report.id}</td>
+                                  <td className="py-3 px-4">
+                                    <div className="font-medium flex items-center">
+                                      <FileText className="h-4 w-4 mr-2 text-primary" />
+                                      {report.name}
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-sm">{report.type}</td>
+                                  <td className="py-3 px-4 text-sm">{report.frequency}</td>
+                                  <td className="py-3 px-4 text-sm">{report.nextRun}</td>
+                                  <td className="py-3 px-4 text-sm">{report.recipients}</td>
+                                  <td className="py-3 px-4 text-sm">{report.format}</td>
+                                  <td className="py-3 px-4">
+                                    <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
+                                      {statusLabel}
+                                    </Badge>
+                                  </td>
+                                  <td className="py-3 px-4 text-right">
+                                    <div className="flex items-center justify-end space-x-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => {}} 
+                                        className="h-8 w-8"
+                                        title="View Details"
+                                      >
+                                        <FileText className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => {}} 
+                                        className="h-8 w-8"
+                                        title="Edit Schedule"
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => {}} 
+                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                                        title="Delete Schedule"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      <div className="border-t mt-4">
+                        <div className="flex items-center justify-between py-4 px-6">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            Showing {Math.min((currentScheduledPage - 1) * scheduledPageSize + 1, totalReports)} to {Math.min(currentScheduledPage * scheduledPageSize, totalReports)} of {totalReports} {totalReports === 1 ? 'scheduled report' : 'scheduled reports'}
+                          </div>
+                          
+                          <div className="flex-1 flex justify-center">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleScheduledPageChange(1)}
+                                disabled={currentScheduledPage === 1}
+                                className="h-8 w-8"
+                                aria-label="First page"
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleScheduledPageChange(currentScheduledPage - 1)}
+                                disabled={currentScheduledPage === 1}
+                                className="h-8 w-8"
+                                aria-label="Previous page"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              
+                              {totalPages <= 5 ? (
+                                // Show all pages if 5 or fewer
+                                [...Array(totalPages)].map((_, i) => (
+                                  <Button
+                                    key={`page-${i+1}`}
+                                    variant={currentScheduledPage === i+1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handleScheduledPageChange(i+1)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${i+1}`}
+                                    aria-current={currentScheduledPage === i+1 ? "page" : undefined}
+                                  >
+                                    {i+1}
+                                  </Button>
+                                ))
+                              ) : (
+                                // Show limited pages with ellipsis
+                                <>
+                                  <Button
+                                    variant={currentScheduledPage === 1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handleScheduledPageChange(1)}
+                                    className="h-8 w-8"
+                                    aria-label="Page 1"
+                                  >
+                                    1
+                                  </Button>
+                                  
+                                  {currentScheduledPage > 3 && <span className="mx-1">...</span>}
+                                  
+                                  {currentScheduledPage > 2 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handleScheduledPageChange(currentScheduledPage - 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentScheduledPage - 1}`}
+                                    >
+                                      {currentScheduledPage - 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentScheduledPage !== 1 && currentScheduledPage !== totalPages && (
+                                    <Button
+                                      variant="default"
+                                      size="icon"
+                                      onClick={() => handleScheduledPageChange(currentScheduledPage)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentScheduledPage}`}
+                                      aria-current="page"
+                                    >
+                                      {currentScheduledPage}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentScheduledPage < totalPages - 1 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handleScheduledPageChange(currentScheduledPage + 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentScheduledPage + 1}`}
+                                    >
+                                      {currentScheduledPage + 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentScheduledPage < totalPages - 2 && <span className="mx-1">...</span>}
+                                  
+                                  <Button
+                                    variant={currentScheduledPage === totalPages ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handleScheduledPageChange(totalPages)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${totalPages}`}
+                                  >
+                                    {totalPages}
+                                  </Button>
+                                </>
+                              )}
+                              
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleScheduledPageChange(currentScheduledPage + 1)}
+                                disabled={currentScheduledPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Next page"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleScheduledPageChange(totalPages)}
+                                disabled={currentScheduledPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Last page"
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1 flex justify-end">
+                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
         

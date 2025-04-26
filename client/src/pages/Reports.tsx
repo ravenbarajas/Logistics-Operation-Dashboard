@@ -1708,6 +1708,180 @@ export default function Reports() {
         
         {/* Report Templates Tab */}
         <TabsContent value="templates">
+          {/* Additional Template Analytics */}
+          <Card className="mb-6">
+            <CardHeader className="pb-2">
+              <CardTitle>Template Usage Analytics</CardTitle>
+              <CardDescription>Distribution and trends of report template usage</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={performanceData}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis 
+                        dataKey="month" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        padding={{ left: 10, right: 10 }}
+                      />
+                      <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        width={60}
+                        tickFormatter={(value) => `${value}`}
+                      />
+                      <Tooltip
+                        cursor={{stroke: '#6b7280', strokeWidth: 1, strokeDasharray: '3 3'}}
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className="bg-background border rounded-md shadow-sm p-3">
+                                <p className="font-medium">{label}</p>
+                                {payload.map((entry, index) => (
+                                  <div key={`tooltip-${index}`} className="flex items-center my-1">
+                                    <div 
+                                      className="h-3 w-3 rounded-full mr-2" 
+                                      style={{ backgroundColor: entry.stroke }}
+                                    />
+                                    <span className="text-sm">
+                                      {entry.name}: <span className="font-medium">{entry.value}</span>
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Line
+                        name="Operations Templates"
+                        type="monotone"
+                        dataKey="costEfficiency"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                        activeDot={{ r: 6, strokeWidth: 2 }}
+                      />
+                      <Line
+                        name="Fleet Templates"
+                        type="monotone"
+                        dataKey="deliverySpeed"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                        activeDot={{ r: 6, strokeWidth: 2 }}
+                      />
+                      <Line
+                        name="Customer Templates"
+                        type="monotone"
+                        dataKey="customerSatisfaction"
+                        stroke="#f43f5e"
+                        strokeWidth={2}
+                        dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                        activeDot={{ r: 6, strokeWidth: 2 }}
+                      />
+                      <Legend 
+                        verticalAlign="top"
+                        iconType="circle"
+                        iconSize={8}
+                        formatter={(value) => <span className="text-xs font-medium">{value}</span>}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                <div className="h-[300px] flex flex-col">
+                  <div className="flex-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        data={[
+                          { name: 'PDF', value: 45 },
+                          { name: 'CSV', value: 28 },
+                          { name: 'Excel', value: 15 },
+                          { name: 'JSON', value: 8 },
+                          { name: 'HTML', value: 4 }
+                        ]}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient id="templateFormatGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
+                          </linearGradient>
+                        </defs>
+                        <Tooltip
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              return (
+                                <div className="bg-background border rounded-md shadow-sm p-2">
+                                  <p className="font-medium text-sm">{payload[0].payload.name}</p>
+                                  <p className="text-sm">
+                                    <span className="font-medium">{payload[0].value}%</span> of all exports
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="value"
+                          stroke="#8884d8"
+                          fillOpacity={1}
+                          fill="url(#templateFormatGradient)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="grid grid-cols-5 gap-2 mt-4">
+                        <div className="text-center">
+                          <div className="bg-primary/10 rounded-md py-2 mb-1">
+                            <div className="font-medium text-xs">PDF</div>
+                            <div className="text-lg font-bold">45%</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Format</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="bg-green-500/10 rounded-md py-2 mb-1">
+                            <div className="font-medium text-xs">CSV</div>
+                            <div className="text-lg font-bold">28%</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Format</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="bg-blue-500/10 rounded-md py-2 mb-1">
+                            <div className="font-medium text-xs">Excel</div>
+                            <div className="text-lg font-bold">15%</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Format</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="bg-amber-500/10 rounded-md py-2 mb-1">
+                            <div className="font-medium text-xs">JSON</div>
+                            <div className="text-lg font-bold">8%</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Format</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="bg-red-500/10 rounded-md py-2 mb-1">
+                            <div className="font-medium text-xs">HTML</div>
+                            <div className="text-lg font-bold">4%</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Format</div>
+                        </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
               <div>
@@ -1808,6 +1982,266 @@ export default function Reports() {
         
         {/* Scheduled Reports Tab */}
         <TabsContent value="scheduled">
+          {/* Report Scheduling Heatmap */}
+          <Card className="mb-6">
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+               <div>
+                <CardTitle>Report Scheduling Heatmap</CardTitle>
+                <CardDescription>Scheduled report generation patterns by day and time</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 py-0">
+              <div className="mb-3 flex items-center justify-between">
+                <Select defaultValue="september">
+                  <SelectTrigger className="w-[180px] h-8">
+                    <SelectValue placeholder="Select Month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="august">August 2023</SelectItem>
+                    <SelectItem value="september">September 2023</SelectItem>
+                    <SelectItem value="october">October 2023</SelectItem>
+                    <SelectItem value="november">November 2023</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="flex space-x-2 text-xs items-center">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 mr-1 bg-blue-500/20 border border-blue-500/30"></div>
+                    <span>0-1</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 mr-1 bg-blue-500/40 border border-blue-500/50"></div>
+                    <span>2-3</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 mr-1 bg-blue-500/60 border border-blue-500/70"></div>
+                    <span>4-5</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 mr-1 bg-blue-500/80 text-primary-foreground"></div>
+                    <span>6+</span>
+                  </div>
+                </div>
+              </div>
+              <div className="h-[235px] overflow-hidden mb-3">
+                {/* Fixed grid layout with proper alignment */}
+                <div className="grid" style={{ display: 'grid', gridTemplateColumns: '100px repeat(7, 1fr)', gridGap: '4px' }}>
+                  {/* Header row with weekdays */}
+                  <div className="text-xs text-muted-foreground"></div>
+                  <div className="text-xs font-medium text-center">Sunday</div>
+                  <div className="text-xs font-medium text-center">Monday</div>
+                  <div className="text-xs font-medium text-center">Tuesday</div>
+                  <div className="text-xs font-medium text-center">Wednesday</div>
+                  <div className="text-xs font-medium text-center">Thursday</div>
+                  <div className="text-xs font-medium text-center">Friday</div>
+                  <div className="text-xs font-medium text-center">Saturday</div>
+                  
+                  {/* Morning row */}
+                  <div className="text-xs font-medium flex items-center justify-start pr-2">Morning<br/>(6AM-9AM)</div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">3</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">3</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">2</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">2</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">2</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+
+                  {/* Midday row */}
+                  <div className="text-xs font-medium flex items-center justify-start pr-2">Midday<br/>(10AM-12PM)</div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">2</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/60 border border-blue-500/70 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">5</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/60 border border-blue-500/70 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">4</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/60 border border-blue-500/70 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">5</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">3</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">3</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+
+                  {/* Afternoon row */}
+                  <div className="text-xs font-medium flex items-center justify-start pr-2">Afternoon<br/>(1PM-4PM)</div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/80 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-white text-right">7</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/60 border border-blue-500/70 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">5</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/80 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-white text-right">6</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/60 border border-blue-500/70 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">4</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">2</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+
+                  {/* Evening row */}
+                  <div className="text-xs font-medium flex items-center justify-start pr-2">Evening<br/>(5PM-8PM)</div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/60 border border-blue-500/70 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">4</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">3</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/40 border border-blue-500/50 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">3</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/80 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-white text-right">6</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+
+                  {/* Night row */}
+                  <div className="text-xs font-medium flex items-center justify-start pr-2">Night<br/>(9PM-12AM)</div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+
+                  {/* Early AM row */}
+                  <div className="text-xs font-medium flex items-center justify-start pr-2">Early AM<br/>(1AM-5AM)</div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+                  <div className="p-1 rounded-md bg-blue-500/20 border border-blue-500/30 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">1</div>
+                  </div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+                  <div className="p-1 rounded-md opacity-10 h-[32px] flex flex-col justify-between">
+                    <div className="text-[10px] opacity-80"></div>
+                    <div className="text-xs font-bold text-right">0</div>
+                  </div>
+                </div>
+              </div>
+              <div className="mb-6 my-3 grid grid-cols-2 gap-4">
+                <div className="bg-muted/30 rounded-md p-2">
+                  <div className="text-xs text-muted-foreground mb-1">Monthly Summary</div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Total Reports Scheduled</span>
+                    <span className="text-sm font-bold">78</span>
+                  </div>
+                </div>
+                <div className="bg-muted/30 rounded-md p-2">
+                  <div className="text-xs text-muted-foreground mb-1">Peak Time</div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Monday, 1PM-4PM</span>
+                    <span className="text-sm font-medium text-blue-500">7 reports</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Scheduled Reports Tab */} 
           <Card>
             <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
               <div>
@@ -2151,9 +2585,26 @@ export default function Reports() {
         {/* Custom Report Builder Tab */}
         <TabsContent value="builder">
           <Card>
-            <CardHeader>
-              <CardTitle>Custom Report Builder</CardTitle>
-              <CardDescription>Create customized reports based on specific criteria</CardDescription>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>Custom Report Builder</CardTitle>
+                <CardDescription>Create customized reports based on specific criteria</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button className="w-full md:w-auto" onClick={handleGenerateReport} disabled={isGenerating}>
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Generate Custom Report
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -2240,22 +2691,7 @@ export default function Reports() {
                     </div>
                   </div>
                 </div>
-                
-                <div className="md:col-span-3 flex justify-end mt-4">
-                  <Button className="w-full md:w-auto" onClick={handleGenerateReport} disabled={isGenerating}>
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="mr-2 h-4 w-4" />
-                        Generate Custom Report
-                      </>
-                    )}
-                  </Button>
-                </div>
+
               </div>
 
               {selectedReportType && (

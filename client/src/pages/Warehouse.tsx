@@ -920,285 +920,285 @@ export default function Warehouse() {
               </div>
             )}
             
-        <CardContent className="p-0">
-              {filteredWarehouses.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-64 p-6">
-                  <WarehouseIcon className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <h3 className="text-lg font-medium text-center mb-2">No warehouses found</h3>
-                  <p className="text-sm text-muted-foreground text-center mb-4">
-                    {searchTerm || statusFilter !== "all" 
-                      ? "Try adjusting your search filters to find what you're looking for." 
-                      : "Get started by adding your first warehouse."}
-                  </p>
-                  {!searchTerm && statusFilter === "all" && (
-                    <Button onClick={handleAddWarehouse}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Warehouse
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div>
-                  <div className="overflow-auto">
-                    <table className="w-full">
-                      <thead className="bg-muted/50 text-sm">
-                        <tr>
-                          <th className="py-3 px-4 text-left font-medium w-[40px]">
-                            <input
-                              type="checkbox"
-                              checked={selectedWarehouses.length === paginatedWarehouses.length && paginatedWarehouses.length > 0}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedWarehouses(paginatedWarehouses.map(w => w.id.toString()));
-                                } else {
-                                  setSelectedWarehouses([]);
-                                }
-                              }}
-                              className="h-4 w-4 rounded border-gray-300"
-                            />
-                          </th>
-                          <th className="py-3 px-4 text-left font-medium w-[60px]">ID</th>
-                          <th className="py-3 px-4 text-left font-medium">Warehouse</th>
-                          <th className="py-3 px-4 text-left font-medium">Location</th>
-                          <th className="py-3 px-4 text-left font-medium">Status</th>
-                          <th className="py-3 px-4 text-center font-medium">Capacity</th>
-                          <th className="py-3 px-4 text-center font-medium">Usage</th>
-                          <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {paginatedWarehouses.map((warehouse) => {
-                          const statusColor = warehouse.status === 'active' ? 'green' : 
-                            warehouse.status === 'maintenance' ? 'amber' : 'red';
-                          const statusLabel = warehouse.status.charAt(0).toUpperCase() + warehouse.status.slice(1);
-                          
-                          return (
-                            <tr 
-                              key={warehouse.id} 
-                              className="hover:bg-muted/50 transition-colors"
-                            >
-                              <td className="py-3 px-4">
+            <CardContent className="p-0">
+                  {filteredWarehouses.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-64 p-6">
+                      <WarehouseIcon className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                      <h3 className="text-lg font-medium text-center mb-2">No warehouses found</h3>
+                      <p className="text-sm text-muted-foreground text-center mb-4">
+                        {searchTerm || statusFilter !== "all" 
+                          ? "Try adjusting your search filters to find what you're looking for." 
+                          : "Get started by adding your first warehouse."}
+                      </p>
+                      {!searchTerm && statusFilter === "all" && (
+                        <Button onClick={handleAddWarehouse}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Warehouse
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="overflow-auto">
+                        <table className="w-full">
+                          <thead className="bg-muted/50 text-sm">
+                            <tr>
+                              <th className="py-3 px-4 text-left font-medium w-[40px]">
                                 <input
                                   type="checkbox"
-                                  checked={selectedWarehouses.includes(warehouse.id.toString())}
-                                  onChange={() => handleToggleWarehouseSelection(warehouse.id.toString())}
+                                  checked={selectedWarehouses.length === paginatedWarehouses.length && paginatedWarehouses.length > 0}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedWarehouses(paginatedWarehouses.map(w => w.id.toString()));
+                                    } else {
+                                      setSelectedWarehouses([]);
+                                    }
+                                  }}
                                   className="h-4 w-4 rounded border-gray-300"
                                 />
-                              </td>
-                              <td className="py-3 px-4 text-sm">{warehouse.id}</td>
-                              <td className="py-3 px-4">
-                                <div className="font-medium flex items-center">
-                                  <WarehouseIcon className="h-4 w-4 mr-2 text-primary" />
-                                  {warehouse.name}
-                                </div>
-                              </td>
-                              <td className="py-3 px-4 text-sm">
-                                <div className="flex items-center">
-                                  <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                                  {warehouse.location && typeof warehouse.location === 'object' && 'lat' in warehouse.location && 'lng' in warehouse.location
-                                    ? `${(warehouse.location.lat as number).toFixed(4)}, ${(warehouse.location.lng as number).toFixed(4)}`
-                                    : 'N/A'}
-                                </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
-                                  {statusLabel}
-                                </Badge>
-                              </td>
-                              <td className="py-3 px-4 text-center">{warehouse.capacity} units</td>
-                              <td className="py-3 px-4">
-                                <div className="flex flex-col items-center">
-                                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[80px]">
-                                    <div 
-                                      className="bg-primary h-2 rounded-full" 
-                                      style={{ width: `${(warehouse.currentUsage / warehouse.capacity) * 100}%` }}
-                                    />
-                                  </div>
-                                  <div className="text-xs mt-1 text-muted-foreground">
-                                    {Math.round((warehouse.currentUsage / warehouse.capacity) * 100)}%
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="py-3 px-4 text-right">
-                                <div className="flex items-center justify-end space-x-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => handleViewDetails(warehouse)} 
-                                    className="h-8 w-8"
-                                    title="View Details"
-                                  >
-                                    <FileText className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => handleEditWarehouse(warehouse)} 
-                                    className="h-8 w-8"
-                                    title="Edit Warehouse"
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => handleDeleteWarehouse(warehouse)} 
-                                    className="h-8 w-8 text-destructive hover:text-destructive"
-                                    title="Delete Warehouse"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </td>
+                              </th>
+                              <th className="py-3 px-4 text-left font-medium w-[60px]">ID</th>
+                              <th className="py-3 px-4 text-left font-medium">Warehouse</th>
+                              <th className="py-3 px-4 text-left font-medium">Location</th>
+                              <th className="py-3 px-4 text-left font-medium">Status</th>
+                              <th className="py-3 px-4 text-center font-medium">Capacity</th>
+                              <th className="py-3 px-4 text-center font-medium">Usage</th>
+                              <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
                             </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                  
-                  <div className="border-t">
-                    <div className="flex items-center justify-between py-4 px-6">
-                      <div className="flex-1 text-sm text-muted-foreground">
-                        Showing {Math.min((currentPage - 1) * pageSize + 1, filteredWarehouses.length)} to {Math.min(currentPage * pageSize, filteredWarehouses.length)} of {filteredWarehouses.length} {filteredWarehouses.length === 1 ? 'warehouse' : 'warehouses'}
-                </div>
-                  
-                  <div className="flex-1 flex justify-center">
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handlePageChange(1)}
-                        disabled={currentPage === 1}
-                        className="h-8 w-8"
-                        aria-label="First page"
-                      >
-                        <ChevronsLeft className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="h-8 w-8"
-                        aria-label="Previous page"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
+                          </thead>
+                          <tbody className="divide-y">
+                            {paginatedWarehouses.map((warehouse) => {
+                              const statusColor = warehouse.status === 'active' ? 'green' : 
+                                warehouse.status === 'maintenance' ? 'amber' : 'red';
+                              const statusLabel = warehouse.status.charAt(0).toUpperCase() + warehouse.status.slice(1);
+                              
+                              return (
+                                <tr 
+                                  key={warehouse.id} 
+                                  className="hover:bg-muted/50 transition-colors"
+                                >
+                                  <td className="py-3 px-4">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedWarehouses.includes(warehouse.id.toString())}
+                                      onChange={() => handleToggleWarehouseSelection(warehouse.id.toString())}
+                                      className="h-4 w-4 rounded border-gray-300"
+                                    />
+                                  </td>
+                                  <td className="py-3 px-4 text-sm">{warehouse.id}</td>
+                                  <td className="py-3 px-4">
+                                    <div className="font-medium flex items-center">
+                                      <WarehouseIcon className="h-4 w-4 mr-2 text-primary" />
+                                      {warehouse.name}
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-sm">
+                                    <div className="flex items-center">
+                                      <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                                      {warehouse.location && typeof warehouse.location === 'object' && 'lat' in warehouse.location && 'lng' in warehouse.location
+                                        ? `${(warehouse.location.lat as number).toFixed(4)}, ${(warehouse.location.lng as number).toFixed(4)}`
+                                        : 'N/A'}
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
+                                      {statusLabel}
+                                    </Badge>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">{warehouse.capacity} units</td>
+                                  <td className="py-3 px-4">
+                                    <div className="flex flex-col items-center">
+                                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[80px]">
+                                        <div 
+                                          className="bg-primary h-2 rounded-full" 
+                                          style={{ width: `${(warehouse.currentUsage / warehouse.capacity) * 100}%` }}
+                                        />
+                                      </div>
+                                      <div className="text-xs mt-1 text-muted-foreground">
+                                        {Math.round((warehouse.currentUsage / warehouse.capacity) * 100)}%
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-right">
+                                    <div className="flex items-center justify-end space-x-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => handleViewDetails(warehouse)} 
+                                        className="h-8 w-8"
+                                        title="View Details"
+                                      >
+                                        <FileText className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => handleEditWarehouse(warehouse)} 
+                                        className="h-8 w-8"
+                                        title="Edit Warehouse"
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => handleDeleteWarehouse(warehouse)} 
+                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                                        title="Delete Warehouse"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                       
-                      {totalPages <= 5 ? (
-                        // Show all pages if 5 or fewer
-                        [...Array(totalPages)].map((_, i) => (
+                      <div className="border-t">
+                        <div className="flex items-center justify-between py-4 px-6">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            Showing {Math.min((currentPage - 1) * pageSize + 1, filteredWarehouses.length)} to {Math.min(currentPage * pageSize, filteredWarehouses.length)} of {filteredWarehouses.length} {filteredWarehouses.length === 1 ? 'warehouse' : 'warehouses'}
+                    </div>
+                      
+                      <div className="flex-1 flex justify-center">
+                        <div className="flex items-center gap-1">
                           <Button
-                            key={`page-${i+1}`}
-                            variant={currentPage === i+1 ? "default" : "outline"}
-                            size="icon"
-                            onClick={() => handlePageChange(i+1)}
-                            className="h-8 w-8"
-                            aria-label={`Page ${i+1}`}
-                            aria-current={currentPage === i+1 ? "page" : undefined}
-                          >
-                            {i+1}
-                          </Button>
-                        ))
-                      ) : (
-                        // Show limited pages with ellipsis
-                        <>
-                          <Button
-                            variant={currentPage === 1 ? "default" : "outline"}
+                            variant="outline"
                             size="icon"
                             onClick={() => handlePageChange(1)}
+                            disabled={currentPage === 1}
                             className="h-8 w-8"
-                            aria-label="Page 1"
+                            aria-label="First page"
                           >
-                            1
+                            <ChevronsLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8"
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
                           </Button>
                           
-                          {currentPage > 3 && <span className="mx-1">...</span>}
-                          
-                          {currentPage > 2 && (
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handlePageChange(currentPage - 1)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${currentPage - 1}`}
-                            >
-                              {currentPage - 1}
-                            </Button>
+                          {totalPages <= 5 ? (
+                            // Show all pages if 5 or fewer
+                            [...Array(totalPages)].map((_, i) => (
+                              <Button
+                                key={`page-${i+1}`}
+                                variant={currentPage === i+1 ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => handlePageChange(i+1)}
+                                className="h-8 w-8"
+                                aria-label={`Page ${i+1}`}
+                                aria-current={currentPage === i+1 ? "page" : undefined}
+                              >
+                                {i+1}
+                              </Button>
+                            ))
+                          ) : (
+                            // Show limited pages with ellipsis
+                            <>
+                              <Button
+                                variant={currentPage === 1 ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => handlePageChange(1)}
+                                className="h-8 w-8"
+                                aria-label="Page 1"
+                              >
+                                1
+                              </Button>
+                              
+                              {currentPage > 3 && <span className="mx-1">...</span>}
+                              
+                              {currentPage > 2 && (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handlePageChange(currentPage - 1)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${currentPage - 1}`}
+                                >
+                                  {currentPage - 1}
+                                </Button>
+                              )}
+                              
+                              {currentPage !== 1 && currentPage !== totalPages && (
+                                <Button
+                                  variant="default"
+                                  size="icon"
+                                  onClick={() => handlePageChange(currentPage)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${currentPage}`}
+                                  aria-current="page"
+                                >
+                                  {currentPage}
+                                </Button>
+                              )}
+                              
+                              {currentPage < totalPages - 1 && (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handlePageChange(currentPage + 1)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${currentPage + 1}`}
+                                >
+                                  {currentPage + 1}
+                                </Button>
+                              )}
+                              
+                              {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                              
+                              <Button
+                                variant={currentPage === totalPages ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => handlePageChange(totalPages)}
+                                className="h-8 w-8"
+                                aria-label={`Page ${totalPages}`}
+                              >
+                                {totalPages}
+                              </Button>
+                            </>
                           )}
-                          
-                          {currentPage !== 1 && currentPage !== totalPages && (
-                            <Button
-                              variant="default"
-                              size="icon"
-                              onClick={() => handlePageChange(currentPage)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${currentPage}`}
-                              aria-current="page"
-                            >
-                              {currentPage}
-                            </Button>
-                          )}
-                          
-                          {currentPage < totalPages - 1 && (
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handlePageChange(currentPage + 1)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${currentPage + 1}`}
-                            >
-                              {currentPage + 1}
-                            </Button>
-                          )}
-                          
-                          {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
                           
                           <Button
-                            variant={currentPage === totalPages ? "default" : "outline"}
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="h-8 w-8"
+                            aria-label="Next page"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
                             size="icon"
                             onClick={() => handlePageChange(totalPages)}
+                            disabled={currentPage === totalPages}
                             className="h-8 w-8"
-                            aria-label={`Page ${totalPages}`}
+                            aria-label="Last page"
                           >
-                            {totalPages}
+                            <ChevronsRight className="h-4 w-4" />
                           </Button>
-                        </>
-                      )}
+                    </div>
+                    </div>
                       
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="h-8 w-8"
-                        aria-label="Next page"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={currentPage === totalPages}
-                        className="h-8 w-8"
-                        aria-label="Last page"
-                      >
-                        <ChevronsRight className="h-4 w-4" />
-                      </Button>
-                </div>
-                </div>
-                  
-                  <div className="flex-1 flex justify-end">
-                    
-          </div>
-                      </div>
-                      </div>
-                      </div>
-              )}
-                  </CardContent>
-                </Card>
+                      <div className="flex-1 flex justify-end">
+                        
+              </div>
+                          </div>
+                          </div>
+                          </div>
+                  )}
+            </CardContent>
+          </Card>
         </TabsContent>
                 
         <TabsContent value="inventory">

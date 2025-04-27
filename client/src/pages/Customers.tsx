@@ -48,8 +48,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon, User, UserCheck, DollarSign, ArrowUp, ArrowDown, ChevronRight } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart as RechartsLineChart, Line } from 'recharts';
+import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon, User, UserCheck, DollarSign, ArrowUp, ArrowDown, ChevronRight, ChevronsLeft, ChevronLeft, Plus, Trash2, Pencil, FileText, UserIcon, RefreshCw, ChevronsRight } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart as RechartsLineChart, Line, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ScatterChart, Scatter, ZAxis, Treemap } from 'recharts';
+import 'chart.js/auto';
 import { TrendingUp } from 'lucide-react';
 import { ShoppingBag } from 'lucide-react';
 import { LineChart } from '@/components/ui/line-chart';
@@ -57,8 +58,11 @@ import { CustomerModal } from "@/components/customers/CustomerModal";
 import { Customer } from "@/services/customerService";
 import { customerService } from "@/services/customerService";
 import { CustomerSummary } from "@/services/customerService";
-import { Plus, RefreshCw } from "lucide-react";
 import { useLocation } from "wouter";
+import { Chart, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip as ChartTooltip, Legend as ChartLegend } from 'chart.js';
+
+// Register required Chart.js components
+Chart.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, ChartLegend);
 
 // Define a UI-specific customer interface that matches the component's needs
 interface UICustomer {
@@ -281,6 +285,91 @@ const orderVolumeData = [
 // Chart colors
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
+// Add more sophisticated data structures for the enhanced dashboard
+const customerLifetimeValue = [
+  { name: 'Q1 2023', value: 2450, previous: 2100, target: 2200 },
+  { name: 'Q2 2023', value: 2800, previous: 2300, target: 2500 },
+  { name: 'Q3 2023', value: 3100, previous: 2650, target: 2800 },
+  { name: 'Q4 2023', value: 3450, previous: 2950, target: 3100 },
+  { name: 'Q1 2024', value: 3720, previous: 3200, target: 3400 },
+  { name: 'Q2 2024', value: 4050, previous: 3500, target: 3700 },
+];
+
+// Format for the LineChart UI component with more detailed data
+const retentionRateData = [
+  { month: 'Jan', retention: 93.2, industry: 89.5, target: 94.0, churn: 6.8 },
+  { month: 'Feb', retention: 92.8, industry: 89.7, target: 94.0, churn: 7.2 },
+  { month: 'Mar', retention: 94.1, industry: 90.0, target: 94.0, churn: 5.9 },
+  { month: 'Apr', retention: 94.3, industry: 90.1, target: 94.5, churn: 5.7 },
+  { month: 'May', retention: 94.5, industry: 90.3, target: 94.5, churn: 5.5 },
+  { month: 'Jun', retention: 94.7, industry: 90.2, target: 94.5, churn: 5.3 },
+  { month: 'Jul', retention: 95.1, industry: 90.4, target: 95.0, churn: 4.9 },
+  { month: 'Aug', retention: 94.9, industry: 90.5, target: 95.0, churn: 5.1 },
+];
+
+const customerAcquisitionCost = [
+  { name: 'Direct', cost: 280, customers: 450 },
+  { name: 'Social', cost: 210, customers: 380 },
+  { name: 'Email', cost: 160, customers: 320 },
+  { name: 'Referral', cost: 120, customers: 290 },
+  { name: 'Organic', cost: 90, customers: 220 },
+];
+
+// Enhanced segment performance data with additional metrics
+const segmentPerformance = [
+  { segment: 'Enterprise', satisfaction: 90, retention: 94, revenue: 65, growth: 18, upsell: 72 },
+  { segment: 'Mid-Market', satisfaction: 85, retention: 87, revenue: 50, growth: 24, upsell: 58 },
+  { segment: 'SMB', satisfaction: 82, retention: 78, revenue: 40, growth: 32, upsell: 45 },
+  { segment: 'Startup', satisfaction: 88, retention: 75, revenue: 25, growth: 42, upsell: 38 },
+];
+
+const regionPerformance = {
+  name: 'Revenue',
+  children: [
+    {
+      name: 'North America',
+      children: [
+        { name: 'USA', size: 46 },
+        { name: 'Canada', size: 12 },
+      ],
+    },
+    {
+      name: 'Europe',
+      children: [
+        { name: 'UK', size: 15 },
+        { name: 'Germany', size: 8 },
+        { name: 'France', size: 7 },
+      ],
+    },
+    {
+      name: 'Asia Pacific',
+      children: [
+        { name: 'Australia', size: 6 },
+        { name: 'Japan', size: 5 },
+        { name: 'Singapore', size: 3 },
+      ],
+    },
+  ],
+};
+
+// Customer acquisition funnel data
+const acquisitionFunnel = [
+  { name: 'Website Visitors', value: 24580 },
+  { name: 'Leads Generated', value: 3850 },
+  { name: 'Qualified Leads', value: 1920 },
+  { name: 'Product Demos', value: 850 },
+  { name: 'Proposals Sent', value: 410 },
+  { name: 'New Customers', value: 215 },
+];
+
+// Funnel conversion rates
+const calculateConversion = (index: number) => {
+  if (index === 0) return 100;
+  const current = acquisitionFunnel[index].value;
+  const previous = acquisitionFunnel[index - 1].value;
+  return ((current / previous) * 100).toFixed(1);
+};
+
 export default function Customers() {
   const [customers, setCustomers] = useState<UICustomer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -296,6 +385,108 @@ export default function Customers() {
   
   // Determine which section to show based on the route
   const [activeSection, setActiveSection] = useState("summary");
+  
+  // Added new filter states
+  const [dateFilter, setDateFilter] = useState("all");
+  const [activityFilter, setActivityFilter] = useState("all");
+  const [industryFilter, setIndustryFilter] = useState("all");
+
+  // Metrics pagination and filtering states
+  const [metricsFilter, setMetricsFilter] = useState("all");
+  const [metricsStatusFilter, setMetricsStatusFilter] = useState("all");
+  const [metricsSearchQuery, setMetricsSearchQuery] = useState("");
+  const [metricsPage, setMetricsPage] = useState(1);
+  const [metricsPageSize, setMetricsPageSize] = useState(5);
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
+  
+  // Customer Health Metrics data
+  const healthMetrics = [
+    { id: 1, name: "Net Promoter Score (NPS)", current: "62", previous: "58", change: "+4", benchmark: "45", status: "excellent" },
+    { id: 2, name: "Customer Satisfaction (CSAT)", current: "4.7/5.0", previous: "4.5/5.0", change: "+0.2", benchmark: "4.2/5.0", status: "excellent" },
+    { id: 3, name: "Customer Effort Score (CES)", current: "5.8/7.0", previous: "5.5/7.0", change: "+0.3", benchmark: "5.3/7.0", status: "good" },
+    { id: 4, name: "Churn Rate", current: "5.1%", previous: "6.8%", change: "-1.7%", benchmark: "7.2%", status: "good" },
+    { id: 5, name: "Average Response Time", current: "2.4h", previous: "3.1h", change: "-0.7h", benchmark: "4.0h", status: "excellent" },
+    { id: 6, name: "Renewal Rate", current: "87.3%", previous: "85.1%", change: "+2.2%", benchmark: "82.0%", status: "good" },
+    { id: 7, name: "First Contact Resolution", current: "78.4%", previous: "75.9%", change: "+2.5%", benchmark: "72.0%", status: "improving" },
+    { id: 8, name: "Customer Acquisition Cost (CAC)", current: "$172", previous: "$195", change: "-$23", benchmark: "$210", status: "excellent" },
+    { id: 9, name: "Average Revenue Per User (ARPU)", current: "$89/mo", previous: "$82/mo", change: "+$7", benchmark: "$75/mo", status: "good" },
+    { id: 10, name: "Customer Lifetime (Months)", current: "42.3", previous: "38.9", change: "+3.4", benchmark: "36.5", status: "good" },
+  ];
+
+  // Filter health metrics based on search query and filters
+  const getFilteredMetrics = () => {
+    let filtered = [...healthMetrics];
+    
+    // Apply search filter
+    if (metricsSearchQuery) {
+      filtered = filtered.filter(metric => 
+        metric.name.toLowerCase().includes(metricsSearchQuery.toLowerCase())
+      );
+    }
+    
+    // Apply metric type filter (simplified for this example)
+    if (metricsFilter !== "all") {
+      filtered = filtered.filter(metric => {
+        if (metricsFilter === "satisfaction") {
+          return metric.name.includes("Satisfaction") || metric.name.includes("NPS") || metric.name.includes("CSAT");
+        } else if (metricsFilter === "retention") {
+          return metric.name.includes("Churn") || metric.name.includes("Renewal") || metric.name.includes("Lifetime");
+        } else if (metricsFilter === "response") {
+          return metric.name.includes("Response") || metric.name.includes("Resolution");
+        } else if (metricsFilter === "financial") {
+          return metric.name.includes("Cost") || metric.name.includes("Revenue");
+        }
+        return true;
+      });
+    }
+    
+    // Apply status filter
+    if (metricsStatusFilter !== "all") {
+      filtered = filtered.filter(metric => metric.status === metricsStatusFilter.toLowerCase());
+    }
+    
+    return filtered;
+  };
+
+  // Get paginated metrics
+  const getPaginatedMetrics = () => {
+    const filtered = getFilteredMetrics();
+    const startIndex = (metricsPage - 1) * metricsPageSize;
+    return filtered.slice(startIndex, startIndex + metricsPageSize);
+  };
+
+  // Calculate total pages for metrics
+  const metricsTotalPages = Math.ceil(getFilteredMetrics().length / metricsPageSize);
+  
+  // Handle metrics page change
+  const handleMetricsPageChange = (page: number) => {
+    setMetricsPage(page);
+  };
+  
+  // Handle metrics per page change
+  const handleMetricsPerPageChange = (value: string) => {
+    setMetricsPageSize(parseInt(value));
+    setMetricsPage(1); // Reset to first page
+  };
+  
+  // Handle toggle metric selection
+  const handleToggleMetricSelection = (metricId: number) => {
+    const id = metricId.toString();
+    if (selectedMetrics.includes(id)) {
+      setSelectedMetrics(selectedMetrics.filter(m => m !== id));
+    } else {
+      setSelectedMetrics([...selectedMetrics, id]);
+    }
+  };
+  
+  // Toggle all metrics selection
+  const handleToggleAllMetrics = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      setSelectedMetrics(getPaginatedMetrics().map(m => m.id.toString()));
+    } else {
+      setSelectedMetrics([]);
+    }
+  };
   
   useEffect(() => {
     // Extract section from URL path
@@ -323,11 +514,6 @@ export default function Customers() {
         return 'Customer Summary';
     }
   };
-  
-  // Added new filter states
-  const [dateFilter, setDateFilter] = useState("all");
-  const [activityFilter, setActivityFilter] = useState("all");
-  const [industryFilter, setIndustryFilter] = useState("all");
   
   // Calculate statistics
   const totalCustomers = customers.length;
@@ -615,7 +801,6 @@ export default function Customers() {
   const RenderFilters = () => (
     <div className="flex flex-row gap-2">
       <div className="flex items-center space-x-2">
-        <CalendarIcon className="h-4 w-4 opacity-50" />
         <Select value={dateFilter} onValueChange={setDateFilter}>
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Last order date" />
@@ -683,6 +868,42 @@ export default function Customers() {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Add pagination functionality
+  const totalPages = Math.ceil(getFilteredCustomers().length / pageSize);
+  
+  const paginatedCustomers = getFilteredCustomers().slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+  
+  const handleToggleCustomerSelection = (customerId: string) => {
+    if (selectedCustomers.includes(customerId)) {
+      setSelectedCustomers(selectedCustomers.filter(id => id !== customerId));
+    } else {
+      setSelectedCustomers([...selectedCustomers, customerId]);
+    }
+  };
+
+  const handleViewDetails = (customer: UICustomer) => {
+    handleEditCustomer(customer);
+  };
+
+  const handleDeleteCustomer = (customer: UICustomer) => {
+    // Implementation would go here
+    if (window.confirm(`Are you sure you want to delete ${customer.name}?`)) {
+      setCustomers(customers.filter(c => c.id !== customer.id));
+      setSelectedCustomers(selectedCustomers.filter(id => id !== customer.id.toString()));
     }
   };
 
@@ -954,13 +1175,718 @@ export default function Customers() {
       {activeSection === "summary" && summary && (
         <div className="flex flex-col items-center w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 w-full">
+            {/* Customer Lifetime Value (CLV) Section */}
             <Card>
-              <CardHeader className="text-center">
-                <CardTitle>Customer Distribution</CardTitle>
-                <CardDescription>Breakdown of customer status</CardDescription>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Customer Lifetime Value (CLV)</CardTitle>
+                <CardDescription>Average revenue generated per customer over time</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={customerLifetimeValue}
+                      margin={{
+                        top: 10,
+                        right: 30,
+                        left: 0,
+                        bottom: 0,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis tickFormatter={(value) => `$${value}`} />
+                      <Tooltip 
+                        formatter={(value, name) => {
+                          if (name === 'value') return [`$${value}`, 'Current CLV'];
+                          if (name === 'previous') return [`$${value}`, 'Previous Year'];
+                          if (name === 'target') return [`$${value}`, 'Target'];
+                          return [value, name];
+                        }}
+                        labelFormatter={(label) => `Period: ${label}`}
+                      />
+                      <Legend />
+                      <Area 
+                        type="monotone" 
+                        dataKey="previous" 
+                        name="Previous Year" 
+                        stroke="#8884d8" 
+                        fill="#8884d8" 
+                        fillOpacity={0.1} 
+                        strokeDasharray="5 5"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="target" 
+                        name="Target" 
+                        stroke="#82ca9d" 
+                        fill="#82ca9d" 
+                        fillOpacity={0.1} 
+                        strokeDasharray="3 3"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="value" 
+                        name="Current CLV" 
+                        stroke="#8884d8" 
+                        fill="#8884d8" 
+                        fillOpacity={0.3} 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex justify-between items-center mt-4 text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground">Current CLV</span>
+                    <span className="text-xl font-bold">$4,050</span>
+                    <span className="text-xs text-muted-foreground mt-1">Lifetime revenue per customer</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground">YoY Growth</span>
+                    <span className="text-xl font-bold text-green-600">+15.8%</span>
+                    <span className="text-xs text-muted-foreground mt-1">From $3,500 last year</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground">Industry Benchmark</span>
+                    <span className="text-xl font-bold">$3,700</span>
+                    <span className="text-xs text-muted-foreground mt-1">9.5% above average</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Customer Retention Rate Section */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Customer Retention Rate</CardTitle>
+                <CardDescription>Percentage of customers retained over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <LineChart 
+                    data={retentionRateData}
+                    index="month"
+                    categories={["retention", "industry", "target"]}
+                    colors={["#10b981", "#94a3b8", "#f59e0b"]}
+                    valueFormatter={(value) => `${value}%`}
+                    yAxisWidth={45}
+                  />
+                </div>
+                <div className="flex justify-between items-center mt-4 text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground">Current Rate</span>
+                    <span className="text-xl font-bold">94.9%</span>
+                    <div className="flex items-center text-xs mt-1">
+                      <span className="text-red-500 mr-1">5.1% churn</span>
+                      <span className="text-muted-foreground">monthly</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground">YoY Change</span>
+                    <span className="text-xl font-bold text-green-600">+1.7%</span>
+                    <div className="flex items-center text-xs mt-1">
+                      <span className="text-green-500 mr-1">-2.4%</span>
+                      <span className="text-muted-foreground">in customer churn</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground">Industry Average</span>
+                    <span className="text-xl font-bold">90.5%</span>
+                    <div className="flex items-center text-xs mt-1">
+                      <span className="text-green-500 mr-1">+4.4%</span>
+                      <span className="text-muted-foreground">above average</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 w-full">
+            {/* Customer Acquisition Funnel Section */}
+            <Card className="w-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Customer Acquisition Funnel</CardTitle>
+                <CardDescription>Conversion metrics across the sales pipeline</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={acquisitionFunnel}
+                      layout="vertical"
+                      margin={{ top: 20, right: 40, left: 40, bottom: 20 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="name" type="category" width={100} />
+                      <Tooltip 
+                        formatter={(value) => [`${value.toLocaleString()}`, 'Count']}
+                        labelFormatter={(value) => `Stage: ${value}`}
+                      />
+                      <Bar 
+                        dataKey="value" 
+                        fill="#8884d8" 
+                        label={{ 
+                          position: 'right', 
+                          formatter: (item: any) => item && item.value ? `${item.value.toLocaleString()}` : '',
+                          fill: 'hsl(var(--foreground))',
+                          fontSize: 12
+                        }}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                  <div className="bg-muted/30 p-3 rounded-md">
+                    <div className="font-medium mb-1">Top Source</div>
+                    <div>Organic Search (42%)</div>
+                    <div className="text-xs text-muted-foreground mt-1">10,323 visitors</div>
+                  </div>
+                  <div className="bg-muted/30 p-3 rounded-md">
+                    <div className="font-medium mb-1">Best Converting</div>
+                    <div>Product Demos (48.2%)</div>
+                    <div className="text-xs text-muted-foreground mt-1">850 → 410 proposals</div>
+                  </div>
+                  <div className="bg-muted/30 p-3 rounded-md">
+                    <div className="font-medium mb-1">Bottleneck</div>
+                    <div>Leads to Qualified (49.9%)</div>
+                    <div className="text-xs text-muted-foreground mt-1">Opportunity to improve</div>
+                  </div>
+                </div>
+
+              </CardContent>
+              <CardFooter className="pb-4 pt-0">
+                <div className="text-sm text-muted-foreground">
+                  <div className="font-medium text-foreground mb-1">Funnel Health:</div>
+                  <p>Overall funnel efficiency is 15% above industry average with a 0.88% visitor-to-customer conversion rate.</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md">
+                      <div className="font-medium">Improvement Focus:</div>
+                      <p className="mt-1">Reduce qualification time by implementing automated scoring system</p>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded-md">
+                      <div className="font-medium">Strength:</div>
+                      <p className="mt-1">High-quality demos resulting in 48.2% conversion to proposals</p>
+                    </div>
+                  </div>
+                </div>
+              </CardFooter>
+            </Card>
+            
+            {/* Funnel Conversion Rates Section */}
+            <Card className="w-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Funnel Conversion Rates</CardTitle>
+                <CardDescription>Stage-by-stage conversion performance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    {acquisitionFunnel.map((stage, index) => {
+                      if (index === 0) return null;
+                      
+                      const conversionRate = calculateConversion(index);
+                      const previousStage = acquisitionFunnel[index - 1].name;
+                      const currentStage = stage.name;
+                      
+                      // Define status colors based on conversion rate
+                      let statusColor = 'bg-amber-500';
+                      let statusText = 'Average';
+                      
+                      const conversionValue = parseFloat(conversionRate as string);
+                      if (conversionValue > 45) {
+                        statusColor = 'bg-green-500';
+                        statusText = 'Good';
+                      } else if (conversionValue < 20) {
+                        statusColor = 'bg-red-500';
+                        statusText = 'Needs Improvement';
+                      }
+                      
+                      return (
+                        <div key={index} className="bg-muted/30 p-4 rounded-md">
+                          <div className="text-sm font-medium mb-1 flex justify-between">
+                            <span>{previousStage} → {currentStage}</span>
+                            <span className={`text-xs ${statusColor.replace('bg-', 'text-')} px-2 py-0.5 rounded-full ${statusColor.replace('bg-', 'bg-')}/10`}>
+                              {statusText}
+                            </span>
+                          </div>
+                          <div className="flex items-end justify-between">
+                            <div className="text-2xl font-bold">{conversionRate}%</div>
+                            <div className="text-sm text-muted-foreground">
+                              {stage.value.toLocaleString()} / {acquisitionFunnel[index - 1].value.toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+                            <div 
+                              className={`${statusColor} h-2.5 rounded-full`}
+                              style={{ width: `${conversionValue}%` }}
+                            ></div>
+                          </div>
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            {index === 1 && "Industry avg: 15.7% • Target: 18%"}
+                            {index === 2 && "Industry avg: 42.1% • Target: 55%"}
+                            {index === 3 && "Industry avg: 38.8% • Target: 50%"}
+                            {index === 4 && "Industry avg: 45.2% • Target: 52%"}
+                            {index === 5 && "Industry avg: 48.4% • Target: 60%"}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md mt-4">
+                    <div className="text-sm font-semibold mb-1 flex justify-between items-center">
+                      <span>Overall Conversion</span>
+                      <span className="text-xs bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full">
+                        {((acquisitionFunnel[acquisitionFunnel.length - 1].value / acquisitionFunnel[0].value) * 100) > 0.8 ? 'Outstanding' : 'Average'}
+                      </span>
+                    </div>
+                    <div className="flex items-end justify-between">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {((acquisitionFunnel[acquisitionFunnel.length - 1].value / acquisitionFunnel[0].value) * 100).toFixed(2)}%
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {acquisitionFunnel[acquisitionFunnel.length - 1].value.toLocaleString()} / {acquisitionFunnel[0].value.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-blue-600 h-2.5 rounded-full" 
+                        style={{ width: `${((acquisitionFunnel[acquisitionFunnel.length - 1].value / acquisitionFunnel[0].value) * 100)}%` }}
+                      ></div>
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Industry average: 0.5-0.9%
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Target: 1.0%
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          YoY Change: <span className="text-green-500">+0.12%</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          CAC: <span className="text-green-500">-$23</span> vs previous quarter
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Customer Health Metrics Section */}
+          <Card className="w-full mb-6">
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle className="text-lg">Customer Health Metrics</CardTitle>
+                <CardDescription>Comprehensive view of customer performance indicators</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder="Search metrics..."
+                      className="pl-8 w-[200px] md:w-[260px]"
+                      value={metricsSearchQuery}
+                      onChange={(e) => {
+                        setMetricsSearchQuery(e.target.value);
+                        setMetricsPage(1); // Reset to first page on search
+                      }}
+                    />      
+                  </div>
+                  <Select 
+                    defaultValue={metricsPageSize.toString()}
+                    onValueChange={handleMetricsPerPageChange}
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue placeholder={`${metricsPageSize} per page`} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5 per page</SelectItem>
+                      <SelectItem value="10">10 per page</SelectItem>
+                      <SelectItem value="15">15 per page</SelectItem>
+                    </SelectContent>
+                  </Select>
+              </div>
+              <div className="mt-4 sm:mt-0 flex items-center gap-2">
+                <Select 
+                  defaultValue="all"
+                  onValueChange={(value) => {
+                    setMetricsFilter(value);
+                    setMetricsPage(1); // Reset to first page on filter change
+                  }}
+                >
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Metric type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Metrics</SelectItem>
+                    <SelectItem value="satisfaction">Satisfaction</SelectItem>
+                    <SelectItem value="retention">Retention</SelectItem>
+                    <SelectItem value="response">Response Times</SelectItem>
+                    <SelectItem value="financial">Financial</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select 
+                  defaultValue="all"
+                  onValueChange={(value) => {
+                    setMetricsStatusFilter(value);
+                    setMetricsPage(1); // Reset to first page on filter change
+                  }}
+                >
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="excellent">Excellent</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="improving">Improving</SelectItem>
+                    <SelectItem value="attention">Needs Attention</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="icon" className="h-9 w-9">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="p-0">
+              {getFilteredMetrics().length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 p-6">
+                  <Activity className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                  <h3 className="text-lg font-medium text-center mb-2">No metrics found</h3>
+                  <p className="text-sm text-muted-foreground text-center mb-4">
+                    {metricsSearchQuery || metricsFilter !== "all" || metricsStatusFilter !== "all" 
+                      ? "Try adjusting your search filters to find what you're looking for." 
+                      : "No data available for the selected filters."}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <div className="overflow-auto">
+                    <table className="w-full">
+                      <thead className="bg-muted/50 text-sm">
+                        <tr>
+                          <th className="py-3 px-4 text-left font-medium w-[40px]">
+                            <input
+                              type="checkbox"
+                              checked={selectedMetrics.length === getPaginatedMetrics().length && getPaginatedMetrics().length > 0}
+                              onChange={handleToggleAllMetrics}
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </th>
+                          <th className="py-3 px-4 text-left font-medium">Metric</th>
+                          <th className="py-3 px-4 text-left font-medium">Current</th>
+                          <th className="py-3 px-4 text-left font-medium">Previous</th>
+                          <th className="py-3 px-4 text-left font-medium">Change</th>
+                          <th className="py-3 px-4 text-left font-medium">Industry Benchmark</th>
+                          <th className="py-3 px-4 text-left font-medium">Status</th>
+                          <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {getPaginatedMetrics().map((metric) => {
+                          const statusColor = metric.status === 'excellent' ? 'green' : 
+                            metric.status === 'good' ? 'green' : 
+                            metric.status === 'improving' ? 'amber' : 'red';
+                          const statusLabel = metric.status.charAt(0).toUpperCase() + metric.status.slice(1);
+                          
+                          return (
+                            <tr key={metric.id} className="hover:bg-muted/50 transition-colors">
+                              <td className="py-3 px-4">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedMetrics.includes(metric.id.toString())}
+                                  onChange={() => handleToggleMetricSelection(metric.id)}
+                                  className="h-4 w-4 rounded border-gray-300"
+                                />
+                              </td>
+                              <td className="py-3 px-4 font-medium">{metric.name}</td>
+                              <td className="py-3 px-4">{metric.current}</td>
+                              <td className="py-3 px-4">{metric.previous}</td>
+                              <td className="py-3 px-4 text-green-600">{metric.change}</td>
+                              <td className="py-3 px-4">{metric.benchmark}</td>
+                              <td className="py-3 px-4">
+                                <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
+                                  {statusLabel}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <div className="flex items-center justify-end space-x-2">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8"
+                                    title="View Details"
+                                  >
+                                    <FileText className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8"
+                                    title="Edit Metric"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 text-destructive hover:text-destructive"
+                                    title="Delete Metric"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="border-t">
+                    <div className="flex items-center justify-between py-4 px-6">
+                      <div className="flex-1 text-sm text-muted-foreground">
+                        Showing {Math.min((metricsPage - 1) * metricsPageSize + 1, getFilteredMetrics().length)} to {Math.min(metricsPage * metricsPageSize, getFilteredMetrics().length)} of {getFilteredMetrics().length} metrics
+                      </div>
+                      
+                      <div className="flex-1 flex justify-center">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleMetricsPageChange(1)}
+                            disabled={metricsPage === 1}
+                            className="h-8 w-8"
+                            aria-label="First page"
+                          >
+                            <ChevronsLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleMetricsPageChange(metricsPage - 1)}
+                            disabled={metricsPage === 1}
+                            className="h-8 w-8"
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          
+                          {metricsTotalPages <= 5 ? (
+                            // Show all pages if 5 or fewer
+                            [...Array(metricsTotalPages)].map((_, i) => (
+                              <Button
+                                key={`page-${i+1}`}
+                                variant={metricsPage === i+1 ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => handleMetricsPageChange(i+1)}
+                                className="h-8 w-8"
+                                aria-label={`Page ${i+1}`}
+                                aria-current={metricsPage === i+1 ? "page" : undefined}
+                              >
+                                {i+1}
+                              </Button>
+                            ))
+                          ) : (
+                            // Show limited pages with ellipsis
+                            <>
+                              <Button
+                                variant={metricsPage === 1 ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => handleMetricsPageChange(1)}
+                                className="h-8 w-8"
+                                aria-label="Page 1"
+                              >
+                                1
+                              </Button>
+                              
+                              {metricsPage > 3 && <span className="mx-1">...</span>}
+                              
+                              {metricsPage > 2 && (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleMetricsPageChange(metricsPage - 1)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${metricsPage - 1}`}
+                                >
+                                  {metricsPage - 1}
+                                </Button>
+                              )}
+                              
+                              {metricsPage !== 1 && metricsPage !== metricsTotalPages && (
+                                <Button
+                                  variant="default"
+                                  size="icon"
+                                  onClick={() => handleMetricsPageChange(metricsPage)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${metricsPage}`}
+                                  aria-current="page"
+                                >
+                                  {metricsPage}
+                                </Button>
+                              )}
+                              
+                              {metricsPage < metricsTotalPages - 1 && (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleMetricsPageChange(metricsPage + 1)}
+                                  className="h-8 w-8"
+                                  aria-label={`Page ${metricsPage + 1}`}
+                                >
+                                  {metricsPage + 1}
+                                </Button>
+                              )}
+                              
+                              {metricsPage < metricsTotalPages - 2 && <span className="mx-1">...</span>}
+                              
+                              <Button
+                                variant={metricsPage === metricsTotalPages ? "default" : "outline"}
+                                size="icon"
+                                onClick={() => handleMetricsPageChange(metricsTotalPages)}
+                                className="h-8 w-8"
+                                aria-label={`Page ${metricsTotalPages}`}
+                              >
+                                {metricsTotalPages}
+                              </Button>
+                            </>
+                          )}
+                          
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleMetricsPageChange(metricsPage + 1)}
+                            disabled={metricsPage === metricsTotalPages}
+                            className="h-8 w-8"
+                            aria-label="Next page"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleMetricsPageChange(metricsTotalPages)}
+                            disabled={metricsPage === metricsTotalPages}
+                            className="h-8 w-8"
+                            aria-label="Last page"
+                          >
+                            <ChevronsRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 flex justify-end">
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 w-full">
+            {/* Segment Performance Analysis Section */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Segment Performance Analysis</CardTitle>
+                <CardDescription>Key metrics across customer segments</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={segmentPerformance}>
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="segment" />
+                      <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                      <Radar name="Satisfaction" dataKey="satisfaction" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                      <Radar name="Retention" dataKey="retention" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+                      <Radar name="Revenue" dataKey="revenue" stroke="#ffc658" fill="#ffc658" fillOpacity={0.6} />
+                      <Radar name="Growth" dataKey="growth" stroke="#ff8042" fill="#ff8042" fillOpacity={0.6} />
+                      <Radar name="Upsell Rate" dataKey="upsell" stroke="#0088fe" fill="#0088fe" fillOpacity={0.6} />
+                      <Legend />
+                      <Tooltip />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                  <div className="p-3 bg-muted/30 rounded-md">
+                    <div className="text-xs font-semibold mb-1">Best Performer</div>
+                    <div className="text-base font-bold">Enterprise</div>
+                    <div className="text-xs text-muted-foreground mt-1">94% retention rate</div>
+                  </div>
+                  <div className="p-3 bg-muted/30 rounded-md">
+                    <div className="text-xs font-semibold mb-1">Highest Growth</div>
+                    <div className="text-base font-bold">Startup</div>
+                    <div className="text-xs text-muted-foreground mt-1">42% annual growth</div>
+                  </div>
+                  <div className="p-3 bg-muted/30 rounded-md">
+                    <div className="text-xs font-semibold mb-1">Focus Area</div>
+                    <div className="text-base font-bold">SMB Retention</div>
+                    <div className="text-xs text-muted-foreground mt-1">78% vs 87% target</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Revenue by Geography Section */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Revenue by Geography</CardTitle>
+                <CardDescription>Regional distribution of customer revenue</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <Treemap
+                      data={regionPerformance.children}
+                      dataKey="size"
+                      aspectRatio={4 / 3}
+                      stroke="#fff"
+                      fill="#8884d8"
+                    >
+                      <Tooltip formatter={(value) => [`${value}%`, 'Revenue Share']} />
+                    </Treemap>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex flex-wrap justify-between items-center mt-4 text-sm">
+                  <div className="flex flex-col mt-2">
+                    <span className="text-muted-foreground">Top Region</span>
+                    <span className="text-lg font-bold">North America (58%)</span>
+                  </div>
+                  <div className="flex flex-col mt-2">
+                    <span className="text-muted-foreground">Fastest Growing</span>
+                    <span className="text-lg font-bold text-green-600">Asia Pacific (+23%)</span>
+                  </div>
+                  <div className="flex flex-col mt-2">
+                    <span className="text-muted-foreground">Global Coverage</span>
+                    <span className="text-lg font-bold">38 Countries</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 w-full">
+            {/* Distribution by Status Section */}
+            <Card className="lg:col-span-1">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Distribution by Status</CardTitle>
+                <CardDescription>Current customer status breakdown</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -991,90 +1917,50 @@ export default function Customers() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="text-center">
-                <CardTitle>Order Volume Trend</CardTitle>
-                <CardDescription>Monthly order volume history</CardDescription>
+            {/* Customer Acquisition Cost (CAC) Section */}
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Customer Acquisition Cost (CAC)</CardTitle>
+                <CardDescription>Cost efficiency by acquisition channel</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
+                <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RechartsLineChart
-                      data={orderTrend}
+                    <ScatterChart
+                      margin={{
+                        top: 20,
+                        right: 20,
+                        bottom: 20,
+                        left: 20,
+                      }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="value" stroke="#2563eb" activeDot={{ r: 8 }} />
-                    </RechartsLineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 w-full">
-            <Card>
-              <CardHeader className="text-center">
-                <CardTitle>Customer Type Distribution</CardTitle>
-                <CardDescription>Business vs Individual customers</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={[
-                          { name: 'Business', value: summary?.businessCustomers || 0 },
-                          { name: 'Individual', value: summary?.individualCustomers || 0 }
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        <Cell fill="#0088FE" />
-                        <Cell fill="#00C49F" />
-                      </Pie>
-                      <Tooltip />
+                      <CartesianGrid />
+                      <XAxis type="number" dataKey="customers" name="Customers Acquired" unit="" />
+                      <YAxis type="number" dataKey="cost" name="Cost per Customer" unit="$" />
+                      <ZAxis type="number" range={[100, 500]} />
+                      <Tooltip cursor={{ strokeDasharray: '3 3' }} formatter={(value, name) => [name === 'cost' ? `$${value}` : value, name === 'cost' ? 'Cost per Customer' : 'Customers Acquired']} />
                       <Legend />
-                    </PieChart>
+                      <Scatter name="Acquisition Channel" data={customerAcquisitionCost} fill="#8884d8">
+                        {customerAcquisitionCost.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Scatter>
+                    </ScatterChart>
                   </ResponsiveContainer>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="text-center">
-                <CardTitle>Customer Revenue Trend</CardTitle>
-                <CardDescription>Average revenue per customer</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsLineChart
-                      data={[
-                        { month: 'Jan', value: 980 },
-                        { month: 'Feb', value: 1020 },
-                        { month: 'Mar', value: 1110 },
-                        { month: 'Apr', value: 1050 },
-                        { month: 'May', value: 1180 },
-                        { month: 'Jun', value: 1250 },
-                        { month: 'Jul', value: 1310 },
-                        { month: 'Aug', value: 1420 }
-                      ]}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
-                      <Line type="monotone" dataKey="value" stroke="#10b981" activeDot={{ r: 8 }} />
-                    </RechartsLineChart>
-                  </ResponsiveContainer>
+                <div className="flex justify-between items-center mt-4 text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground">Avg. CAC</span>
+                    <span className="text-xl font-bold">$172</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground">Best Channel</span>
+                    <span className="text-xl font-bold">Referral ($120)</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground">CAC:CLV Ratio</span>
+                    <span className="text-xl font-bold text-green-600">1:23.5</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1086,7 +1972,7 @@ export default function Customers() {
       {activeSection === "directory" && (
         <div className="flex flex-col items-center w-full">
           <Card className="w-full">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <div>
                   <CardTitle>Customer Directory</CardTitle>
@@ -1103,79 +1989,226 @@ export default function Customers() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
+                <div className="flex items-center gap-2">
                   <RenderFilters />
                 </div>
+                <Button onClick={handleAddCustomer}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Customer
+                  </Button>
+                </div>
               </div>
+
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Orders</TableHead>
-                    <TableHead>Last Order</TableHead>
-                    <TableHead>Total Spent</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredCustomers().length > 0 ? (
-                    getFilteredCustomers().map((customer) => (
-                    <TableRow key={customer.id}>
-                      <TableCell className="font-medium">
-                        <div>
-                          <div className="font-medium">{customer.name}</div>
-                          <div className="text-sm text-muted-foreground">{customer.contactPerson}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col text-sm">
-                          <div className="flex items-center">
-                            <Mail className="h-3 w-3 mr-1" /> {customer.email}
-                          </div>
-                          <div className="flex items-center mt-1">
-                            <Phone className="h-3 w-3 mr-1" /> {customer.phone}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{customer.location}</TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          customer.status === 'active' ? 'success' : 
-                          customer.status === 'inactive' ? 'secondary' : 
-                          'warning'
-                        }>
-                          {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{customer.orders}</TableCell>
-                      <TableCell>{customer.lastOrder}</TableCell>
-                      <TableCell>{customer.totalSpent}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleEditCustomer(customer)}>
-                          View
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-6">
-                        No customers found matching your criteria
-                      </TableCell>
-                    </TableRow>
+            <CardContent className="p-0">
+              {getFilteredCustomers().length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 p-6">
+                  <UserIcon className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                  <h3 className="text-lg font-medium text-center mb-2">No customers found</h3>
+                  <p className="text-sm text-muted-foreground text-center mb-4">
+                    {searchQuery || dateFilter !== "all" || activityFilter !== "all"
+                      ? "Try adjusting your search filters to find what you're looking for."
+                      : "Get started by adding your first customer."}
+                  </p>
+                  {!searchQuery && dateFilter === "all" && activityFilter === "all" && (
+                    <Button onClick={handleAddCustomer}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Customer
+                    </Button>
                   )}
-                </TableBody>
-              </Table>
+                </div>
+              ) : (
+                <div>
+                  <div className="overflow-auto">
+                    <table className="w-full">
+                      <thead className="bg-muted/50 text-sm">
+                        <tr>
+                          <th className="py-3 px-4 text-left font-medium w-[40px]">
+                            <input
+                              type="checkbox"
+                              checked={selectedCustomers.length === paginatedCustomers.length && paginatedCustomers.length > 0}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedCustomers(paginatedCustomers.map(c => c.id.toString()));
+                                } else {
+                                  setSelectedCustomers([]);
+                                }
+                              }}
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </th>
+                          <th className="py-3 px-4 text-left font-medium w-[60px]">ID</th>
+                          <th className="py-3 px-4 text-left font-medium">Customer</th>
+                          <th className="py-3 px-4 text-left font-medium">Email</th>
+                          <th className="py-3 px-4 text-left font-medium">Phone</th>
+                          <th className="py-3 px-4 text-left font-medium">Location</th>
+                          <th className="py-3 px-4 text-left font-medium">Status</th>
+                          <th className="py-3 px-4 text-center font-medium">Orders</th>
+                          <th className="py-3 px-4 text-center font-medium">Last Order</th>
+                          <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {paginatedCustomers.map((customer) => {
+                          const statusColor = customer.status === 'active' ? 'green' : 
+                            customer.status === 'inactive' ? 'amber' : 'red';
+                          const statusLabel = customer.status.charAt(0).toUpperCase() + customer.status.slice(1);
+                          
+                          return (
+                            <tr 
+                              key={customer.id} 
+                              className="hover:bg-muted/50 transition-colors"
+                            >
+                              <td className="py-3 px-4">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedCustomers.includes(customer.id.toString())}
+                                  onChange={() => handleToggleCustomerSelection(customer.id.toString())}
+                                  className="h-4 w-4 rounded border-gray-300"
+                                />
+                              </td>
+                              <td className="py-3 px-4 text-sm">{customer.id}</td>
+                              <td className="py-3 px-4">
+                                <div className="font-medium flex items-center">
+                                  <UserIcon className="h-4 w-4 mr-2 text-primary" />
+                                  {customer.name}
+                                  <div className="text-sm text-muted-foreground ml-2">{customer.contactPerson}</div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-sm">
+                                <div className="flex items-center">
+                                  <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                                  {customer.email}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-sm">
+                                <div className="flex items-center">
+                                  <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                                  {customer.phone}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-sm">
+                                <div className="flex items-center">
+                                  <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                                  {customer.location}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
+                                  {statusLabel}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4 text-center">{customer.orders}</td>
+                              <td className="py-3 px-4 text-center text-sm text-muted-foreground">{customer.lastOrder}</td>
+                              <td className="py-3 px-4 text-right">
+                                <div className="flex items-center justify-end space-x-2">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => handleViewDetails(customer)} 
+                                    className="h-8 w-8"
+                                    title="View Details"
+                                  >
+                                    <FileText className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => handleEditCustomer(customer)} 
+                                    className="h-8 w-8"
+                                    title="Edit Customer"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => handleDeleteCustomer(customer)} 
+                                    className="h-8 w-8 text-destructive hover:text-destructive"
+                                    title="Delete Customer"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="border-t">
+                    <div className="flex items-center justify-between py-4 px-6">
+                      <div className="flex-1 text-sm text-muted-foreground">
+                        Showing {Math.min((currentPage - 1) * pageSize + 1, getFilteredCustomers().length)} to {Math.min(currentPage * pageSize, getFilteredCustomers().length)} of {getFilteredCustomers().length} {getFilteredCustomers().length === 1 ? 'customer' : 'customers'}
+                      </div>
+                      
+                      <div className="flex-1 flex justify-center">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handlePageChange(1)}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8"
+                            aria-label="First page"
+                          >
+                            <ChevronsLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8"
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          
+                          <Button
+                            variant="default"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-current="page"
+                          >
+                            1
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            2
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Next page"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Last page"
+                          >
+                            <ChevronsRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 flex justify-end"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
-            <CardFooter className="border-t py-4 px-6 flex justify-center">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredCustomers().length} of {totalCustomers} customers
-              </div>
-            </CardFooter>
           </Card>
         </div>
       )}

@@ -8,6 +8,8 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox"
+
 import { 
   Table, 
   TableBody, 
@@ -49,7 +51,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon, User, UserCheck, DollarSign, ArrowUp, ArrowDown, ChevronRight, ChevronsLeft, ChevronLeft, Plus, Trash2, Pencil, FileText, UserIcon, RefreshCw, ChevronsRight, AlertCircle, Users, CheckCircle, Bell, MessageSquare } from "lucide-react";
+import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon, User, UserCheck, DollarSign, ArrowUp, ArrowDown, ChevronRight, ChevronsLeft, ChevronLeft, Plus, Trash2, Pencil, FileText, UserIcon, RefreshCw, ChevronsRight, AlertCircle, Users, CheckCircle, Bell, MessageSquare, CalendarRange, PlusCircle, TrendingDown, Calendar } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart as RechartsLineChart, Line, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ScatterChart, Scatter, ZAxis, Treemap } from 'recharts';
 import 'chart.js/auto';
 import { TrendingUp } from 'lucide-react';
@@ -1796,7 +1798,7 @@ export default function Customers() {
               )}
             </CardContent>
           </Card>
-
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 w-full">
             {/* Segment Performance Analysis Section */}
             <Card>
@@ -2019,7 +2021,7 @@ export default function Customers() {
                   )}
                 </div>
               ) : (
-                <div>
+                        <div>
                   <div className="overflow-auto">
                     <table className="w-full">
                       <thead className="bg-muted/50 text-sm">
@@ -2074,30 +2076,30 @@ export default function Customers() {
                                   <UserIcon className="h-4 w-4 mr-2 text-primary" />
                                   {customer.name}
                                   <div className="text-sm text-muted-foreground ml-2">{customer.contactPerson}</div>
-                                </div>
+                        </div>
                               </td>
                               <td className="py-3 px-4 text-sm">
-                                <div className="flex items-center">
+                          <div className="flex items-center">
                                   <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
                                   {customer.email}
-                                </div>
+                          </div>
                               </td>
                               <td className="py-3 px-4 text-sm">
                                 <div className="flex items-center">
                                   <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
                                   {customer.phone}
-                                </div>
+                          </div>
                               </td>
                               <td className="py-3 px-4 text-sm">
                                 <div className="flex items-center">
                                   <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
                                   {customer.location}
-                                </div>
+                        </div>
                               </td>
                               <td className="py-3 px-4">
                                 <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
                                   {statusLabel}
-                                </Badge>
+                        </Badge>
                               </td>
                               <td className="py-3 px-4 text-center">{customer.orders}</td>
                               <td className="py-3 px-4 text-center text-sm text-muted-foreground">{customer.lastOrder}</td>
@@ -2111,7 +2113,7 @@ export default function Customers() {
                                     title="View Details"
                                   >
                                     <FileText className="h-4 w-4" />
-                                  </Button>
+                        </Button>
                                   <Button 
                                     variant="ghost" 
                                     size="icon" 
@@ -2244,7 +2246,7 @@ export default function Customers() {
                       <Area type="monotone" dataKey="meetings" stroke="#ffc658" fill="#ffc658" fillOpacity={0.3} />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
+              </div>
                 <div className="mt-4 grid grid-cols-3 gap-3">
                   <div className="bg-muted/30 p-3 rounded-md">
                     <div className="text-xs font-medium mb-1">Total Interactions</div>
@@ -2263,7 +2265,7 @@ export default function Customers() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+          </Card>
 
             <Card>
               <CardHeader className="pb-2">
@@ -2851,6 +2853,696 @@ export default function Customers() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Advanced Segmentation Analysis */}
+          <div className="grid grid-cols-1 gap-6 mb-6 w-full">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Advanced Segmentation Analysis</CardTitle>
+                    <CardDescription>Multi-dimensional customer segmentation model</CardDescription>
+                  </div>
+                  <Select defaultValue="purchase">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select dimension" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="purchase">Purchase Behavior</SelectItem>
+                      <SelectItem value="engagement">Engagement Level</SelectItem>
+                      <SelectItem value="channel">Channel Preference</SelectItem>
+                      <SelectItem value="product">Product Affinity</SelectItem>
+                      <SelectItem value="lifecycle">Lifecycle Stage</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-muted/30 p-4 rounded-md flex flex-col items-center">
+                    <div className="text-sm font-medium mb-2">High-Value Regulars</div>
+                    <div className="text-3xl font-bold">24.8%</div>
+                    <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '24.8%' }}></div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">Frequent buyers, high AOV</div>
+                  </div>
+                  <div className="bg-muted/30 p-4 rounded-md flex flex-col items-center">
+                    <div className="text-sm font-medium mb-2">Occasional Buyers</div>
+                    <div className="text-3xl font-bold">32.7%</div>
+                    <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '32.7%' }}></div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">Infrequent, medium AOV</div>
+                  </div>
+                  <div className="bg-muted/30 p-4 rounded-md flex flex-col items-center">
+                    <div className="text-sm font-medium mb-2">New Customers</div>
+                    <div className="text-3xl font-bold">18.5%</div>
+                    <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: '18.5%' }}></div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">First 90 days</div>
+                  </div>
+                  <div className="bg-muted/30 p-4 rounded-md flex flex-col items-center">
+                    <div className="text-sm font-medium mb-2">At-Risk</div>
+                    <div className="text-3xl font-bold">24.0%</div>
+                    <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '24.0%' }}></div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">Declining activity</div>
+                  </div>
+                </div>
+                
+                <div className="border rounded-md">
+                  <ScrollArea className="h-[300px]">
+                    <div className="p-4">
+                      <h3 className="text-lg font-medium mb-3">Segment Characteristics</h3>
+                      
+                      <div className="space-y-6">
+                        <div>
+                          <h4 className="text-sm font-medium mb-2 flex items-center">
+                            <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                            High-Value Regulars
+                          </h4>
+                          <div className="pl-5 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Average Order Value</div>
+                              <div className="text-xs">$758.32</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Purchase Frequency</div>
+                              <div className="text-xs">3.7 orders/month</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Customer Lifetime</div>
+                              <div className="text-xs">4.2 years</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Preferred Channels</div>
+                              <div className="text-xs">Direct, EDI</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Top Product Categories</div>
+                              <div className="text-xs">Equipment, Premium Services</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-sm font-medium mb-2 flex items-center">
+                            <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                            Occasional Buyers
+                          </h4>
+                          <div className="pl-5 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Average Order Value</div>
+                              <div className="text-xs">$325.47</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Purchase Frequency</div>
+                              <div className="text-xs">1.2 orders/month</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Customer Lifetime</div>
+                              <div className="text-xs">2.8 years</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Preferred Channels</div>
+                              <div className="text-xs">Web Portal, Phone</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Top Product Categories</div>
+                              <div className="text-xs">Standard Services, Consumables</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-sm font-medium mb-2 flex items-center">
+                            <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
+                            New Customers
+                          </h4>
+                          <div className="pl-5 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Average Order Value</div>
+                              <div className="text-xs">$284.15</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Purchase Frequency</div>
+                              <div className="text-xs">0.8 orders/month</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Time Since First Order</div>
+                              <div className="text-xs">47 days (avg)</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Preferred Channels</div>
+                              <div className="text-xs">Web Portal, Email</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Top Product Categories</div>
+                              <div className="text-xs">Starter Kits, Basic Services</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-sm font-medium mb-2 flex items-center">
+                            <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
+                            At-Risk
+                          </h4>
+                          <div className="pl-5 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Average Order Value</div>
+                              <div className="text-xs">$412.68</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Purchase Frequency</div>
+                              <div className="text-xs">0.4 orders/month</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Days Since Last Order</div>
+                              <div className="text-xs">78 days (avg)</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Preferred Channels</div>
+                              <div className="text-xs">Phone, Web Portal</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="text-xs font-medium">Top Product Categories</div>
+                              <div className="text-xs">Maintenance, Replacement Parts</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* RFM Analysis & Predictive Analytics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 w-full">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>RFM Analysis</CardTitle>
+                    <CardDescription>Recency, Frequency, Monetary metrics</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="icon" className="h-8 w-8" id="rfm-scroll-up">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-8 w-8" id="rfm-scroll-down">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea id="rfm-analysis-container" className="h-[350px]">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div className="flex flex-col items-center p-3 bg-muted/30 rounded-md">
+                        <div className="text-sm font-medium">Recency</div>
+                        <div className="text-3xl font-bold mt-1">32</div>
+                        <div className="text-xs text-muted-foreground mt-1">Days (avg)</div>
+                      </div>
+                      <div className="flex flex-col items-center p-3 bg-muted/30 rounded-md">
+                        <div className="text-sm font-medium">Frequency</div>
+                        <div className="text-3xl font-bold mt-1">2.4</div>
+                        <div className="text-xs text-muted-foreground mt-1">Orders/month</div>
+                      </div>
+                      <div className="flex flex-col items-center p-3 bg-muted/30 rounded-md">
+                        <div className="text-sm font-medium">Monetary</div>
+                        <div className="text-3xl font-bold mt-1">$486</div>
+                        <div className="text-xs text-muted-foreground mt-1">Avg order value</div>
+                      </div>
+                    </div>
+                    
+                    <div className="border p-4 rounded-md">
+                      <h3 className="text-sm font-medium mb-3">RFM Score Distribution</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Champions (4.5-5.0)</span>
+                            <span>18%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '18%' }}></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Loyal Customers (3.5-4.4)</span>
+                            <span>24%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '24%' }}></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Potential Loyalists (2.5-3.4)</span>
+                            <span>32%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: '32%' }}></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>At Risk (1.5-2.4)</span>
+                            <span>16%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '16%' }}></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Needs Attention (0.5-1.4)</span>
+                            <span>10%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div className="bg-red-500 h-1.5 rounded-full" style={{ width: '10%' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border p-4 rounded-md">
+                      <h3 className="text-sm font-medium mb-3">Top RFM Segments</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between border-b pb-2">
+                          <div>
+                            <div className="text-xs font-medium">Champions</div>
+                            <div className="text-xs text-muted-foreground">Recent, frequent, high-spend</div>
+                          </div>
+                          <div className="text-sm font-medium">148 customers</div>
+                        </div>
+                        <div className="flex items-center justify-between border-b pb-2">
+                          <div>
+                            <div className="text-xs font-medium">Loyal Customers</div>
+                            <div className="text-xs text-muted-foreground">Regular purchases, above-avg spend</div>
+                          </div>
+                          <div className="text-sm font-medium">203 customers</div>
+                        </div>
+                        <div className="flex items-center justify-between border-b pb-2">
+                          <div>
+                            <div className="text-xs font-medium">Potential Loyalists</div>
+                            <div className="text-xs text-muted-foreground">Recent, moderate frequency/spend</div>
+                          </div>
+                          <div className="text-sm font-medium">267 customers</div>
+                        </div>
+                        <div className="flex items-center justify-between border-b pb-2">
+                          <div>
+                            <div className="text-xs font-medium">New Customers</div>
+                            <div className="text-xs text-muted-foreground">Joined recently, few orders</div>
+                          </div>
+                          <div className="text-sm font-medium">134 customers</div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-xs font-medium">At Risk</div>
+                            <div className="text-xs text-muted-foreground">No recent purchases</div>
+                          </div>
+                          <div className="text-sm font-medium">89 customers</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Predictive Analytics</CardTitle>
+                    <CardDescription>Customer behavior forecasting</CardDescription>
+                  </div>
+                  <Select defaultValue="churn">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="churn">Churn Prediction</SelectItem>
+                      <SelectItem value="clv">Lifetime Value</SelectItem>
+                      <SelectItem value="next">Next Purchase</SelectItem>
+                      <SelectItem value="upsell">Upsell Opportunities</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[350px]">
+                  <div className="space-y-4">
+                    <div className="border p-4 rounded-md">
+                      <h3 className="text-sm font-medium mb-2">Churn Risk Prediction</h3>
+                      <p className="text-xs text-muted-foreground mb-3">AI-driven prediction of customers likely to churn in the next 90 days</p>
+                      
+                      <div className="flex flex-col space-y-2 mb-4">
+                        <div className="flex justify-between items-center">
+                          <div className="text-sm font-medium">Overall Churn Risk</div>
+                          <div className="text-sm font-bold">12.4%</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="bg-amber-500 h-2 rounded-full" style={{ width: '12.4%' }}></div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-medium">Risk Factors</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-muted/30 rounded-md p-2 flex items-center">
+                            <Clock className="h-4 w-4 mr-2 text-amber-500" />
+                            <div>
+                              <div className="text-xs font-medium">Support Response Time</div>
+                              <div className="text-xs text-muted-foreground">43% impact</div>
+                            </div>
+                          </div>
+                          <div className="bg-muted/30 rounded-md p-2 flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-2 text-red-500" />
+                            <div>
+                              <div className="text-xs font-medium">Service Issues</div>
+                              <div className="text-xs text-muted-foreground">28% impact</div>
+                            </div>
+                          </div>
+                          <div className="bg-muted/30 rounded-md p-2 flex items-center">
+                            <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+                            <div>
+                              <div className="text-xs font-medium">Order Frequency</div>
+                              <div className="text-xs text-muted-foreground">17% impact</div>
+                            </div>
+                          </div>
+                          <div className="bg-muted/30 rounded-md p-2 flex items-center">
+                            <DollarSign className="h-4 w-4 mr-2 text-green-500" />
+                            <div>
+                              <div className="text-xs font-medium">Price Sensitivity</div>
+                              <div className="text-xs text-muted-foreground">12% impact</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border p-4 rounded-md">
+                      <h3 className="text-sm font-medium mb-3">High Churn Risk Customers</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between pb-2 border-b">
+                          <div className="flex items-center">
+                            <Badge className="bg-red-500/10 text-red-500 mr-2">84%</Badge>
+                            <div>
+                              <div className="text-xs font-medium">TechCorp Industries</div>
+                              <div className="text-xs text-muted-foreground">Last order: 46 days ago</div>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" className="h-7">
+                            <Phone className="h-3 w-3 mr-1" />
+                            Contact
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between pb-2 border-b">
+                          <div className="flex items-center">
+                            <Badge className="bg-red-500/10 text-red-500 mr-2">77%</Badge>
+                            <div>
+                              <div className="text-xs font-medium">Global Logistics Ltd</div>
+                              <div className="text-xs text-muted-foreground">Last order: 52 days ago</div>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" className="h-7">
+                            <Phone className="h-3 w-3 mr-1" />
+                            Contact
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between pb-2 border-b">
+                          <div className="flex items-center">
+                            <Badge className="bg-amber-500/10 text-amber-500 mr-2">68%</Badge>
+                            <div>
+                              <div className="text-xs font-medium">EastWest Shipping</div>
+                              <div className="text-xs text-muted-foreground">Last order: 38 days ago</div>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" className="h-7">
+                            <Phone className="h-3 w-3 mr-1" />
+                            Contact
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between pb-2 border-b">
+                          <div className="flex items-center">
+                            <Badge className="bg-amber-500/10 text-amber-500 mr-2">63%</Badge>
+                            <div>
+                              <div className="text-xs font-medium">Acme Freight Services</div>
+                              <div className="text-xs text-muted-foreground">Last order: 41 days ago</div>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" className="h-7">
+                            <Phone className="h-3 w-3 mr-1" />
+                            Contact
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <Badge className="bg-amber-500/10 text-amber-500 mr-2">59%</Badge>
+                            <div>
+                              <div className="text-xs font-medium">Pacific Transport Co</div>
+                              <div className="text-xs text-muted-foreground">Last order: 35 days ago</div>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" className="h-7">
+                            <Phone className="h-3 w-3 mr-1" />
+                            Contact
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 border rounded-md">
+                      <h3 className="text-sm font-medium mb-2">Recommended Actions</h3>
+                      <div className="space-y-2">
+                        <div className="p-2 bg-muted/30 rounded-md">
+                          <div className="text-xs font-medium">Service Check-in</div>
+                          <div className="text-xs text-muted-foreground">Contact high-risk customers to address service issues</div>
+                        </div>
+                        <div className="p-2 bg-muted/30 rounded-md">
+                          <div className="text-xs font-medium">Loyalty Program</div>
+                          <div className="text-xs text-muted-foreground">Invite medium-risk customers to join premium tier</div>
+                        </div>
+                        <div className="p-2 bg-muted/30 rounded-md">
+                          <div className="text-xs font-medium">Targeted Promotions</div>
+                          <div className="text-xs text-muted-foreground">Offer specific deals based on past purchase history</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Customer Lifetime Value Forecast */}
+          <div className="grid grid-cols-1 gap-6 w-full">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Customer Lifetime Value Forecast</CardTitle>
+                    <CardDescription>Projected revenue and retention analysis</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <CalendarRange className="h-4 w-4 mr-2" />
+                      3 Year
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div className="bg-muted/30 p-4 rounded-md flex flex-col">
+                    <div className="font-medium text-sm">Average CLV</div>
+                    <div className="text-2xl font-bold mt-1">$12,847</div>
+                    <div className="text-xs text-green-500 flex items-center mt-1">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      8.2% from last year
+                    </div>
+                    <div className="mt-auto pt-3 text-xs text-muted-foreground">Projected over 3 years</div>
+                  </div>
+                  <div className="bg-muted/30 p-4 rounded-md flex flex-col">
+                    <div className="font-medium text-sm">Retention Rate</div>
+                    <div className="text-2xl font-bold mt-1">78.4%</div>
+                    <div className="text-xs text-green-500 flex items-center mt-1">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      2.5% from last year
+                    </div>
+                    <div className="mt-auto pt-3 text-xs text-muted-foreground">Annual customer retention</div>
+                  </div>
+                  <div className="bg-muted/30 p-4 rounded-md flex flex-col">
+                    <div className="font-medium text-sm">Forecast Accuracy</div>
+                    <div className="text-2xl font-bold mt-1">92.7%</div>
+                    <div className="text-xs text-amber-500 flex items-center mt-1">
+                      <TrendingDown className="h-3 w-3 mr-1" />
+                      1.3% from last model
+                    </div>
+                    <div className="mt-auto pt-3 text-xs text-muted-foreground">Based on historical data</div>
+                  </div>
+                </div>
+                
+                <div className="border p-4 rounded-md mb-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-medium">CLV Projection by Segment</h3>
+                    <Select defaultValue="all">
+                      <SelectTrigger className="w-[150px] h-8">
+                        <SelectValue placeholder="Select segment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Segments</SelectItem>
+                        <SelectItem value="high">High Value</SelectItem>
+                        <SelectItem value="medium">Medium Value</SelectItem>
+                        <SelectItem value="low">Low Value</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsLineChart
+                        data={[
+                          { year: 'Year 1', high: 6240, medium: 3850, low: 1980, avg: 4023 },
+                          { year: 'Year 2', high: 11680, medium: 6420, low: 2860, avg: 6987 },
+                          { year: 'Year 3', high: 19850, medium: 8930, low: 3760, avg: 10847 },
+                          { year: 'Year 4', high: 26740, medium: 10450, low: 4290, avg: 13827 },
+                          { year: 'Year 5', high: 31280, medium: 11380, low: 4570, avg: 15743 }
+                        ]}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="year" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => `$${value}`} />
+                        <Legend />
+                        <Line type="monotone" dataKey="high" stroke="#22c55e" activeDot={{ r: 8 }} />
+                        <Line type="monotone" dataKey="medium" stroke="#3b82f6" />
+                        <Line type="monotone" dataKey="low" stroke="#a855f7" />
+                        <Line type="monotone" dataKey="avg" stroke="#6b7280" strokeDasharray="5 5" />
+                      </RechartsLineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="border p-4 rounded-md">
+                    <h3 className="text-sm font-medium mb-4">CLV to CAC Ratio by Industry</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-xs font-medium">Manufacturing</div>
+                          <div className="text-xs font-medium">5.8:1</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '83%' }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-xs font-medium">Retail</div>
+                          <div className="text-xs font-medium">4.3:1</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: '61%' }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-xs font-medium">Healthcare</div>
+                          <div className="text-xs font-medium">7.2:1</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '103%' }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-xs font-medium">Technology</div>
+                          <div className="text-xs font-medium">6.5:1</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: '93%' }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-xs font-medium">Finance</div>
+                          <div className="text-xs font-medium">5.1:1</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '73%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-4">Industry benchmark: 3:1 ratio</div>
+                  </div>
+                  
+                  <div className="border p-4 rounded-md">
+                    <h3 className="text-sm font-medium mb-4">Growth Opportunities</h3>
+                    <div className="space-y-3">
+                      <div className="p-3 bg-muted/30 rounded-lg">
+                        <div className="flex items-center">
+                          <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
+                          <div className="text-xs font-medium">Cross-Sell Premium Services</div>
+                        </div>
+                        <div className="pl-6 mt-1">
+                          <div className="text-xs text-muted-foreground">42 high-value customers identified</div>
+                          <div className="text-xs font-medium mt-1">Potential CLV increase: +24%</div>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-muted/30 rounded-lg">
+                        <div className="flex items-center">
+                          <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
+                          <div className="text-xs font-medium">Contract Renewals</div>
+                        </div>
+                        <div className="pl-6 mt-1">
+                          <div className="text-xs text-muted-foreground">18 contracts expiring in 30 days</div>
+                          <div className="text-xs font-medium mt-1">Potential CLV impact: +$192K</div>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-muted/30 rounded-lg">
+                        <div className="flex items-center">
+                          <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
+                          <div className="text-xs font-medium">Service Upgrades</div>
+                        </div>
+                        <div className="pl-6 mt-1">
+                          <div className="text-xs text-muted-foreground">67 customers on basic plans</div>
+                          <div className="text-xs font-medium mt-1">Potential CLV increase: +18%</div>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" className="w-full mt-2">
+                        <PlusCircle className="h-3.5 w-3.5 mr-1" />
+                        Create Opportunity
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t pt-4">
+                <div className="w-full flex justify-between items-center">
+                  <div className="text-xs text-muted-foreground">Last updated: Today, 10:45 AM</div>
+                  <Button variant="outline" size="sm">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh Analysis
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          </div>
         </div>
       )}
       
@@ -2890,7 +3582,7 @@ export default function Customers() {
             </Card>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-6">
             <Card>
               <CardHeader className="pb-2 text-center">
                 <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
@@ -2928,6 +3620,797 @@ export default function Customers() {
                   <p className="text-xs text-green-500">Industry avg: 45</p>
                 </div>
               </CardContent>
+            </Card>
+          </div>
+          
+          {/* Detailed Satisfaction Analysis */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>NPS Breakdown</CardTitle>
+                    <CardDescription>Net Promoter Score by customer segment</CardDescription>
+                  </div>
+                  <Select defaultValue="overall">
+                    <SelectTrigger className="w-[150px]">
+                      <SelectValue placeholder="Select view" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="overall">Overall</SelectItem>
+                      <SelectItem value="segment">By Segment</SelectItem>
+                      <SelectItem value="region">By Region</SelectItem>
+                      <SelectItem value="industry">By Industry</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="text-sm font-medium">NPS Distribution</div>
+                    <div className="text-xs text-muted-foreground">Scale: 0-100</div>
+                  </div>
+                  <div className="relative h-7 bg-muted/30 rounded-md overflow-hidden">
+                    <div className="absolute top-0 left-0 h-full bg-red-500/80" style={{ width: '12%' }}>
+                      <div className="h-full flex items-center justify-center">
+                        <span className="text-xs font-medium text-white">Detractors</span>
+                      </div>
+                    </div>
+                    <div className="absolute top-0 left-[12%] h-full bg-amber-500/80" style={{ width: '14%' }}>
+                      <div className="h-full flex items-center justify-center">
+                        <span className="text-xs font-medium text-white">Passives</span>
+                      </div>
+                    </div>
+                    <div className="absolute top-0 left-[26%] h-full bg-green-500/80" style={{ width: '74%' }}>
+                      <div className="h-full flex items-center justify-center">
+                        <span className="text-xs font-medium text-white">Promoters</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <div className="text-xs">12% Detractors</div>
+                    <div className="text-xs">14% Passives</div>
+                    <div className="text-xs">74% Promoters</div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4 mt-6">
+                  <div>
+                    <h3 className="text-sm font-medium mb-3">Score by Customer Segment</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-xs">High-Value Customers</div>
+                          <div className="text-xs font-medium">78</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '78%' }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-xs">Occasional Buyers</div>
+                          <div className="text-xs font-medium">64</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '64%' }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-xs">New Customers</div>
+                          <div className="text-xs font-medium">58</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '58%' }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="text-xs">At-Risk Customers</div>
+                          <div className="text-xs font-medium">42</div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '42%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-medium mb-3">Primary Factors</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-green-500/10 p-3 rounded-lg">
+                        <div className="text-xs font-medium mb-1 text-green-600">Positive Drivers</div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span>Service Quality</span>
+                            <span>+24%</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span>Response Time</span>
+                            <span>+19%</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span>Product Reliability</span>
+                            <span>+16%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-red-500/10 p-3 rounded-lg">
+                        <div className="text-xs font-medium mb-1 text-red-600">Improvement Areas</div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span>Pricing Structure</span>
+                            <span>-12%</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span>Technical Support</span>
+                            <span>-8%</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span>Billing Clarity</span>
+                            <span>-6%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Satisfaction by Channel</CardTitle>
+                    <CardDescription>Ratings across service touchpoints</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[280px] mb-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { channel: 'Web Portal', rating: 4.8, responses: 427 },
+                        { channel: 'Mobile App', rating: 4.6, responses: 318 },
+                        { channel: 'Phone Support', rating: 4.2, responses: 245 },
+                        { channel: 'Email', rating: 4.4, responses: 192 },
+                        { channel: 'Chat', rating: 4.5, responses: 156 },
+                        { channel: 'In-Person', rating: 4.9, responses: 83 }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="channel" />
+                      <YAxis yAxisId="left" orientation="left" domain={[3.5, 5]} />
+                      <YAxis yAxisId="right" orientation="right" />
+                      <Tooltip />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="rating" fill="#8884d8" name="Satisfaction Rating" />
+                      <Bar yAxisId="right" dataKey="responses" fill="#82ca9d" name="Response Volume" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium mb-3">Channel Performance</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-2 bg-green-500/10 rounded-md">
+                      <div className="flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                        <div>
+                          <div className="text-xs font-medium">Highest Performing</div>
+                          <div className="text-xs text-muted-foreground">In-Person Support (4.9/5)</div>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="bg-green-500/20 text-green-700">+0.2 QoQ</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-amber-500/10 rounded-md">
+                      <div className="flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-2 text-amber-500" />
+                        <div>
+                          <div className="text-xs font-medium">Needs Improvement</div>
+                          <div className="text-xs text-muted-foreground">Phone Support (4.2/5)</div>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="bg-amber-500/20 text-amber-700">-0.1 QoQ</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-blue-500/10 rounded-md">
+                      <div className="flex items-center">
+                        <TrendingUp className="h-4 w-4 mr-2 text-blue-500" />
+                        <div>
+                          <div className="text-xs font-medium">Most Improved</div>
+                          <div className="text-xs text-muted-foreground">Mobile App (4.6/5)</div>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="bg-blue-500/20 text-blue-700">+0.4 QoQ</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Survey Analytics and Feedback Analysis */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-6">
+            <div className="md:col-span-2">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Survey Response Analytics</CardTitle>
+                      <CardDescription>Detailed satisfaction survey metrics</CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      <Select defaultValue="last30">
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue placeholder="Time period" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="last30">Last 30 Days</SelectItem>
+                          <SelectItem value="last90">Last 90 Days</SelectItem>
+                          <SelectItem value="lastYear">Last Year</SelectItem>
+                          <SelectItem value="allTime">All Time</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-4 mb-6">
+                    <div className="border rounded-md p-3 flex flex-col items-center">
+                      <div className="text-xs text-muted-foreground">Surveys Sent</div>
+                      <div className="text-lg font-bold mt-1">1,248</div>
+                      <div className="text-xs text-blue-500 flex items-center mt-1">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        12.4%
+                      </div>
+                    </div>
+                    <div className="border rounded-md p-3 flex flex-col items-center">
+                      <div className="text-xs text-muted-foreground">Completed</div>
+                      <div className="text-lg font-bold mt-1">847</div>
+                      <div className="text-xs text-blue-500 flex items-center mt-1">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        68%
+                      </div>
+                    </div>
+                    <div className="border rounded-md p-3 flex flex-col items-center">
+                      <div className="text-xs text-muted-foreground">Avg. Completion Time</div>
+                      <div className="text-lg font-bold mt-1">4:32</div>
+                      <div className="text-xs text-green-500 flex items-center mt-1">
+                        <TrendingDown className="h-3 w-3 mr-1" />
+                        -0:28
+                      </div>
+                    </div>
+                    <div className="border rounded-md p-3 flex flex-col items-center">
+                      <div className="text-xs text-muted-foreground">Avg. Questions Answered</div>
+                      <div className="text-lg font-bold mt-1">8.4/10</div>
+                      <div className="text-xs text-blue-500 flex items-center mt-1">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        0.6
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-md overflow-hidden">
+                    <div className="bg-muted/30 px-4 py-3 border-b">
+                      <h3 className="text-sm font-medium">Question Performance</h3>
+                    </div>
+                    <div className="max-h-[300px] overflow-auto">
+                      <table className="w-full">
+                        <thead className="bg-muted/20 sticky top-0">
+                          <tr>
+                            <th className="text-xs font-medium text-left p-3">Question</th>
+                            <th className="text-xs font-medium text-center p-3">Score</th>
+                            <th className="text-xs font-medium text-center p-3">Response Rate</th>
+                            <th className="text-xs font-medium text-center p-3">Change</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          <tr className="hover:bg-muted/10">
+                            <td className="text-xs p-3">How would you rate your overall experience?</td>
+                            <td className="text-xs text-center p-3">
+                              <div className="flex items-center justify-center">
+                                <span className="font-medium">4.8</span>
+                                <span className="text-xs text-muted-foreground ml-1">/5</span>
+                              </div>
+                            </td>
+                            <td className="text-xs text-center p-3">96%</td>
+                            <td className="text-xs text-center p-3">
+                              <span className="text-green-500 flex items-center justify-center">
+                                <TrendingUp className="h-3 w-3 mr-1" />
+                                0.2
+                              </span>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/10">
+                            <td className="text-xs p-3">How satisfied are you with our customer support?</td>
+                            <td className="text-xs text-center p-3">
+                              <div className="flex items-center justify-center">
+                                <span className="font-medium">4.5</span>
+                                <span className="text-xs text-muted-foreground ml-1">/5</span>
+                              </div>
+                            </td>
+                            <td className="text-xs text-center p-3">92%</td>
+                            <td className="text-xs text-center p-3">
+                              <span className="text-green-500 flex items-center justify-center">
+                                <TrendingUp className="h-3 w-3 mr-1" />
+                                0.3
+                              </span>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/10">
+                            <td className="text-xs p-3">How likely are you to recommend our service?</td>
+                            <td className="text-xs text-center p-3">
+                              <div className="flex items-center justify-center">
+                                <span className="font-medium">4.7</span>
+                                <span className="text-xs text-muted-foreground ml-1">/5</span>
+                              </div>
+                            </td>
+                            <td className="text-xs text-center p-3">94%</td>
+                            <td className="text-xs text-center p-3">
+                              <span className="text-green-500 flex items-center justify-center">
+                                <TrendingUp className="h-3 w-3 mr-1" />
+                                0.1
+                              </span>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/10">
+                            <td className="text-xs p-3">How easy was it to find what you were looking for?</td>
+                            <td className="text-xs text-center p-3">
+                              <div className="flex items-center justify-center">
+                                <span className="font-medium">4.2</span>
+                                <span className="text-xs text-muted-foreground ml-1">/5</span>
+                              </div>
+                            </td>
+                            <td className="text-xs text-center p-3">88%</td>
+                            <td className="text-xs text-center p-3">
+                              <span className="text-amber-500 flex items-center justify-center">
+                                <TrendingDown className="h-3 w-3 mr-1" />
+                                0.1
+                              </span>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/10">
+                            <td className="text-xs p-3">How would you rate our product quality?</td>
+                            <td className="text-xs text-center p-3">
+                              <div className="flex items-center justify-center">
+                                <span className="font-medium">4.6</span>
+                                <span className="text-xs text-muted-foreground ml-1">/5</span>
+                              </div>
+                            </td>
+                            <td className="text-xs text-center p-3">90%</td>
+                            <td className="text-xs text-center p-3">
+                              <span className="text-green-500 flex items-center justify-center">
+                                <TrendingUp className="h-3 w-3 mr-1" />
+                                0.2
+                              </span>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/10">
+                            <td className="text-xs p-3">How satisfied are you with our pricing?</td>
+                            <td className="text-xs text-center p-3">
+                              <div className="flex items-center justify-center">
+                                <span className="font-medium">3.9</span>
+                                <span className="text-xs text-muted-foreground ml-1">/5</span>
+                              </div>
+                            </td>
+                            <td className="text-xs text-center p-3">85%</td>
+                            <td className="text-xs text-center p-3">
+                              <span className="text-amber-500 flex items-center justify-center">
+                                <TrendingDown className="h-3 w-3 mr-1" />
+                                0.2
+                              </span>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/10">
+                            <td className="text-xs p-3">How would you rate our delivery process?</td>
+                            <td className="text-xs text-center p-3">
+                              <div className="flex items-center justify-center">
+                                <span className="font-medium">4.4</span>
+                                <span className="text-xs text-muted-foreground ml-1">/5</span>
+                              </div>
+                            </td>
+                            <td className="text-xs text-center p-3">89%</td>
+                            <td className="text-xs text-center p-3">
+                              <span className="text-green-500 flex items-center justify-center">
+                                <TrendingUp className="h-3 w-3 mr-1" />
+                                0.1
+                              </span>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="md:col-span-1">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle>Feedback Sentiment Analysis</CardTitle>
+                  <CardDescription>AI-powered customer comment analysis</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-medium mb-2">Overall Sentiment</h3>
+                      <div className="flex items-center mb-4">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                          <div className="bg-green-500 h-2.5 rounded-l-full" style={{ width: '78%' }}></div>
+                          <div className="bg-red-500 h-2.5 rounded-r-full" style={{ width: '22%', marginLeft: '78%', marginTop: '-10px' }}></div>
+                        </div>
+                        <span className="text-xs font-medium">78% Positive</span>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-4">
+                      <h3 className="text-sm font-medium mb-3">Key Topics Mentioned</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <Badge className="bg-green-500/20 text-green-700 mr-2">+</Badge>
+                            <span className="text-xs">Customer Service</span>
+                          </div>
+                          <span className="text-xs font-medium">42%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <Badge className="bg-green-500/20 text-green-700 mr-2">+</Badge>
+                            <span className="text-xs">Product Quality</span>
+                          </div>
+                          <span className="text-xs font-medium">38%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <Badge className="bg-green-500/20 text-green-700 mr-2">+</Badge>
+                            <span className="text-xs">Order Process</span>
+                          </div>
+                          <span className="text-xs font-medium">27%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <Badge className="bg-red-500/20 text-red-700 mr-2">-</Badge>
+                            <span className="text-xs">Pricing</span>
+                          </div>
+                          <span className="text-xs font-medium">23%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <Badge className="bg-red-500/20 text-red-700 mr-2">-</Badge>
+                            <span className="text-xs">Wait Times</span>
+                          </div>
+                          <span className="text-xs font-medium">18%</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-4">
+                      <h3 className="text-sm font-medium mb-3">Recent Feedback Highlights</h3>
+                      <div className="space-y-3">
+                        <div className="bg-green-500/10 p-2 rounded-md">
+                          <div className="text-xs italic">"The customer service team went above and beyond to resolve my issue. Very impressed!"</div>
+                          <div className="flex justify-between items-center mt-1">
+                            <div className="text-xs text-muted-foreground">High-Value Customer</div>
+                            <Badge variant="outline" className="bg-green-500/10 text-green-700 text-xs">Positive</Badge>
+                          </div>
+                        </div>
+                        <div className="bg-green-500/10 p-2 rounded-md">
+                          <div className="text-xs italic">"Quality of products has significantly improved over the last year. Will continue ordering."</div>
+                          <div className="flex justify-between items-center mt-1">
+                            <div className="text-xs text-muted-foreground">Regular Customer</div>
+                            <Badge variant="outline" className="bg-green-500/10 text-green-700 text-xs">Positive</Badge>
+                          </div>
+                        </div>
+                        <div className="bg-red-500/10 p-2 rounded-md">
+                          <div className="text-xs italic">"Pricing structure is confusing and higher than competitors for similar services."</div>
+                          <div className="flex justify-between items-center mt-1">
+                            <div className="text-xs text-muted-foreground">New Customer</div>
+                            <Badge variant="outline" className="bg-red-500/10 text-red-700 text-xs">Negative</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+          
+          {/* Response Metrics and Action Plans */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Response Time Metrics</CardTitle>
+                    <CardDescription>Customer service performance analysis</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[250px] mb-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsLineChart
+                      data={[
+                        { week: 'Week 1', firstResponse: 4.2, resolution: 12.8 },
+                        { week: 'Week 2', firstResponse: 3.8, resolution: 10.5 },
+                        { week: 'Week 3', firstResponse: 3.2, resolution: 9.4 },
+                        { week: 'Week 4', firstResponse: 3.5, resolution: 9.8 },
+                        { week: 'Week 5', firstResponse: 3.7, resolution: 10.2 },
+                        { week: 'Week 6', firstResponse: 3.0, resolution: 8.4 },
+                        { week: 'Week 7', firstResponse: 2.8, resolution: 8.1 },
+                        { week: 'Week 8', firstResponse: 2.5, resolution: 7.6 }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="week" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => `${value} hours`} />
+                      <Legend />
+                      <Line type="monotone" dataKey="firstResponse" stroke="#3b82f6" name="First Response Time" />
+                      <Line type="monotone" dataKey="resolution" stroke="#8884d8" name="Avg Resolution Time" strokeDasharray="3 3" />
+                    </RechartsLineChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="border rounded-md p-3 flex flex-col items-center">
+                    <div className="text-xs text-muted-foreground">First Response</div>
+                    <div className="text-lg font-bold mt-1">2.5h</div>
+                    <div className="text-xs text-green-500 flex items-center mt-1">
+                      <TrendingDown className="h-3 w-3 mr-1" />
+                      40.5%
+                    </div>
+                  </div>
+                  <div className="border rounded-md p-3 flex flex-col items-center">
+                    <div className="text-xs text-muted-foreground">Resolution Time</div>
+                    <div className="text-lg font-bold mt-1">7.6h</div>
+                    <div className="text-xs text-green-500 flex items-center mt-1">
+                      <TrendingDown className="h-3 w-3 mr-1" />
+                      40.6%
+                    </div>
+                  </div>
+                  <div className="border rounded-md p-3 flex flex-col items-center">
+                    <div className="text-xs text-muted-foreground">One-Touch Resolution</div>
+                    <div className="text-lg font-bold mt-1">64%</div>
+                    <div className="text-xs text-blue-500 flex items-center mt-1">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      8%
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-medium mb-3">Response Time by Issue Type</h3>
+                  <div className="space-y-2">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="text-xs">Technical Issues</div>
+                        <div className="text-xs font-medium">3.2h</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '60%' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="text-xs">Billing Questions</div>
+                        <div className="text-xs font-medium">2.1h</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '40%' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="text-xs">Product Information</div>
+                        <div className="text-xs font-medium">1.8h</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '35%' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="text-xs">Shipping Inquiries</div>
+                        <div className="text-xs font-medium">2.4h</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '45%' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Satisfaction Improvement Plan</CardTitle>
+                    <CardDescription>Strategic action items based on feedback</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-4">
+                    <div className="border rounded-md overflow-hidden">
+                      <div className="bg-blue-500/10 px-3 py-2 border-b">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-sm font-medium text-blue-700">Technical Support Improvements</h3>
+                          <Badge variant="outline">High Priority</Badge>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <div className="space-y-3">
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="item-1" />
+                            </div>
+                            <div>
+                              <Label htmlFor="item-1" className="text-xs font-medium">Implement knowledge base expansion</Label>
+                              <p className="text-xs text-muted-foreground">Increase self-service resolution rate by 20%</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="item-2" />
+                            </div>
+                            <div>
+                              <Label htmlFor="item-2" className="text-xs font-medium">Reduce technical issue response time</Label>
+                              <p className="text-xs text-muted-foreground">Target: 2.5 hours (currently 3.2 hours)</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="item-3" />
+                            </div>
+                            <div>
+                              <Label htmlFor="item-3" className="text-xs font-medium">Technical support team training</Label>
+                              <p className="text-xs text-muted-foreground">New product features and troubleshooting</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-md overflow-hidden">
+                      <div className="bg-amber-500/10 px-3 py-2 border-b">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-sm font-medium text-amber-700">Pricing Clarity Initiative</h3>
+                          <Badge variant="outline">Medium Priority</Badge>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <div className="space-y-3">
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="price-1" />
+                            </div>
+                            <div>
+                              <Label htmlFor="price-1" className="text-xs font-medium">Pricing page redesign</Label>
+                              <p className="text-xs text-muted-foreground">Simplify structure and add comparison tools</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="price-2" />
+                            </div>
+                            <div>
+                              <Label htmlFor="price-2" className="text-xs font-medium">Create transparent billing FAQ</Label>
+                              <p className="text-xs text-muted-foreground">Address top 10 pricing confusion points</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="price-3" />
+                            </div>
+                            <div>
+                              <Label htmlFor="price-3" className="text-xs font-medium">Sales team training on pricing discussions</Label>
+                              <p className="text-xs text-muted-foreground">Ensure consistent value communication</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-md overflow-hidden">
+                      <div className="bg-green-500/10 px-3 py-2 border-b">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-sm font-medium text-green-700">Customer Onboarding Enhancement</h3>
+                          <Badge variant="outline">Medium Priority</Badge>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <div className="space-y-3">
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="onboard-1" />
+                            </div>
+                            <div>
+                              <Label htmlFor="onboard-1" className="text-xs font-medium">Develop interactive product tours</Label>
+                              <p className="text-xs text-muted-foreground">Reduce initial support requests by 15%</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="onboard-2" />
+                            </div>
+                            <div>
+                              <Label htmlFor="onboard-2" className="text-xs font-medium">Personalized onboarding checklists</Label>
+                              <p className="text-xs text-muted-foreground">Based on customer segment and needs</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="onboard-3" checked={true} />
+                            </div>
+                            <div>
+                              <Label htmlFor="onboard-3" className="text-xs font-medium line-through">Launch welcome email sequence</Label>
+                              <p className="text-xs text-muted-foreground line-through">With key resources and getting started guide</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-md overflow-hidden">
+                      <div className="bg-purple-500/10 px-3 py-2 border-b">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-sm font-medium text-purple-700">Mobile Experience Optimization</h3>
+                          <Badge variant="outline">Low Priority</Badge>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <div className="space-y-3">
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="mobile-1" />
+                            </div>
+                            <div>
+                              <Label htmlFor="mobile-1" className="text-xs font-medium">Mobile app performance improvements</Label>
+                              <p className="text-xs text-muted-foreground">Target 20% faster load times</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start">
+                            <div className="mt-0.5 mr-2">
+                              <Checkbox id="mobile-2" />
+                            </div>
+                            <div>
+                              <Label htmlFor="mobile-2" className="text-xs font-medium">Add offline capabilities</Label>
+                              <p className="text-xs text-muted-foreground">For key app functions during outages</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </CardContent>
+              <CardFooter className="border-t pt-4">
+                <div className="w-full flex justify-between">
+                  <div className="text-xs text-muted-foreground">Last updated: Today, 9:15 AM</div>
+                  <div className="text-xs text-muted-foreground">6 / 11 tasks completed</div>
+                </div>
+              </CardFooter>
             </Card>
           </div>
         </div>

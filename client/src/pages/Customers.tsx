@@ -7,6 +7,7 @@ import {
   CardTitle,
   CardFooter
 } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Table, 
   TableBody, 
@@ -48,7 +49,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon, User, UserCheck, DollarSign, ArrowUp, ArrowDown, ChevronRight, ChevronsLeft, ChevronLeft, Plus, Trash2, Pencil, FileText, UserIcon, RefreshCw, ChevronsRight } from "lucide-react";
+import { MoreHorizontal, Search, UserRound, Building2, MapPin, Activity, Clock, Ship, Phone, Mail, UserPlus, Filter, Download, CalendarIcon, User, UserCheck, DollarSign, ArrowUp, ArrowDown, ChevronRight, ChevronsLeft, ChevronLeft, Plus, Trash2, Pencil, FileText, UserIcon, RefreshCw, ChevronsRight, AlertCircle, Users, CheckCircle, Bell, MessageSquare } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart as RechartsLineChart, Line, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ScatterChart, Scatter, ZAxis, Treemap } from 'recharts';
 import 'chart.js/auto';
 import { TrendingUp } from 'lucide-react';
@@ -1329,7 +1330,7 @@ export default function Customers() {
                         fill="#8884d8" 
                         label={{ 
                           position: 'right', 
-                          formatter: (item: any) => item && item.value ? `${item.value.toLocaleString()}` : '',
+                          formatter: (item: { value?: number }) => item && item.value ? `${item.value.toLocaleString()}` : '',
                           fill: 'hsl(var(--foreground))',
                           fontSize: 12
                         }}
@@ -1996,7 +1997,7 @@ export default function Customers() {
                     <Plus className="h-4 w-4 mr-2" />
                     Add Customer
                   </Button>
-                </div>
+              </div>
               </div>
 
             </CardHeader>
@@ -2210,6 +2211,562 @@ export default function Customers() {
               )}
             </CardContent>
           </Card>
+
+          {/* New Advanced Analytics Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 w-full">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Customer Engagement Metrics</CardTitle>
+                <CardDescription>Interaction trends over the past 30 days</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={[
+                        { date: '1', emails: 23, calls: 12, meetings: 5 },
+                        { date: '5', emails: 25, calls: 10, meetings: 6 },
+                        { date: '10', emails: 18, calls: 15, meetings: 3 },
+                        { date: '15', emails: 30, calls: 8, meetings: 7 },
+                        { date: '20', emails: 27, calls: 13, meetings: 4 },
+                        { date: '25', emails: 32, calls: 11, meetings: 8 },
+                        { date: '30', emails: 35, calls: 14, meetings: 9 }
+                      ]}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" label={{ value: 'Day of Month', position: 'insideBottom', offset: -5 }} />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Area type="monotone" dataKey="emails" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
+                      <Area type="monotone" dataKey="calls" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} />
+                      <Area type="monotone" dataKey="meetings" stroke="#ffc658" fill="#ffc658" fillOpacity={0.3} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-3">
+                  <div className="bg-muted/30 p-3 rounded-md">
+                    <div className="text-xs font-medium mb-1">Total Interactions</div>
+                    <div className="text-xl font-bold">342</div>
+                    <div className="text-xs text-green-500 mt-1">+12% from last month</div>
+                  </div>
+                  <div className="bg-muted/30 p-3 rounded-md">
+                    <div className="text-xs font-medium mb-1">Response Rate</div>
+                    <div className="text-xl font-bold">78%</div>
+                    <div className="text-xs text-green-500 mt-1">+5% from last month</div>
+                  </div>
+                  <div className="bg-muted/30 p-3 rounded-md">
+                    <div className="text-xs font-medium mb-1">Avg. Response Time</div>
+                    <div className="text-xl font-bold">4.2h</div>
+                    <div className="text-xs text-red-500 mt-1">+0.8h from last month</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-lg">Contact Activity Log</CardTitle>
+                    <CardDescription>Recent customer interactions</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8" 
+                      onClick={() => {
+                        const container = document.getElementById('contact-log-container');
+                        if (container) {
+                          container.scrollBy({ top: -200, behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8" 
+                      onClick={() => {
+                        const container = document.getElementById('contact-log-container');
+                        if (container) {
+                          container.scrollBy({ top: 200, behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ScrollArea id="contact-log-container" className="max-h-[350px]">
+                  <div className="divide-y">
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-primary/10 rounded-full p-2">
+                            <Mail className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Email Received</div>
+                            <div className="text-sm text-muted-foreground">Ocean Shipping Ltd - Inquiry about shipment #45692</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Today, 10:23 AM</div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-green-500/10 rounded-full p-2">
+                            <Phone className="h-4 w-4 text-green-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Call Completed</div>
+                            <div className="text-sm text-muted-foreground">TechCorp - Technical support call (18 minutes)</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Yesterday, 3:45 PM</div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-blue-500/10 rounded-full p-2">
+                            <UserCheck className="h-4 w-4 text-blue-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Meeting Scheduled</div>
+                            <div className="text-sm text-muted-foreground">Acme Inc. - Quarterly business review</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Aug 15, 11:00 AM</div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-amber-500/10 rounded-full p-2">
+                            <FileText className="h-4 w-4 text-amber-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Proposal Sent</div>
+                            <div className="text-sm text-muted-foreground">GlobalTrade - New logistics solution proposal</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Aug 14, 2:15 PM</div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-primary/10 rounded-full p-2">
+                            <Mail className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Email Sent</div>
+                            <div className="text-sm text-muted-foreground">Premier Logistics - Follow-up on last order</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Aug 12, 9:30 AM</div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-red-500/10 rounded-full p-2">
+                            <AlertCircle className="h-4 w-4 text-red-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Complaint Resolved</div>
+                            <div className="text-sm text-muted-foreground">FastFreight Inc. - Delivery delay resolution</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Aug 11, 2:45 PM</div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-green-500/10 rounded-full p-2">
+                            <Phone className="h-4 w-4 text-green-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Call Completed</div>
+                            <div className="text-sm text-muted-foreground">MegaShip - Contract renewal discussion (25 minutes)</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Aug 10, 11:20 AM</div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-blue-500/10 rounded-full p-2">
+                            <UserCheck className="h-4 w-4 text-blue-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Meeting Completed</div>
+                            <div className="text-sm text-muted-foreground">LogiTech Solutions - Product demo (45 minutes)</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Aug 9, 2:00 PM</div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-purple-500/10 rounded-full p-2">
+                            <MessageSquare className="h-4 w-4 text-purple-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Chat Conversation</div>
+                            <div className="text-sm text-muted-foreground">EastWest Logistics - Support chat (12 messages)</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Aug 8, 10:15 AM</div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-amber-500/10 rounded-full p-2">
+                            <FileText className="h-4 w-4 text-amber-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Quote Sent</div>
+                            <div className="text-sm text-muted-foreground">Harbor Freight - New equipment quote</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Aug 7, 4:30 PM</div>
+                      </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Technical Data Integration Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 w-full">
+            <Card className="md:col-span-2">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-lg">Customer Data Integration</CardTitle>
+                    <CardDescription>API connection status and data sync metrics</CardDescription>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8" 
+                        onClick={() => {
+                          const container = document.getElementById('integration-table-container');
+                          if (container) {
+                            container.scrollBy({ top: -200, behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8" 
+                        onClick={() => {
+                          const container = document.getElementById('integration-table-container');
+                          if (container) {
+                            container.scrollBy({ top: 200, behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                      </Button>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Sync Now
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-muted/30 p-4 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium">CRM Integration</div>
+                        <Badge variant="outline" className="bg-green-500/10 text-green-500">Connected</Badge>
+                      </div>
+                      <div className="mt-2 flex justify-between items-center text-sm">
+                        <span>Last sync: 35 min ago</span>
+                        <span className="text-green-500">98.5% success</span>
+                      </div>
+                      <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '98.5%' }}></div>
+                      </div>
+                    </div>
+                    <div className="bg-muted/30 p-4 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium">ERP System</div>
+                        <Badge variant="outline" className="bg-amber-500/10 text-amber-500">Partial</Badge>
+                      </div>
+                      <div className="mt-2 flex justify-between items-center text-sm">
+                        <span>Last sync: 2h ago</span>
+                        <span className="text-amber-500">76.2% success</span>
+                      </div>
+                      <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '76.2%' }}></div>
+                      </div>
+                    </div>
+                    <div className="bg-muted/30 p-4 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <div className="font-medium">Help Desk</div>
+                        <Badge variant="outline" className="bg-green-500/10 text-green-500">Connected</Badge>
+                      </div>
+                      <div className="mt-2 flex justify-between items-center text-sm">
+                        <span>Last sync: 20 min ago</span>
+                        <span className="text-green-500">99.7% success</span>
+                      </div>
+                      <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '99.7%' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-md">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50 sticky top-0 z-10">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-medium">Data Type</th>
+                          <th className="px-4 py-3 text-left font-medium">Last Updated</th>
+                          <th className="px-4 py-3 text-left font-medium">Records</th>
+                          <th className="px-4 py-3 text-left font-medium">Status</th>
+                          <th className="px-4 py-3 text-left font-medium">Source</th>
+                          <th className="px-4 py-3 text-left font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                    </table>
+                    <ScrollArea id="integration-table-container" className="max-h-[300px]">
+                      <table className="w-full text-sm">
+                        <tbody className="divide-y">
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Contact Information</td>
+                            <td className="px-4 py-3">Today, 10:15 AM</td>
+                            <td className="px-4 py-3">152 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-green-500/10 text-green-500 border-green-500/20">Synced</Badge></td>
+                            <td className="px-4 py-3">CRM</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Orders History</td>
+                            <td className="px-4 py-3">Today, 9:45 AM</td>
+                            <td className="px-4 py-3">1,248 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-green-500/10 text-green-500 border-green-500/20">Synced</Badge></td>
+                            <td className="px-4 py-3">ERP</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Support Tickets</td>
+                            <td className="px-4 py-3">Today, 10:05 AM</td>
+                            <td className="px-4 py-3">89 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-green-500/10 text-green-500 border-green-500/20">Synced</Badge></td>
+                            <td className="px-4 py-3">Help Desk</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Billing Data</td>
+                            <td className="px-4 py-3">Yesterday, 6:30 PM</td>
+                            <td className="px-4 py-3">452 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">Pending</Badge></td>
+                            <td className="px-4 py-3">ERP</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Customer Preferences</td>
+                            <td className="px-4 py-3">Today, 8:20 AM</td>
+                            <td className="px-4 py-3">103 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-green-500/10 text-green-500 border-green-500/20">Synced</Badge></td>
+                            <td className="px-4 py-3">CRM</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Shipping Information</td>
+                            <td className="px-4 py-3">Today, 9:10 AM</td>
+                            <td className="px-4 py-3">567 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-green-500/10 text-green-500 border-green-500/20">Synced</Badge></td>
+                            <td className="px-4 py-3">Logistics</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Contract Documents</td>
+                            <td className="px-4 py-3">Yesterday, 3:45 PM</td>
+                            <td className="px-4 py-3">84 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-red-500/10 text-red-500 border-red-500/20">Failed</Badge></td>
+                            <td className="px-4 py-3">Document System</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Marketing Preferences</td>
+                            <td className="px-4 py-3">Yesterday, 5:12 PM</td>
+                            <td className="px-4 py-3">215 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">Pending</Badge></td>
+                            <td className="px-4 py-3">Marketing Platform</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Customer Feedback</td>
+                            <td className="px-4 py-3">2 days ago</td>
+                            <td className="px-4 py-3">76 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-green-500/10 text-green-500 border-green-500/20">Synced</Badge></td>
+                            <td className="px-4 py-3">Survey System</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                          <tr className="hover:bg-muted/50 transition-colors">
+                            <td className="px-4 py-3">Account Managers</td>
+                            <td className="px-4 py-3">Today, 11:30 AM</td>
+                            <td className="px-4 py-3">42 records</td>
+                            <td className="px-4 py-3"><Badge className="bg-green-500/10 text-green-500 border-green-500/20">Synced</Badge></td>
+                            <td className="px-4 py-3">CRM</td>
+                            <td className="px-4 py-3">
+                              <Button variant="ghost" size="icon">
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </ScrollArea>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Data Quality Index</CardTitle>
+                <CardDescription>Customer data completeness and accuracy</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm font-medium">Overall Score</div>
+                    <div className="text-2xl font-bold text-right">86%</div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between items-center mb-1 text-sm">
+                        <div>Contact Information</div>
+                        <div>92%</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }}></div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between items-center mb-1 text-sm">
+                        <div>Company Details</div>
+                        <div>88%</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '88%' }}></div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between items-center mb-1 text-sm">
+                        <div>Order History</div>
+                        <div>95%</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '95%' }}></div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between items-center mb-1 text-sm">
+                        <div>Billing Information</div>
+                        <div>78%</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-amber-500 h-2 rounded-full" style={{ width: '78%' }}></div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between items-center mb-1 text-sm">
+                        <div>Customer Preferences</div>
+                        <div>72%</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-amber-500 h-2 rounded-full" style={{ width: '72%' }}></div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between items-center mb-1 text-sm">
+                        <div>Integration Fields</div>
+                        <div>85%</div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-muted/30 p-3 rounded-md mt-2">
+                    <div className="text-sm font-medium mb-1">Data Growth</div>
+                    <div className="text-2xl font-bold">+12.4%</div>
+                    <div className="text-xs text-muted-foreground mt-1">Customer records growth this quarter</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
       

@@ -3412,8 +3412,8 @@ export default function Customers() {
                     </Select>
                   </div>
                   
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <div className="h-50">
+                    <ResponsiveContainer width="100%" height="80%">
                       <RechartsLineChart
                         data={[
                           { year: 'Year 1', high: 6240, medium: 3850, low: 1980, avg: 4023 },
@@ -3532,15 +3532,6 @@ export default function Customers() {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="border-t pt-4">
-                <div className="w-full flex justify-between items-center">
-                  <div className="text-xs text-muted-foreground">Last updated: Today, 10:45 AM</div>
-                  <Button variant="outline" size="sm">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Refresh Analysis
-                  </Button>
-                </div>
-              </CardFooter>
             </Card>
           </div>
         </div>
@@ -3555,8 +3546,8 @@ export default function Customers() {
                 <CardTitle>Satisfaction Score Trends</CardTitle>
                 <CardDescription>Monthly customer feedback scores</CardDescription>
               </CardHeader>
-              <CardContent className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
+              <CardContent className="h-70">
+                <ResponsiveContainer width="100%" height="80%">
                   <RechartsLineChart
                     data={[
                       { month: 'Jan', score: 4.2 },
@@ -4250,7 +4241,7 @@ export default function Customers() {
                 </div>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-[550px]">
                   <div className="space-y-4">
                     <div className="border rounded-md overflow-hidden">
                       <div className="bg-blue-500/10 px-3 py-2 border-b">
@@ -4405,12 +4396,6 @@ export default function Customers() {
                   </div>
                 </ScrollArea>
               </CardContent>
-              <CardFooter className="border-t pt-4">
-                <div className="w-full flex justify-between">
-                  <div className="text-xs text-muted-foreground">Last updated: Today, 9:15 AM</div>
-                  <div className="text-xs text-muted-foreground">6 / 11 tasks completed</div>
-                </div>
-              </CardFooter>
             </Card>
           </div>
         </div>

@@ -3412,8 +3412,8 @@ export default function Customers() {
                     </Select>
                   </div>
                   
-                  <div className="h-50">
-                    <ResponsiveContainer width="100%" height="80%">
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
                       <RechartsLineChart
                         data={[
                           { year: 'Year 1', high: 6240, medium: 3850, low: 1980, avg: 4023 },
@@ -3546,8 +3546,8 @@ export default function Customers() {
                 <CardTitle>Satisfaction Score Trends</CardTitle>
                 <CardDescription>Monthly customer feedback scores</CardDescription>
               </CardHeader>
-              <CardContent className="h-70">
-                <ResponsiveContainer width="100%" height="80%">
+              <CardContent className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
                   <RechartsLineChart
                     data={[
                       { month: 'Jan', score: 4.2 },

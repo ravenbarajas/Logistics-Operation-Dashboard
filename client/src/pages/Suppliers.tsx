@@ -58,7 +58,8 @@ import {
   ChevronDown,
   Download,
   Filter,
-  Loader2
+  Loader2,
+  Check
 } from "lucide-react";
 import {
   BarChart,
@@ -80,7 +81,8 @@ import {
   Pie,
   Cell,
   AreaChart,
-  Area
+  Area,
+  ComposedChart
 } from 'recharts';
 import { Supplier, supplierService } from "@/services/supplierService";
 import { SupplierModal } from "@/components/suppliers/SupplierModal";
@@ -634,6 +636,82 @@ const relationshipLengthData = [
   { range: ">10 Years", count: 8 },
 ];
 
+// Purchase order trends by month
+const purchaseOrderTrends = [
+  { month: "Jan", count: 42, value: 245000 },
+  { month: "Feb", count: 38, value: 215000 },
+  { month: "Mar", count: 55, value: 320000 },
+  { month: "Apr", count: 47, value: 278000 },
+  { month: "May", count: 62, value: 345000 },
+  { month: "Jun", count: 51, value: 302000 },
+  { month: "Jul", count: 49, value: 287000 },
+  { month: "Aug", count: 64, value: 370000 },
+];
+
+// Purchase order fulfillment metrics
+const orderFulfillmentMetrics = [
+  { status: "On Time", count: 523, percentage: 78.5 },
+  { status: "1-2 Days Late", count: 87, percentage: 13.1 },
+  { status: "3-7 Days Late", count: 42, percentage: 6.3 },
+  { status: ">7 Days Late", count: 14, percentage: 2.1 },
+];
+
+// Supplier order volume breakdown
+const supplierOrderVolume = [
+  { supplier: "Global Electronics Manufacturing", count: 28, value: 87500 },
+  { supplier: "American Industrial Solutions", count: 22, value: 65200 },
+  { supplier: "EuroTech Components", count: 19, value: 58400 },
+  { supplier: "Pacific Logistics Partners", count: 15, value: 42300 },
+  { supplier: "Tokyo Tech Innovations", count: 12, value: 38700 },
+];
+
+// Purchase order items by category
+const orderItemsByCategory = [
+  { category: "Electronics", count: 128, value: 185000 },
+  { category: "Industrial", count: 85, value: 142000 },
+  { category: "Raw Materials", count: 67, value: 98000 },
+  { category: "Packaging", count: 42, value: 35000 },
+  { category: "Office Supplies", count: 38, value: 28000 },
+];
+
+// Purchase order payment analytics
+const paymentAnalytics = [
+  { status: "Paid", count: 423, value: 1245000 },
+  { status: "Pending", count: 112, value: 675000 },
+  { status: "Overdue", count: 27, value: 183000 },
+  { status: "Disputed", count: 8, value: 47000 },
+];
+
+// Historical purchase orders (longer history)
+const historicalOrders = [
+  { year: "2018", q1: 85000, q2: 92000, q3: 88000, q4: 95000 },
+  { year: "2019", q1: 90000, q2: 98000, q3: 92000, q4: 105000 },
+  { year: "2020", q1: 86000, q2: 82000, q3: 90000, q4: 98000 },
+  { year: "2021", q1: 95000, q2: 102000, q3: 108000, q4: 115000 },
+  { year: "2022", q1: 112000, q2: 118000, q3: 122000, q4: 135000 },
+  { year: "2023", q1: 128000, q2: 142000, q3: 0, q4: 0 },
+];
+
+// Mock data for supplier performance metrics
+const supplierRatings = [
+  { name: "Alpha Corp", overall: 4.7, quality: 4.8, delivery: 4.5, price: 4.2, service: 4.8 },
+  { name: "Beta Industries", overall: 4.2, quality: 4.5, delivery: 3.9, price: 4.6, service: 4.1 },
+  { name: "Gamma Supplies", overall: 3.8, quality: 3.7, delivery: 3.5, price: 4.8, service: 3.9 },
+  { name: "Delta Manufacturing", overall: 4.5, quality: 4.6, delivery: 4.7, price: 4.1, service: 4.5 },
+  { name: "Epsilon Logistics", overall: 4.0, quality: 3.9, delivery: 4.8, price: 3.8, service: 4.2 },
+];
+
+const qualityMetrics = [
+  { month: "Jan", defectRate: 0.8, returnRate: 1.2 },
+  { month: "Feb", defectRate: 0.7, returnRate: 0.9 },
+  { month: "Mar", defectRate: 1.1, returnRate: 1.4 },
+  { month: "Apr", defectRate: 0.6, returnRate: 0.8 },
+  { month: "May", defectRate: 0.5, returnRate: 0.7 },
+  { month: "Jun", defectRate: 0.4, returnRate: 0.6 },
+  { month: "Jul", defectRate: 0.5, returnRate: 0.8 },
+  { month: "Aug", defectRate: 0.3, returnRate: 0.5 },
+];
+
 export default function Suppliers() {
   const [suppliers, setSuppliers] = useState<PageSupplier[]>(supplierData);
   const [searchTerm, setSearchTerm] = useState("");
@@ -659,6 +737,8 @@ export default function Suppliers() {
   const [performanceTab, setPerformanceTab] = useState("overview");
   // Add state for directory sub-tabs
   const [directorySubTab, setDirectorySubTab] = useState("list");
+  // Add state for purchase orders sub-tabs
+  const [ordersSubTab, setOrdersSubTab] = useState("current");
   
   // State for purchase orders
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
@@ -1925,6 +2005,7 @@ export default function Suppliers() {
               <TabsTrigger value="metrics">Detailed Metrics</TabsTrigger>
               <TabsTrigger value="risk">Risk Assessment</TabsTrigger>
               <TabsTrigger value="cost">Cost Analysis</TabsTrigger>
+              <TabsTrigger value="performance">Supplier Performance</TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview">
@@ -2504,6 +2585,133 @@ export default function Suppliers() {
                 </CardContent>
               </Card>
             </TabsContent>
+            
+            <TabsContent value="performance">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Supplier Ratings Comparison</CardTitle>
+                    <CardDescription>Performance metrics across suppliers</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart outerRadius={90} data={supplierRatings.map(s => ({
+                          subject: s.name,
+                          quality: s.quality * 20,
+                          delivery: s.delivery * 20,
+                          price: s.price * 20,
+                          service: s.service * 20
+                        }))}>
+                          <PolarGrid />
+                          <PolarAngleAxis dataKey="subject" />
+                          <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                          <Radar name="Quality" dataKey="quality" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                          <Radar name="Delivery" dataKey="delivery" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+                          <Radar name="Price" dataKey="price" stroke="#ffc658" fill="#ffc658" fillOpacity={0.6} />
+                          <Radar name="Service" dataKey="service" stroke="#ff8042" fill="#ff8042" fillOpacity={0.6} />
+                          <Legend />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              borderColor: 'hsl(var(--border))',
+                              color: 'hsl(var(--foreground))'
+                            }}
+                          />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Quality Metrics Trend</CardTitle>
+                    <CardDescription>Defect and return rates over time</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={qualityMetrics}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              borderColor: 'hsl(var(--border))',
+                              color: 'hsl(var(--foreground))'
+                            }}
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="defectRate" 
+                            name="Defect Rate (%)" 
+                            stroke="#8884d8" 
+                            activeDot={{ r: 8 }}
+                            strokeWidth={2}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="returnRate" 
+                            name="Return Rate (%)" 
+                            stroke="#82ca9d" 
+                            activeDot={{ r: 8 }}
+                            strokeWidth={2}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Supplier Rating Summary</CardTitle>
+                  <CardDescription>Detailed breakdown of supplier performance ratings</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Supplier</TableHead>
+                        <TableHead>Overall Rating</TableHead>
+                        <TableHead>Quality</TableHead>
+                        <TableHead>Delivery</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Service</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {supplierRatings.map((supplier, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{supplier.name}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              {Array(5).fill(0).map((_, i) => (
+                                <Star key={i} 
+                                  className={`h-4 w-4 ${i < Math.floor(supplier.overall) ? 'text-amber-500 fill-amber-500' : 'text-muted stroke-muted'}`} 
+                                />
+                              ))}
+                              <span className="ml-2">{supplier.overall.toFixed(1)}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{supplier.quality.toFixed(1)}</TableCell>
+                          <TableCell>{supplier.delivery.toFixed(1)}</TableCell>
+                          <TableCell>{supplier.price.toFixed(1)}</TableCell>
+                          <TableCell>{supplier.service.toFixed(1)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </TabsContent>
         
@@ -2605,6 +2813,662 @@ export default function Suppliers() {
               </div>
             </CardFooter>
           </Card>
+
+          {/* Additional Purchase Order Analysis Components */}
+          <div className="mt-8">
+            <Tabs value={ordersSubTab} onValueChange={setOrdersSubTab} className="mb-6">
+              <TabsList>
+                <TabsTrigger value="current">Current Orders</TabsTrigger>
+                <TabsTrigger value="analytics">Order Analytics</TabsTrigger>
+                <TabsTrigger value="suppliers">Supplier Breakdown</TabsTrigger>
+                <TabsTrigger value="history">Order History</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="current">
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Order Status Breakdown</CardTitle>
+                    <CardDescription>Overview of current purchase orders by status</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Pending', value: purchaseOrders.filter(o => o.status === 'pending').length },
+                              { name: 'Shipped', value: purchaseOrders.filter(o => o.status === 'shipped').length },
+                              { name: 'Delivered', value: purchaseOrders.filter(o => o.status === 'delivered').length },
+                              { name: 'Cancelled', value: purchaseOrders.filter(o => o.status === 'cancelled').length || 0 }
+                            ]}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                            nameKey="name"
+                            label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {[
+                              { name: 'Pending', value: purchaseOrders.filter(o => o.status === 'pending').length },
+                              { name: 'Shipped', value: purchaseOrders.filter(o => o.status === 'shipped').length },
+                              { name: 'Delivered', value: purchaseOrders.filter(o => o.status === 'delivered').length },
+                              { name: 'Cancelled', value: purchaseOrders.filter(o => o.status === 'cancelled').length || 0 }
+                            ].map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={[
+                                  'hsl(var(--warning))', 
+                                  'hsl(var(--primary))', 
+                                  'hsl(var(--success))', 
+                                  'hsl(var(--destructive))'
+                                ][index % 4]} 
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              borderColor: 'hsl(var(--border))',
+                              color: 'hsl(var(--foreground))'
+                            }}
+                          />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Orders by Priority</CardTitle>
+                      <CardDescription>Purchase orders categorized by priority level</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={[
+                              { priority: 'High', count: purchaseOrders.filter(o => o.priority === 'high').length },
+                              { priority: 'Medium', count: purchaseOrders.filter(o => o.priority === 'medium').length },
+                              { priority: 'Low', count: purchaseOrders.filter(o => o.priority === 'low').length }
+                            ]}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="priority" />
+                            <YAxis />
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                            />
+                            <Legend />
+                            <Bar 
+                              dataKey="count" 
+                              name="Number of Orders" 
+                              fill="hsl(var(--primary))"
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="analytics">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Order Value Trends</CardTitle>
+                      <CardDescription>Monthly order value over time</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart
+                            data={[
+                              { month: 'Jan', value: 45000 },
+                              { month: 'Feb', value: 52000 },
+                              { month: 'Mar', value: 49000 },
+                              { month: 'Apr', value: 63000 },
+                              { month: 'May', value: 58000 },
+                              { month: 'Jun', value: 72000 },
+                              { month: 'Jul', value: 80000 },
+                              { month: 'Aug', value: 74000 }
+                            ]}
+                            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="month" />
+                            <YAxis 
+                              tickFormatter={(value) => `$${value/1000}k`}
+                            />
+                            <Tooltip 
+                              formatter={(value) => [`$${value.toLocaleString()}`, 'Order Value']}
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="value" 
+                              stroke="hsl(var(--primary))" 
+                              fill="hsl(var(--primary)/0.2)" 
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>On-Time vs Late Deliveries</CardTitle>
+                      <CardDescription>Performance metrics for order fulfillment</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={[
+                                { name: 'On Time', value: 78 },
+                                { name: '1-2 Days Late', value: 14 },
+                                { name: '3-7 Days Late', value: 6 },
+                                { name: '>7 Days Late', value: 2 }
+                              ]}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                              label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            >
+                              {[
+                                { name: 'On Time', value: 78 },
+                                { name: '1-2 Days Late', value: 14 },
+                                { name: '3-7 Days Late', value: 6 },
+                                { name: '>7 Days Late', value: 2 }
+                              ].map((entry, index) => (
+                                <Cell 
+                                  key={`cell-${index}`} 
+                                  fill={[
+                                    'hsl(var(--success))', 
+                                    'hsl(var(--warning))', 
+                                    'hsl(var(--warning)/0.7)', 
+                                    'hsl(var(--destructive))'
+                                  ][index % 4]} 
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              formatter={(value) => [`${value}%`, 'Percentage']}
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                            />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle>Average Lead Time by Supplier</CardTitle>
+                    <CardDescription>Time from order placement to delivery</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={[
+                            { supplier: 'Tech Solutions Inc.', leadTime: 12 },
+                            { supplier: 'Global Logistics', leadTime: 8 },
+                            { supplier: 'EcoPackaging', leadTime: 15 },
+                            { supplier: 'FastTrack Delivery', leadTime: 5 },
+                            { supplier: 'Quality Materials', leadTime: 10 },
+                            { supplier: 'Industrial Supplies', leadTime: 14 },
+                            { supplier: 'Smart Components', leadTime: 9 }
+                          ]}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          layout="vertical"
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis type="number" label={{ value: 'Days', position: 'insideBottom', offset: -5 }} />
+                          <YAxis 
+                            type="category" 
+                            dataKey="supplier" 
+                            width={150}
+                            tick={{fill: 'hsl(var(--foreground))'}}
+                          />
+                          <Tooltip 
+                            formatter={(value) => [`${value} days`, 'Lead Time']}
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              borderColor: 'hsl(var(--border))',
+                              color: 'hsl(var(--foreground))'
+                            }}
+                          />
+                          <Legend />
+                          <Bar 
+                            dataKey="leadTime" 
+                            name="Lead Time (Days)" 
+                            fill="hsl(var(--primary))" 
+                            radius={[0, 4, 4, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="suppliers">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Orders by Supplier</CardTitle>
+                      <CardDescription>Distribution of purchase orders across suppliers</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={purchaseOrders.reduce((acc, order) => {
+                                const existing = acc.find(item => item.name === order.supplier);
+                                if (existing) {
+                                  existing.value++;
+                                } else {
+                                  acc.push({ name: order.supplier, value: 1 });
+                                }
+                                return acc;
+                              }, [] as { name: string; value: number }[]).slice(0, 5)}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                              nameKey="name"
+                              label={({name, percent}) => `${name.substring(0, 10)}...: ${(percent * 100).toFixed(0)}%`}
+                            >
+                              {purchaseOrders.reduce((acc, order) => {
+                                const existing = acc.find(item => item.name === order.supplier);
+                                if (existing) {
+                                  existing.value++;
+                                } else {
+                                  acc.push({ name: order.supplier, value: 1 });
+                                }
+                                return acc;
+                              }, [] as { name: string; value: number }[]).slice(0, 5).map((entry, index) => (
+                                <Cell 
+                                  key={`cell-${index}`} 
+                                  fill={[
+                                    'hsl(var(--primary))', 
+                                    'hsl(142, 76%, 36%)', 
+                                    'hsl(217, 91%, 60%)', 
+                                    'hsl(271, 91%, 65%)',
+                                    'hsl(15, 90%, 65%)'
+                                  ][index % 5]} 
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                            />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Spend by Supplier</CardTitle>
+                      <CardDescription>Total purchase value by supplier</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={purchaseOrders.reduce((acc, order) => {
+                              const existing = acc.find(item => item.name === order.supplier);
+                              if (existing) {
+                                existing.value += order.total;
+                              } else {
+                                acc.push({ name: order.supplier, value: order.total });
+                              }
+                              return acc;
+                            }, [] as { name: string; value: number }[]).slice(0, 5)}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis 
+                              dataKey="name" 
+                              tick={{ fill: 'hsl(var(--foreground))' }}
+                              tickFormatter={(value) => value.length > 10 ? `${value.substring(0, 10)}...` : value}
+                            />
+                            <YAxis 
+                              tickFormatter={(value) => `$${value/1000}k`}
+                              tick={{ fill: 'hsl(var(--foreground))' }}
+                            />
+                            <Tooltip 
+                              formatter={(value) => [`$${value.toLocaleString()}`, 'Total Spend']}
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                            />
+                            <Legend />
+                            <Bar 
+                              dataKey="value" 
+                              name="Total Spend" 
+                              fill="hsl(var(--primary))" 
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Supplier Performance Comparison</CardTitle>
+                    <CardDescription>Key metrics across top suppliers</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Supplier</TableHead>
+                          <TableHead>Order Count</TableHead>
+                          <TableHead>Total Spend</TableHead>
+                          <TableHead>Avg. Lead Time</TableHead>
+                          <TableHead>On-Time Delivery</TableHead>
+                          <TableHead>Cost Efficiency</TableHead>
+                          <TableHead>Risk Level</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {[
+                          { 
+                            supplier: 'Tech Solutions Inc.', 
+                            orderCount: 24, 
+                            spend: 182500, 
+                            leadTime: 12, 
+                            onTime: 92, 
+                            costEfficiency: 'High',
+                            riskLevel: 'Low' 
+                          },
+                          { 
+                            supplier: 'Global Logistics', 
+                            orderCount: 18, 
+                            spend: 143000, 
+                            leadTime: 8, 
+                            onTime: 97, 
+                            costEfficiency: 'Medium',
+                            riskLevel: 'Low' 
+                          },
+                          { 
+                            supplier: 'EcoPackaging', 
+                            orderCount: 31, 
+                            spend: 76500, 
+                            leadTime: 15, 
+                            onTime: 86, 
+                            costEfficiency: 'Medium',
+                            riskLevel: 'Medium' 
+                          },
+                          { 
+                            supplier: 'FastTrack Delivery', 
+                            orderCount: 15, 
+                            spend: 58200, 
+                            leadTime: 5, 
+                            onTime: 99, 
+                            costEfficiency: 'High',
+                            riskLevel: 'Low' 
+                          },
+                          { 
+                            supplier: 'Quality Materials', 
+                            orderCount: 22, 
+                            spend: 127000, 
+                            leadTime: 10, 
+                            onTime: 94, 
+                            costEfficiency: 'High',
+                            riskLevel: 'Low' 
+                          }
+                        ].map((item) => (
+                          <TableRow key={item.supplier}>
+                            <TableCell className="font-medium">{item.supplier}</TableCell>
+                            <TableCell>{item.orderCount}</TableCell>
+                            <TableCell>${item.spend.toLocaleString()}</TableCell>
+                            <TableCell>{item.leadTime} days</TableCell>
+                            <TableCell>
+                              <div className="flex items-center">
+                                <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                  <div 
+                                    className={`h-2.5 rounded-full ${
+                                      item.onTime >= 95 ? 'bg-green-500' :
+                                      item.onTime >= 90 ? 'bg-yellow-500' :
+                                      'bg-red-500'
+                                    }`}
+                                    style={{ width: `${item.onTime}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-xs">{item.onTime}%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                item.costEfficiency === 'High' ? 'success' :
+                                item.costEfficiency === 'Medium' ? 'warning' :
+                                'destructive'
+                              }>
+                                {item.costEfficiency}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                item.riskLevel === 'Low' ? 'success' :
+                                item.riskLevel === 'Medium' ? 'warning' :
+                                'destructive'
+                              }>
+                                {item.riskLevel}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="history">
+                <div className="flex flex-col gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Order History Timeline</CardTitle>
+                      <CardDescription>Chronological view of past orders</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-8">
+                        {purchaseOrders
+                          .filter(order => order.status === 'delivered')
+                          .slice(0, 5)
+                          .map((order, index) => (
+                            <div key={order.id} className="flex">
+                              <div className="flex flex-col items-center mr-4">
+                                <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary">
+                                  <Check className="h-5 w-5 text-primary" />
+                                </div>
+                                {index < 4 && <div className="w-px h-full bg-border"></div>}
+                              </div>
+                              <div className="pb-8">
+                                <div className="flex items-center mb-1">
+                                  <h4 className="text-lg font-medium">PO #{order.id}</h4>
+                                  <Badge className="ml-3">{order.status}</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                  Order placed on {new Date(order.orderDate).toLocaleDateString()} - 
+                                  Delivered on {new Date(order.deliveryDate).toLocaleDateString()}
+                                </p>
+                                <div className="bg-muted/50 p-4 rounded-lg mb-2">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <p className="text-sm font-medium mb-1">Supplier</p>
+                                      <p className="text-sm">{order.supplier}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium mb-1">Items</p>
+                                      <p className="text-sm">{order.items} items</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium mb-1">Total Value</p>
+                                      <p className="text-sm">${order.total.toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium mb-1">Payment Status</p>
+                                      <Badge variant={
+                                        order.paymentStatus === 'paid' ? 'success' :
+                                        order.paymentStatus === 'partial' ? 'warning' :
+                                        'destructive'
+                                      }>
+                                        {order.paymentStatus}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button variant="outline" size="sm">
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    View Invoice
+                                  </Button>
+                                  <Button variant="outline" size="sm">
+                                    <Search className="h-4 w-4 mr-2" />
+                                    View Details
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Monthly Order Volume</CardTitle>
+                        <CardDescription>Historical order count by month</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-80">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart
+                              data={[
+                                { month: 'Jan', count: 12 },
+                                { month: 'Feb', count: 19 },
+                                { month: 'Mar', count: 14 },
+                                { month: 'Apr', count: 22 },
+                                { month: 'May', count: 25 },
+                                { month: 'Jun', count: 18 },
+                                { month: 'Jul', count: 30 },
+                                { month: 'Aug', count: 24 }
+                              ]}
+                              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                              <XAxis dataKey="month" />
+                              <YAxis />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: 'hsl(var(--card))',
+                                  borderColor: 'hsl(var(--border))',
+                                  color: 'hsl(var(--foreground))'
+                                }}
+                              />
+                              <Legend />
+                              <Line 
+                                type="monotone" 
+                                dataKey="count" 
+                                name="Order Count" 
+                                stroke="hsl(var(--primary))" 
+                                activeDot={{ r: 8 }} 
+                                strokeWidth={2} 
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Order Status History</CardTitle>
+                        <CardDescription>Status breakdown of past orders</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-80">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={[
+                                { month: 'Jan', delivered: 10, cancelled: 2 },
+                                { month: 'Feb', delivered: 16, cancelled: 3 },
+                                { month: 'Mar', delivered: 13, cancelled: 1 },
+                                { month: 'Apr', delivered: 20, cancelled: 2 },
+                                { month: 'May', delivered: 23, cancelled: 2 },
+                                { month: 'Jun', delivered: 16, cancelled: 2 },
+                                { month: 'Jul', delivered: 27, cancelled: 3 },
+                                { month: 'Aug', delivered: 22, cancelled: 2 }
+                              ]}
+                              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                              <XAxis dataKey="month" />
+                              <YAxis />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: 'hsl(var(--card))',
+                                  borderColor: 'hsl(var(--border))',
+                                  color: 'hsl(var(--foreground))'
+                                }}
+                              />
+                              <Legend />
+                              <Bar dataKey="delivered" name="Delivered" stackId="a" fill="hsl(var(--success))" />
+                              <Bar dataKey="cancelled" name="Cancelled" stackId="a" fill="hsl(var(--destructive))" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
         </TabsContent>
         
         <TabsContent value="quality">

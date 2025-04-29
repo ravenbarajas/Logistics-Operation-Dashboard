@@ -96,6 +96,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
+import { Label } from "@/components/ui/label";
 
 // Define supplier interface that matches the format of suppliers in the page
 interface PageSupplier {
@@ -1421,582 +1422,6 @@ export default function Suppliers() {
         </TabsList>
         
         {/* Tab content will be added here */}
-        <TabsContent value="directory">
-          <Card>
-            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
-              <div>
-                <CardTitle>Supplier Directory</CardTitle>
-                <CardDescription>Complete listing of all supplier information and contacts</CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="relative w-full md:w-auto flex-1 max-w-sm">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Search directory..."
-                    className="pl-8 w-full md:w-[300px]"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                  />
-                </div>
-                <Button variant="outline" onClick={handleAddSupplier}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Supplier
-                </Button>
-              </div>
-            </CardHeader>
-            
-            <div className="p-6 bg-background py-0 mb-6">
-              <div className="flex flex-wrap items-center gap-3">
-                <RenderFilters />
-              </div>
-            </div>
-            
-            <CardContent className="p-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Contact Information</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Website</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredSuppliers().map((supplier) => (
-                    <TableRow key={supplier.id}>
-                      <TableCell>
-                        <div className="font-medium">{supplier.name}</div>
-                        <div className="text-sm text-muted-foreground">ID: {supplier.id}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center">
-                            <span className="font-medium">{supplier.contact}</span>
-                          </div>
-                          <div className="text-sm">{supplier.email}</div>
-                          <div className="text-sm">{supplier.phone || "No phone"}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{supplier.location}</TableCell>
-                      <TableCell>{supplier.category}</TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          supplier.status === 'active' ? 'success' : 
-                          supplier.status === 'review' ? 'warning' : 
-                          'secondary'
-                        }>
-                          {supplier.status === 'active' ? 'Active' :
-                          supplier.status === 'review' ? 'Under Review' :
-                          'Inactive'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {supplier.website ? (
-                          <Button variant="link" className="p-0 h-auto">
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Website
-                          </Button>
-                        ) : (
-                          <span className="text-muted-foreground">Not available</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>View details</DropdownMenuItem>
-                            <DropdownMenuItem>Edit supplier</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>Contact supplier</DropdownMenuItem>
-                            <DropdownMenuItem>Place order</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">Delete supplier</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredSuppliers().length} of {totalSuppliers} suppliers
-              </div>
-            </CardFooter>
-          </Card>
-
-          {/* Additional Directory Analysis Components */}
-          <div className="mt-8">
-            <Tabs value={directorySubTab} onValueChange={setDirectorySubTab} className="mb-6">
-              <TabsList>
-                <TabsTrigger value="list">Supplier List</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
-                <TabsTrigger value="certifications">Certifications</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="list">
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle>Supplier Quick Overview</CardTitle>
-                    <CardDescription>Supplier status overview and key metrics</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div className="flex flex-col p-4 border rounded-lg">
-                        <div className="text-sm font-medium text-muted-foreground mb-2">Total Suppliers</div>
-                        <div className="text-2xl font-bold">{totalSuppliers}</div>
-                        <div className="mt-2 flex items-center text-sm">
-                          <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
-                          <span className="text-green-500">+3 since last month</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col p-4 border rounded-lg">
-                        <div className="text-sm font-medium text-muted-foreground mb-2">Active Suppliers</div>
-                        <div className="text-2xl font-bold">{activeSuppliers}</div>
-                        <div className="mt-2 flex items-center text-sm">
-                          <span className="text-muted-foreground">{Math.round((activeSuppliers / totalSuppliers) * 100)}% of total</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col p-4 border rounded-lg">
-                        <div className="text-sm font-medium text-muted-foreground mb-2">Categories</div>
-                        <div className="text-2xl font-bold">{Object.keys(categories).length}</div>
-                        <div className="mt-2 flex items-center text-sm">
-                          <span className="text-muted-foreground">Across {totalSuppliers} suppliers</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="analytics">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Geographical Distribution</CardTitle>
-                      <CardDescription>Supplier distribution by region</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={supplierGeographicData}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              outerRadius={80}
-                              fill="#8884d8"
-                              dataKey="count"
-                              nameKey="region"
-                              label={({region, share}) => `${region}: ${share}%`}
-                            >
-                              {supplierGeographicData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5]} />
-                              ))}
-                            </Pie>
-                            <Tooltip 
-                              contentStyle={{
-                                backgroundColor: 'hsl(var(--card))',
-                                borderColor: 'hsl(var(--border))',
-                                color: 'hsl(var(--foreground))'
-                              }}
-                              formatter={(value, name, props) => [`${value} suppliers (${props.payload.share}%)`, props.payload.region]}
-                            />
-                            <Legend />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Category Breakdown</CardTitle>
-                      <CardDescription>Suppliers by product/service category</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart
-                            data={supplierCategoryBreakdown}
-                            layout="vertical"
-                            margin={{ top: 5, right: 30, left: 70, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                            <XAxis type="number" />
-                            <YAxis 
-                              type="category" 
-                              dataKey="name" 
-                              width={60}
-                            />
-                            <Tooltip 
-                              contentStyle={{
-                                backgroundColor: 'hsl(var(--card))',
-                                borderColor: 'hsl(var(--border))',
-                                color: 'hsl(var(--foreground))'
-                              }}
-                              formatter={(value) => [`${value} suppliers`, "Count"]}
-                            />
-                            <Legend />
-                            <Bar dataKey="value" name="Supplier Count" fill="hsl(var(--primary))" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Relationship Length</CardTitle>
-                      <CardDescription>Duration of supplier relationships</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart
-                            data={relationshipLengthData}
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                            <XAxis dataKey="range" />
-                            <YAxis />
-                            <Tooltip 
-                              contentStyle={{
-                                backgroundColor: 'hsl(var(--card))',
-                                borderColor: 'hsl(var(--border))',
-                                color: 'hsl(var(--foreground))'
-                              }}
-                              formatter={(value) => [`${value} suppliers`, "Count"]}
-                            />
-                            <Legend />
-                            <Bar dataKey="count" name="Supplier Count" fill="#8884d8" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Status Distribution</CardTitle>
-                      <CardDescription>Breakdown by supplier status</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80 flex flex-col justify-center space-y-8">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div className="h-4 w-4 rounded-full bg-green-500"></div>
-                              <span className="text-sm font-medium">Active</span>
-                            </div>
-                            <span className="text-sm text-muted-foreground">{activeSuppliers} suppliers ({Math.round((activeSuppliers / totalSuppliers) * 100)}%)</span>
-                          </div>
-                          <Progress value={(activeSuppliers / totalSuppliers) * 100} className="h-2 bg-muted" />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div className="h-4 w-4 rounded-full bg-amber-500"></div>
-                              <span className="text-sm font-medium">Under Review</span>
-                            </div>
-                            <span className="text-sm text-muted-foreground">{reviewSuppliers} suppliers ({Math.round((reviewSuppliers / totalSuppliers) * 100)}%)</span>
-                          </div>
-                          <Progress value={(reviewSuppliers / totalSuppliers) * 100} className="h-2 bg-muted" />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div className="h-4 w-4 rounded-full bg-gray-500"></div>
-                              <span className="text-sm font-medium">Inactive</span>
-                            </div>
-                            <span className="text-sm text-muted-foreground">{inactiveSuppliers} suppliers ({Math.round((inactiveSuppliers / totalSuppliers) * 100)}%)</span>
-                          </div>
-                          <Progress value={(inactiveSuppliers / totalSuppliers) * 100} className="h-2 bg-muted" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="onboarding">
-                <div className="grid grid-cols-1 gap-6 mb-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Supplier Onboarding Pipeline</CardTitle>
-                      <CardDescription>Current status of new supplier onboarding</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart
-                            data={onboardingFunnelData}
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                            <XAxis dataKey="stage" />
-                            <YAxis />
-                            <Tooltip 
-                              contentStyle={{
-                                backgroundColor: 'hsl(var(--card))',
-                                borderColor: 'hsl(var(--border))',
-                                color: 'hsl(var(--foreground))'
-                              }}
-                              formatter={(value) => [`${value} suppliers`, "Count"]}
-                            />
-                            <Bar dataKey="count" name="Suppliers" fill="hsl(var(--primary))" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Ongoing Onboarding Processes</CardTitle>
-                      <CardDescription>Suppliers currently in the onboarding process</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Supplier Name</TableHead>
-                            <TableHead>Current Stage</TableHead>
-                            <TableHead>Started On</TableHead>
-                            <TableHead>Owner</TableHead>
-                            <TableHead>Progress</TableHead>
-                            <TableHead>Time in Stage</TableHead>
-                            <TableHead>Expected Completion</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell className="font-medium">Green Valley Organics</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">Documentation</Badge>
-                            </TableCell>
-                            <TableCell>Aug 15, 2023</TableCell>
-                            <TableCell>Sarah Johnson</TableCell>
-                            <TableCell className="w-[130px]">
-                              <div className="flex items-center gap-2">
-                                <Progress value={50} className="h-2" />
-                                <span className="text-xs">50%</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>5 days</TableCell>
-                            <TableCell>Sep 10, 2023</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="font-medium">MetalWorks Inc.</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">Compliance Check</Badge>
-                            </TableCell>
-                            <TableCell>Aug 8, 2023</TableCell>
-                            <TableCell>Michael Brown</TableCell>
-                            <TableCell className="w-[130px]">
-                              <div className="flex items-center gap-2">
-                                <Progress value={75} className="h-2" />
-                                <span className="text-xs">75%</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>3 days</TableCell>
-                            <TableCell>Aug 28, 2023</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="font-medium">Tech Solutions Ltd</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">Final Approval</Badge>
-                            </TableCell>
-                            <TableCell>Jul 29, 2023</TableCell>
-                            <TableCell>Emily Parker</TableCell>
-                            <TableCell className="w-[130px]">
-                              <div className="flex items-center gap-2">
-                                <Progress value={90} className="h-2" />
-                                <span className="text-xs">90%</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>2 days</TableCell>
-                            <TableCell>Aug 22, 2023</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="certifications">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Certification Distribution</CardTitle>
-                      <CardDescription>Most common supplier certifications</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart
-                            data={certificationData}
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                            <XAxis dataKey="name" />
-                            <YAxis yAxisId="left" orientation="left" />
-                            <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `${value}%`} />
-                            <Tooltip 
-                              contentStyle={{
-                                backgroundColor: 'hsl(var(--card))',
-                                borderColor: 'hsl(var(--border))',
-                                color: 'hsl(var(--foreground))'
-                              }}
-                            />
-                            <Legend />
-                            <Bar yAxisId="left" dataKey="count" name="Supplier Count" fill="hsl(var(--primary))" />
-                            <Line yAxisId="right" dataKey="percentage" name="% of Suppliers" stroke="#ff7300" strokeWidth={2} />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Certification Compliance</CardTitle>
-                      <CardDescription>Supplier certification status overview</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80 flex flex-col justify-center space-y-6">
-                        {certificationData.map((cert, index) => (
-                          <div key={index} className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium leading-none">{cert.name}</p>
-                                <p className="text-sm text-muted-foreground">{cert.count} suppliers certified</p>
-                              </div>
-                              <div>
-                                <span className="text-sm font-medium">{cert.percentage}%</span>
-                              </div>
-                            </div>
-                            <Progress value={cert.percentage} className="h-2" />
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Certification Expiry Monitor</CardTitle>
-                    <CardDescription>Tracking upcoming certification renewals</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Supplier</TableHead>
-                          <TableHead>Certification</TableHead>
-                          <TableHead>Issued Date</TableHead>
-                          <TableHead>Expiry Date</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Days Until Expiry</TableHead>
-                          <TableHead>Renewal Process</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">Global Electronics Manufacturing</TableCell>
-                          <TableCell>ISO 9001</TableCell>
-                          <TableCell>Aug 15, 2022</TableCell>
-                          <TableCell>Aug 14, 2025</TableCell>
-                          <TableCell>
-                            <Badge variant="success">Valid</Badge>
-                          </TableCell>
-                          <TableCell>685</TableCell>
-                          <TableCell>Not started</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">American Industrial Solutions</TableCell>
-                          <TableCell>ISO 14001</TableCell>
-                          <TableCell>Mar 22, 2021</TableCell>
-                          <TableCell>Mar 21, 2024</TableCell>
-                          <TableCell>
-                            <Badge variant="warning">Expiring Soon</Badge>
-                          </TableCell>
-                          <TableCell>215</TableCell>
-                          <TableCell>In progress</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">African Minerals Ltd</TableCell>
-                          <TableCell>ISO 14001</TableCell>
-                          <TableCell>Jul 10, 2020</TableCell>
-                          <TableCell>Jul 9, 2023</TableCell>
-                          <TableCell>
-                            <Badge variant="destructive">Expired</Badge>
-                          </TableCell>
-                          <TableCell>-45</TableCell>
-                          <TableCell>Overdue</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </TabsContent>
-        
         <TabsContent value="performance">
           {/* Sub-navigation for Performance section */}
           <Tabs value={performanceTab} onValueChange={setPerformanceTab} className="mb-6">
@@ -2713,6 +2138,582 @@ export default function Suppliers() {
               </Card>
             </TabsContent>
           </Tabs>
+        </TabsContent>
+
+        <TabsContent value="directory">
+          <Card>
+            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+              <div>
+                <CardTitle>Supplier Directory</CardTitle>
+                <CardDescription>Complete listing of all supplier information and contacts</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search directory..."
+                    className="pl-8 w-full md:w-[300px]"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
+                </div>
+                <Button variant="outline" onClick={handleAddSupplier}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Supplier
+                </Button>
+              </div>
+            </CardHeader>
+            
+            <div className="p-6 bg-background py-0 mb-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <RenderFilters />
+              </div>
+            </div>
+            
+            <CardContent className="p-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Contact Information</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Website</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {getFilteredSuppliers().map((supplier) => (
+                    <TableRow key={supplier.id}>
+                      <TableCell>
+                        <div className="font-medium">{supplier.name}</div>
+                        <div className="text-sm text-muted-foreground">ID: {supplier.id}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center">
+                            <span className="font-medium">{supplier.contact}</span>
+                          </div>
+                          <div className="text-sm">{supplier.email}</div>
+                          <div className="text-sm">{supplier.phone || "No phone"}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{supplier.location}</TableCell>
+                      <TableCell>{supplier.category}</TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          supplier.status === 'active' ? 'success' : 
+                          supplier.status === 'review' ? 'warning' : 
+                          'secondary'
+                        }>
+                          {supplier.status === 'active' ? 'Active' :
+                          supplier.status === 'review' ? 'Under Review' :
+                          'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {supplier.website ? (
+                          <Button variant="link" className="p-0 h-auto">
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Website
+                          </Button>
+                        ) : (
+                          <span className="text-muted-foreground">Not available</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem>View details</DropdownMenuItem>
+                            <DropdownMenuItem>Edit supplier</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>Contact supplier</DropdownMenuItem>
+                            <DropdownMenuItem>Place order</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive">Delete supplier</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+            <CardFooter className="border-t py-4 px-6">
+              <div className="text-sm text-muted-foreground">
+                Showing {getFilteredSuppliers().length} of {totalSuppliers} suppliers
+              </div>
+            </CardFooter>
+          </Card>
+
+          {/* Additional Directory Analysis Components */}
+          <div className="mt-8">
+            <Tabs value={directorySubTab} onValueChange={setDirectorySubTab} className="mb-6">
+              <TabsList>
+                <TabsTrigger value="list">Supplier List</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
+                <TabsTrigger value="certifications">Certifications</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="list">
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Supplier Quick Overview</CardTitle>
+                    <CardDescription>Supplier status overview and key metrics</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="flex flex-col p-4 border rounded-lg">
+                        <div className="text-sm font-medium text-muted-foreground mb-2">Total Suppliers</div>
+                        <div className="text-2xl font-bold">{totalSuppliers}</div>
+                        <div className="mt-2 flex items-center text-sm">
+                          <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                          <span className="text-green-500">+3 since last month</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col p-4 border rounded-lg">
+                        <div className="text-sm font-medium text-muted-foreground mb-2">Active Suppliers</div>
+                        <div className="text-2xl font-bold">{activeSuppliers}</div>
+                        <div className="mt-2 flex items-center text-sm">
+                          <span className="text-muted-foreground">{Math.round((activeSuppliers / totalSuppliers) * 100)}% of total</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col p-4 border rounded-lg">
+                        <div className="text-sm font-medium text-muted-foreground mb-2">Categories</div>
+                        <div className="text-2xl font-bold">{Object.keys(categories).length}</div>
+                        <div className="mt-2 flex items-center text-sm">
+                          <span className="text-muted-foreground">Across {totalSuppliers} suppliers</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="analytics">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Geographical Distribution</CardTitle>
+                      <CardDescription>Supplier distribution by region</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={supplierGeographicData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="count"
+                              nameKey="region"
+                              label={({region, share}) => `${region}: ${share}%`}
+                            >
+                              {supplierGeographicData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5]} />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                              formatter={(value, name, props) => [`${value} suppliers (${props.payload.share}%)`, props.payload.region]}
+                            />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Category Breakdown</CardTitle>
+                      <CardDescription>Suppliers by product/service category</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={supplierCategoryBreakdown}
+                            layout="vertical"
+                            margin={{ top: 5, right: 30, left: 70, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis type="number" />
+                            <YAxis 
+                              type="category" 
+                              dataKey="name" 
+                              width={60}
+                            />
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                              formatter={(value) => [`${value} suppliers`, "Count"]}
+                            />
+                            <Legend />
+                            <Bar dataKey="value" name="Supplier Count" fill="hsl(var(--primary))" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Relationship Length</CardTitle>
+                      <CardDescription>Duration of supplier relationships</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={relationshipLengthData}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="range" />
+                            <YAxis />
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                              formatter={(value) => [`${value} suppliers`, "Count"]}
+                            />
+                            <Legend />
+                            <Bar dataKey="count" name="Supplier Count" fill="#8884d8" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Status Distribution</CardTitle>
+                      <CardDescription>Breakdown by supplier status</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80 flex flex-col justify-center space-y-8">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <div className="h-4 w-4 rounded-full bg-green-500"></div>
+                              <span className="text-sm font-medium">Active</span>
+                            </div>
+                            <span className="text-sm text-muted-foreground">{activeSuppliers} suppliers ({Math.round((activeSuppliers / totalSuppliers) * 100)}%)</span>
+                          </div>
+                          <Progress value={(activeSuppliers / totalSuppliers) * 100} className="h-2 bg-muted" />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <div className="h-4 w-4 rounded-full bg-amber-500"></div>
+                              <span className="text-sm font-medium">Under Review</span>
+                            </div>
+                            <span className="text-sm text-muted-foreground">{reviewSuppliers} suppliers ({Math.round((reviewSuppliers / totalSuppliers) * 100)}%)</span>
+                          </div>
+                          <Progress value={(reviewSuppliers / totalSuppliers) * 100} className="h-2 bg-muted" />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <div className="h-4 w-4 rounded-full bg-gray-500"></div>
+                              <span className="text-sm font-medium">Inactive</span>
+                            </div>
+                            <span className="text-sm text-muted-foreground">{inactiveSuppliers} suppliers ({Math.round((inactiveSuppliers / totalSuppliers) * 100)}%)</span>
+                          </div>
+                          <Progress value={(inactiveSuppliers / totalSuppliers) * 100} className="h-2 bg-muted" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="onboarding">
+                <div className="grid grid-cols-1 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Supplier Onboarding Pipeline</CardTitle>
+                      <CardDescription>Current status of new supplier onboarding</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={onboardingFunnelData}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="stage" />
+                            <YAxis />
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                              formatter={(value) => [`${value} suppliers`, "Count"]}
+                            />
+                            <Bar dataKey="count" name="Suppliers" fill="hsl(var(--primary))" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Ongoing Onboarding Processes</CardTitle>
+                      <CardDescription>Suppliers currently in the onboarding process</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Supplier Name</TableHead>
+                            <TableHead>Current Stage</TableHead>
+                            <TableHead>Started On</TableHead>
+                            <TableHead>Owner</TableHead>
+                            <TableHead>Progress</TableHead>
+                            <TableHead>Time in Stage</TableHead>
+                            <TableHead>Expected Completion</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="font-medium">Green Valley Organics</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">Documentation</Badge>
+                            </TableCell>
+                            <TableCell>Aug 15, 2023</TableCell>
+                            <TableCell>Sarah Johnson</TableCell>
+                            <TableCell className="w-[130px]">
+                              <div className="flex items-center gap-2">
+                                <Progress value={50} className="h-2" />
+                                <span className="text-xs">50%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>5 days</TableCell>
+                            <TableCell>Sep 10, 2023</TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">MetalWorks Inc.</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">Compliance Check</Badge>
+                            </TableCell>
+                            <TableCell>Aug 8, 2023</TableCell>
+                            <TableCell>Michael Brown</TableCell>
+                            <TableCell className="w-[130px]">
+                              <div className="flex items-center gap-2">
+                                <Progress value={75} className="h-2" />
+                                <span className="text-xs">75%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>3 days</TableCell>
+                            <TableCell>Aug 28, 2023</TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">Tech Solutions Ltd</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">Final Approval</Badge>
+                            </TableCell>
+                            <TableCell>Jul 29, 2023</TableCell>
+                            <TableCell>Emily Parker</TableCell>
+                            <TableCell className="w-[130px]">
+                              <div className="flex items-center gap-2">
+                                <Progress value={90} className="h-2" />
+                                <span className="text-xs">90%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>2 days</TableCell>
+                            <TableCell>Aug 22, 2023</TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="certifications">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Certification Distribution</CardTitle>
+                      <CardDescription>Most common supplier certifications</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={certificationData}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="name" />
+                            <YAxis yAxisId="left" orientation="left" />
+                            <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `${value}%`} />
+                            <Tooltip 
+                              contentStyle={{
+                                backgroundColor: 'hsl(var(--card))',
+                                borderColor: 'hsl(var(--border))',
+                                color: 'hsl(var(--foreground))'
+                              }}
+                            />
+                            <Legend />
+                            <Bar yAxisId="left" dataKey="count" name="Supplier Count" fill="hsl(var(--primary))" />
+                            <Line yAxisId="right" dataKey="percentage" name="% of Suppliers" stroke="#ff7300" strokeWidth={2} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Certification Compliance</CardTitle>
+                      <CardDescription>Supplier certification status overview</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80 flex flex-col justify-center space-y-6">
+                        {certificationData.map((cert, index) => (
+                          <div key={index} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium leading-none">{cert.name}</p>
+                                <p className="text-sm text-muted-foreground">{cert.count} suppliers certified</p>
+                              </div>
+                              <div>
+                                <span className="text-sm font-medium">{cert.percentage}%</span>
+                              </div>
+                            </div>
+                            <Progress value={cert.percentage} className="h-2" />
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Certification Expiry Monitor</CardTitle>
+                    <CardDescription>Tracking upcoming certification renewals</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Supplier</TableHead>
+                          <TableHead>Certification</TableHead>
+                          <TableHead>Issued Date</TableHead>
+                          <TableHead>Expiry Date</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Days Until Expiry</TableHead>
+                          <TableHead>Renewal Process</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium">Global Electronics Manufacturing</TableCell>
+                          <TableCell>ISO 9001</TableCell>
+                          <TableCell>Aug 15, 2022</TableCell>
+                          <TableCell>Aug 14, 2025</TableCell>
+                          <TableCell>
+                            <Badge variant="success">Valid</Badge>
+                          </TableCell>
+                          <TableCell>685</TableCell>
+                          <TableCell>Not started</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">American Industrial Solutions</TableCell>
+                          <TableCell>ISO 14001</TableCell>
+                          <TableCell>Mar 22, 2021</TableCell>
+                          <TableCell>Mar 21, 2024</TableCell>
+                          <TableCell>
+                            <Badge variant="warning">Expiring Soon</Badge>
+                          </TableCell>
+                          <TableCell>215</TableCell>
+                          <TableCell>In progress</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">African Minerals Ltd</TableCell>
+                          <TableCell>ISO 14001</TableCell>
+                          <TableCell>Jul 10, 2020</TableCell>
+                          <TableCell>Jul 9, 2023</TableCell>
+                          <TableCell>
+                            <Badge variant="destructive">Expired</Badge>
+                          </TableCell>
+                          <TableCell>-45</TableCell>
+                          <TableCell>Overdue</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
         </TabsContent>
         
         <TabsContent value="orders">
@@ -3637,6 +3638,347 @@ export default function Suppliers() {
                       </TableCell>
                     </TableRow>
                   ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Quality Trends Analysis Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 mb-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Quality Trend Analysis</CardTitle>
+                <CardDescription>Quality metrics over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={[
+                        { month: 'Jan', defectRate: 2.4, returnRate: 1.8 },
+                        { month: 'Feb', defectRate: 2.1, returnRate: 1.6 },
+                        { month: 'Mar', defectRate: 2.3, returnRate: 1.9 },
+                        { month: 'Apr', defectRate: 1.9, returnRate: 1.5 },
+                        { month: 'May', defectRate: 1.7, returnRate: 1.3 },
+                        { month: 'Jun', defectRate: 1.5, returnRate: 1.2 },
+                        { month: 'Jul', defectRate: 1.3, returnRate: 1.0 },
+                        { month: 'Aug', defectRate: 1.4, returnRate: 1.1 }
+                      ]}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          borderColor: 'hsl(var(--border))',
+                          color: 'hsl(var(--foreground))'
+                        }}
+                        formatter={(value) => [`${value}%`, '']}
+                      />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="defectRate" 
+                        name="Defect Rate" 
+                        stroke="#ef4444" 
+                        strokeWidth={2}
+                        activeDot={{ r: 8 }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="returnRate" 
+                        name="Return Rate" 
+                        stroke="#3b82f6" 
+                        strokeWidth={2}
+                        activeDot={{ r: 8 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Inspection Results Distribution</CardTitle>
+                <CardDescription>Breakdown of inspection outcomes by category</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Passed', value: 76 },
+                          { name: 'Conditional', value: 18 },
+                          { name: 'Failed', value: 6 }
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="name"
+                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {[
+                          { name: 'Passed', value: 76 },
+                          { name: 'Conditional', value: 18 },
+                          { name: 'Failed', value: 6 }
+                        ].map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={[
+                              'hsl(var(--success))', 
+                              'hsl(var(--warning))', 
+                              'hsl(var(--destructive))'
+                            ][index % 3]} 
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value) => [`${value}%`, 'Percentage']}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          borderColor: 'hsl(var(--border))',
+                          color: 'hsl(var(--foreground))'
+                        }}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quality Control Process KPIs */}
+          <Card className="mb-6 mt-6">
+            <CardHeader>
+              <CardTitle>Quality Control Process KPIs</CardTitle>
+              <CardDescription>Key performance indicators for quality control processes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <div className="text-sm font-medium mb-1">First Time Pass Rate</div>
+                  <div className="text-2xl font-bold">92.3%</div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                    <span className="text-green-500">+2.1% vs last quarter</span>
+                  </div>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <div className="text-sm font-medium mb-1">Avg. Resolution Time</div>
+                  <div className="text-2xl font-bold">2.4 days</div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <ArrowDown className="h-4 w-4 mr-1 text-green-500" />
+                    <span className="text-green-500">-0.6 days improvement</span>
+                  </div>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <div className="text-sm font-medium mb-1">Quality Audit Compliance</div>
+                  <div className="text-2xl font-bold">98.7%</div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                    <span className="text-green-500">+1.2% vs target</span>
+                  </div>
+                </div>
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <div className="text-sm font-medium mb-1">Supplier Quality Index</div>
+                  <div className="text-2xl font-bold">4.3/5.0</div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <ArrowUp className="h-4 w-4 mr-1 text-green-500" />
+                    <span className="text-green-500">+0.2 vs baseline</span>
+                  </div>
+                </div>
+              </div>
+            
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>Inspection Thoroughness</Label>
+                    <span className="text-sm font-medium">94%</span>
+                  </div>
+                  <Progress value={94} className="h-2" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>Documentation Accuracy</Label>
+                    <span className="text-sm font-medium">89%</span>
+                  </div>
+                  <Progress value={89} className="h-2" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>Process Adherence</Label>
+                    <span className="text-sm font-medium">97%</span>
+                  </div>
+                  <Progress value={97} className="h-2" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>Corrective Action Effectiveness</Label>
+                    <span className="text-sm font-medium">92%</span>
+                  </div>
+                  <Progress value={92} className="h-2" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Root Cause Analysis Section */}
+          <Card className="mb-6">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle>Quality Issue Categories</CardTitle>
+                <CardDescription>Distribution of quality issues by category</CardDescription>
+              </div>
+              <Select defaultValue="six_months">
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Time period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="three_months">Last 3 Months</SelectItem>
+                  <SelectItem value="six_months">Last 6 Months</SelectItem>
+                  <SelectItem value="year">Last Year</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { category: 'Material Defects', count: 42 },
+                      { category: 'Assembly Errors', count: 28 },
+                      { category: 'Specification Non-Compliance', count: 22 },
+                      { category: 'Packaging Issues', count: 15 },
+                      { category: 'Documentation Errors', count: 12 },
+                      { category: 'Transportation Damage', count: 10 }
+                    ]}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    layout="vertical"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" />
+                    <YAxis 
+                      dataKey="category" 
+                      type="category" 
+                      width={150}
+                      tick={{fill: 'hsl(var(--foreground))'}} 
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        borderColor: 'hsl(var(--border))',
+                        color: 'hsl(var(--foreground))'
+                      }}
+                    />
+                    <Legend />
+                    <Bar dataKey="count" name="Issue Count" fill="hsl(var(--primary))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quality Improvement Initiatives */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Quality Improvement Initiatives</CardTitle>
+              <CardDescription>Tracking progress of active quality initiatives</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Initiative</TableHead>
+                    <TableHead>Objective</TableHead>
+                    <TableHead>Target</TableHead>
+                    <TableHead>Current</TableHead>
+                    <TableHead>Progress</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">Supplier Quality Program</TableCell>
+                    <TableCell>Reduce defect rate from suppliers</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">&#60; 1.0%</Badge>
+                    </TableCell>
+                    <TableCell>1.3%</TableCell>
+                    <TableCell className="w-[180px]">
+                      <div className="flex items-center gap-2">
+                        <Progress value={76} className="h-2" />
+                        <span className="text-xs">76%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>Sarah Johnson</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">In Progress</Badge>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Inspection Process Optimization</TableCell>
+                    <TableCell>Enhance quality inspection efficiency</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">-25% time</Badge>
+                    </TableCell>
+                    <TableCell>-22%</TableCell>
+                    <TableCell className="w-[180px]">
+                      <div className="flex items-center gap-2">
+                        <Progress value={88} className="h-2" />
+                        <span className="text-xs">88%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>Michael Chen</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">In Progress</Badge>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Quality Documentation System</TableCell>
+                    <TableCell>Implement digital documentation</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">100% Digital</Badge>
+                    </TableCell>
+                    <TableCell>100%</TableCell>
+                    <TableCell className="w-[180px]">
+                      <div className="flex items-center gap-2">
+                        <Progress value={100} className="h-2" />
+                        <span className="text-xs">100%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>David Wilson</TableCell>
+                    <TableCell>
+                      <Badge variant="success">Completed</Badge>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Quality Certification Program</TableCell>
+                    <TableCell>Achieve ISO 9001:2015 certification</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">Full Compliance</Badge>
+                    </TableCell>
+                    <TableCell>92%</TableCell>
+                    <TableCell className="w-[180px]">
+                      <div className="flex items-center gap-2">
+                        <Progress value={92} className="h-2" />
+                        <span className="text-xs">92%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>Jennifer Lopez</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">In Progress</Badge>
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             </CardContent>

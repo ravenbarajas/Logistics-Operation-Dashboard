@@ -59,7 +59,11 @@ import {
   Download,
   Filter,
   Loader2,
-  Check
+  Check,
+  ChevronsLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsRight
 } from "lucide-react";
 import {
   BarChart,
@@ -1761,78 +1765,216 @@ export default function Suppliers() {
               </div>
               
               <Card>
-                <CardHeader>
-                  <CardTitle>Risk & Contingency Planning</CardTitle>
-                  <CardDescription>Key risk factors and mitigation strategies</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>Risk & Contingency Planning</CardTitle>
+                    <CardDescription>Key risk factors and mitigation strategies</CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="relative w-[200px]">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="search"
+                        placeholder="Search risks..."
+                        className="pl-8 w-full"
+                      />
+                    </div>
+                    <Select defaultValue="all">
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue placeholder="Risk Level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Levels</SelectItem>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Risk Factor</TableHead>
-                        <TableHead>Impact</TableHead>
-                        <TableHead>Probability</TableHead>
-                        <TableHead>Risk Level</TableHead>
-                        <TableHead>Mitigation Strategy</TableHead>
-                        <TableHead>Owner</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell className="font-medium">Supplier Bankruptcy</TableCell>
-                        <TableCell>High</TableCell>
-                        <TableCell>Low</TableCell>
-                        <TableCell>
-                          <Badge variant="warning">Medium</Badge>
-                        </TableCell>
-                        <TableCell>Multi-sourcing strategy</TableCell>
-                        <TableCell>Procurement</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">In Progress</Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">Supply Chain Disruption</TableCell>
-                        <TableCell>High</TableCell>
-                        <TableCell>Medium</TableCell>
-                        <TableCell>
-                          <Badge variant="destructive">High</Badge>
-                        </TableCell>
-                        <TableCell>Increased inventory levels</TableCell>
-                        <TableCell>Operations</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">In Progress</Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">Quality Issues</TableCell>
-                        <TableCell>Medium</TableCell>
-                        <TableCell>Low</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Low</Badge>
-                        </TableCell>
-                        <TableCell>Enhanced QA process</TableCell>
-                        <TableCell>Quality</TableCell>
-                        <TableCell>
-                          <Badge variant="success">Completed</Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">Price Volatility</TableCell>
-                        <TableCell>Medium</TableCell>
-                        <TableCell>High</TableCell>
-                        <TableCell>
-                          <Badge variant="warning">Medium</Badge>
-                        </TableCell>
-                        <TableCell>Long-term contracts</TableCell>
-                        <TableCell>Finance</TableCell>
-                        <TableCell>
-                          <Badge variant="success">Completed</Badge>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                <CardContent className="p-0">
+                  <div className="overflow-auto">
+                    <table className="w-full">
+                      <thead className="bg-muted/50 text-sm">
+                        <tr>
+                          <th className="py-3 px-4 text-left font-medium w-[40px]">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </th>
+                          <th className="py-3 px-4 text-left font-medium">Risk Factor</th>
+                          <th className="py-3 px-4 text-left font-medium">Impact</th>
+                          <th className="py-3 px-4 text-left font-medium">Probability</th>
+                          <th className="py-3 px-4 text-left font-medium">Risk Level</th>
+                          <th className="py-3 px-4 text-left font-medium">Mitigation Strategy</th>
+                          <th className="py-3 px-4 text-left font-medium">Owner</th>
+                          <th className="py-3 px-4 text-right font-medium">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        <tr className="hover:bg-muted/50 transition-colors">
+                          <td className="py-3 px-4">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-medium flex items-center">
+                              <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
+                              Supplier Bankruptcy
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm">High</td>
+                          <td className="py-3 px-4 text-sm">Low</td>
+                          <td className="py-3 px-4">
+                            <Badge variant="warning">Medium</Badge>
+                          </td>
+                          <td className="py-3 px-4 text-sm">Multi-sourcing strategy</td>
+                          <td className="py-3 px-4 text-sm">Procurement</td>
+                          <td className="py-3 px-4 text-right">
+                            <Badge variant="outline">In Progress</Badge>
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-muted/50 transition-colors">
+                          <td className="py-3 px-4">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-medium flex items-center">
+                              <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
+                              Supply Chain Disruption
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm">High</td>
+                          <td className="py-3 px-4 text-sm">Medium</td>
+                          <td className="py-3 px-4">
+                            <Badge variant="destructive">High</Badge>
+                          </td>
+                          <td className="py-3 px-4 text-sm">Increased inventory levels</td>
+                          <td className="py-3 px-4 text-sm">Operations</td>
+                          <td className="py-3 px-4 text-right">
+                            <Badge variant="outline">In Progress</Badge>
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-muted/50 transition-colors">
+                          <td className="py-3 px-4">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-medium flex items-center">
+                              <AlertCircle className="h-4 w-4 mr-2 text-green-500" />
+                              Quality Issues
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm">Medium</td>
+                          <td className="py-3 px-4 text-sm">Low</td>
+                          <td className="py-3 px-4">
+                            <Badge variant="outline">Low</Badge>
+                          </td>
+                          <td className="py-3 px-4 text-sm">Enhanced QA process</td>
+                          <td className="py-3 px-4 text-sm">Quality</td>
+                          <td className="py-3 px-4 text-right">
+                            <Badge variant="success">Completed</Badge>
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-muted/50 transition-colors">
+                          <td className="py-3 px-4">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-medium flex items-center">
+                              <AlertCircle className="h-4 w-4 mr-2 text-amber-500" />
+                              Price Volatility
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm">Medium</td>
+                          <td className="py-3 px-4 text-sm">High</td>
+                          <td className="py-3 px-4">
+                            <Badge variant="warning">Medium</Badge>
+                          </td>
+                          <td className="py-3 px-4 text-sm">Long-term contracts</td>
+                          <td className="py-3 px-4 text-sm">Finance</td>
+                          <td className="py-3 px-4 text-right">
+                            <Badge variant="success">Completed</Badge>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="border-t">
+                    <div className="flex items-center justify-between py-4 px-6">
+                      <div className="flex-1 text-sm text-muted-foreground">
+                        Showing 1 to 4 of 4 risk factors
+                      </div>
+                      
+                      <div className="flex-1 flex justify-center">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="First page"
+                          >
+                            <ChevronsLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          
+                          <Button
+                            variant="default"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Page 1"
+                            aria-current="page"
+                          >
+                            1
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Next page"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Last page"
+                          >
+                            <ChevronsRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 flex justify-end">
+                        <Button variant="outline" size="sm">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Risk
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -2096,44 +2238,226 @@ export default function Suppliers() {
               </div>
               
               <Card>
-                <CardHeader>
-                  <CardTitle>Supplier Rating Summary</CardTitle>
-                  <CardDescription>Detailed breakdown of supplier performance ratings</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>Supplier Rating Summary</CardTitle>
+                    <CardDescription>Detailed breakdown of supplier performance ratings</CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="relative w-[200px]">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="search"
+                        placeholder="Search suppliers..."
+                        className="pl-8 w-full"
+                      />
+                    </div>
+                    <Select defaultValue="all">
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue placeholder="Rating" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Ratings</SelectItem>
+                        <SelectItem value="excellent">4.5+</SelectItem>
+                        <SelectItem value="good">4.0-4.4</SelectItem>
+                        <SelectItem value="average">Below 4.0</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Supplier</TableHead>
-                        <TableHead>Overall Rating</TableHead>
-                        <TableHead>Quality</TableHead>
-                        <TableHead>Delivery</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Service</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {supplierRatings.map((supplier, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">{supplier.name}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center">
-                              {Array(5).fill(0).map((_, i) => (
-                                <Star key={i} 
-                                  className={`h-4 w-4 ${i < Math.floor(supplier.overall) ? 'text-amber-500 fill-amber-500' : 'text-muted stroke-muted'}`} 
-                                />
-                              ))}
-                              <span className="ml-2">{supplier.overall.toFixed(1)}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{supplier.quality.toFixed(1)}</TableCell>
-                          <TableCell>{supplier.delivery.toFixed(1)}</TableCell>
-                          <TableCell>{supplier.price.toFixed(1)}</TableCell>
-                          <TableCell>{supplier.service.toFixed(1)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <CardContent className="p-0">
+                  <div className="overflow-auto">
+                    <table className="w-full">
+                      <thead className="bg-muted/50 text-sm">
+                        <tr>
+                          <th className="py-3 px-4 text-left font-medium w-[40px]">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                          </th>
+                          <th className="py-3 px-4 text-left font-medium">Supplier</th>
+                          <th className="py-3 px-4 text-left font-medium">Overall Rating</th>
+                          <th className="py-3 px-4 text-center font-medium">Quality</th>
+                          <th className="py-3 px-4 text-center font-medium">Delivery</th>
+                          <th className="py-3 px-4 text-center font-medium">Price</th>
+                          <th className="py-3 px-4 text-center font-medium">Service</th>
+                          <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {supplierRatings.map((supplier, index) => (
+                          <tr key={index} className="hover:bg-muted/50 transition-colors">
+                            <td className="py-3 px-4">
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300"
+                              />
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="font-medium flex items-center">
+                                <Factory className="h-4 w-4 mr-2 text-primary" />
+                                {supplier.name}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center">
+                                {Array(5).fill(0).map((_, i) => (
+                                  <Star key={i} 
+                                    className={`h-4 w-4 ${i < Math.floor(supplier.overall) ? 'text-amber-500 fill-amber-500' : 'text-muted stroke-muted'}`} 
+                                  />
+                                ))}
+                                <span className="ml-2">{supplier.overall.toFixed(1)}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex flex-col items-center">
+                                <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[60px]">
+                                  <div 
+                                    className="bg-green-500 h-2 rounded-full" 
+                                    style={{ width: `${(supplier.quality / 5) * 100}%` }}
+                                  />
+                                </div>
+                                <div className="text-xs mt-1 text-muted-foreground">
+                                  {supplier.quality.toFixed(1)}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex flex-col items-center">
+                                <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[60px]">
+                                  <div 
+                                    className="bg-blue-500 h-2 rounded-full" 
+                                    style={{ width: `${(supplier.delivery / 5) * 100}%` }}
+                                  />
+                                </div>
+                                <div className="text-xs mt-1 text-muted-foreground">
+                                  {supplier.delivery.toFixed(1)}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex flex-col items-center">
+                                <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[60px]">
+                                  <div 
+                                    className="bg-purple-500 h-2 rounded-full" 
+                                    style={{ width: `${(supplier.price / 5) * 100}%` }}
+                                  />
+                                </div>
+                                <div className="text-xs mt-1 text-muted-foreground">
+                                  {supplier.price.toFixed(1)}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex flex-col items-center">
+                                <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[60px]">
+                                  <div 
+                                    className="bg-amber-500 h-2 rounded-full" 
+                                    style={{ width: `${(supplier.service / 5) * 100}%` }}
+                                  />
+                                </div>
+                                <div className="text-xs mt-1 text-muted-foreground">
+                                  {supplier.service.toFixed(1)}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex items-center justify-end space-x-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  title="View Details"
+                                >
+                                  <FileText className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  title="Rating History"
+                                >
+                                  <TrendingUp className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  title="Rate Supplier"
+                                >
+                                  <Star className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="border-t">
+                    <div className="flex items-center justify-between py-4 px-6">
+                      <div className="flex-1 text-sm text-muted-foreground">
+                        Showing 1 to {supplierRatings.length} of {supplierRatings.length} supplier ratings
+                      </div>
+                      
+                      <div className="flex-1 flex justify-center">
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="First page"
+                          >
+                            <ChevronsLeft className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          
+                          <Button
+                            variant="default"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Page 1"
+                            aria-current="page"
+                          >
+                            1
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Next page"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Last page"
+                          >
+                            <ChevronsRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 flex justify-end">
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Ratings
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

@@ -1412,7 +1412,7 @@ export default function Suppliers() {
 
   // Add state for pagination and selection
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -1906,6 +1906,276 @@ export default function Suppliers() {
     {/* Keep other existing tab content */}
   </TabsContent>
   // ... existing code ...
+
+  // Add new state variables for Onboarding table
+  const [onboardingSuppliers, setOnboardingSuppliers] = useState([
+    {
+      id: "ONB-001",
+      name: "Green Valley Organics",
+      stage: "Documentation",
+      startDate: "Aug 15, 2023",
+      owner: "Sarah Johnson",
+      progress: 50,
+      timeInStage: "5 days",
+      expectedCompletion: "Sep 10, 2023"
+    },
+    {
+      id: "ONB-002",
+      name: "MetalWorks Inc.",
+      stage: "Compliance Check",
+      startDate: "Aug 8, 2023",
+      owner: "Michael Brown",
+      progress: 75,
+      timeInStage: "3 days",
+      expectedCompletion: "Aug 28, 2023"
+    },
+    {
+      id: "ONB-003",
+      name: "Tech Solutions Ltd",
+      stage: "Final Approval",
+      startDate: "Jul 29, 2023",
+      owner: "Emily Parker",
+      progress: 90,
+      timeInStage: "2 days",
+      expectedCompletion: "Aug 22, 2023"
+    },
+    {
+      id: "ONB-004",
+      name: "Global Logistics Co.",
+      stage: "Documentation",
+      startDate: "Aug 12, 2023",
+      owner: "Robert Chen",
+      progress: 35,
+      timeInStage: "7 days",
+      expectedCompletion: "Sep 15, 2023"
+    },
+    {
+      id: "ONB-005",
+      name: "Farm Fresh Produce",
+      stage: "Initial Assessment",
+      startDate: "Aug 18, 2023",
+      owner: "James Wilson",
+      progress: 15,
+      timeInStage: "2 days",
+      expectedCompletion: "Sep 25, 2023"
+    },
+    {
+      id: "ONB-006",
+      name: "Eastern Electronics",
+      stage: "Compliance Check",
+      startDate: "Aug 5, 2023",
+      owner: "Linda Martinez",
+      progress: 65,
+      timeInStage: "4 days",
+      expectedCompletion: "Sep 1, 2023"
+    },
+    {
+      id: "ONB-007",
+      name: "Nordic Furniture Design",
+      stage: "Final Approval",
+      startDate: "Aug 1, 2023",
+      owner: "Erik Hansen",
+      progress: 95,
+      timeInStage: "1 day",
+      expectedCompletion: "Aug 21, 2023"
+    }
+  ]);
+  const [onboardingSearchTerm, setOnboardingSearchTerm] = useState("");
+  const [onboardingStageFilter, setOnboardingStageFilter] = useState("all");
+  const [onboardingCurrentPage, setOnboardingCurrentPage] = useState(1);
+  const [onboardingPageSize, setOnboardingPageSize] = useState(5);
+  const [selectedOnboardingSuppliers, setSelectedOnboardingSuppliers] = useState<string[]>([]);
+
+  // Add new functions for Onboarding table
+  const filterOnboardingSuppliers = () => {
+    let filtered = onboardingSuppliers;
+    
+    // Apply search filter
+    if (onboardingSearchTerm) {
+      filtered = filtered.filter(supplier => 
+        supplier.name.toLowerCase().includes(onboardingSearchTerm.toLowerCase()) ||
+        supplier.owner.toLowerCase().includes(onboardingSearchTerm.toLowerCase()) ||
+        supplier.stage.toLowerCase().includes(onboardingSearchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply stage filter
+    if (onboardingStageFilter !== "all") {
+      filtered = filtered.filter(supplier => supplier.stage === onboardingStageFilter);
+    }
+    
+    return filtered;
+  };
+
+  const handleOnboardingPageChange = (page: number) => {
+    setOnboardingCurrentPage(page);
+  };
+
+  const handleToggleOnboardingSupplierSelection = (supplierId: string) => {
+    setSelectedOnboardingSuppliers(prev => {
+      if (prev.includes(supplierId)) {
+        return prev.filter(id => id !== supplierId);
+      } else {
+        return [...prev, supplierId];
+      }
+    });
+  };
+
+  const handleOnboardingSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOnboardingSearchTerm(e.target.value);
+    setOnboardingCurrentPage(1); // Reset to first page after search
+  };
+
+  // Calculate pagination for Onboarding
+  const filteredOnboardingSuppliers = filterOnboardingSuppliers();
+  const onboardingTotalPages = Math.max(1, Math.ceil(filteredOnboardingSuppliers.length / onboardingPageSize));
+  const paginatedOnboardingSuppliers = filteredOnboardingSuppliers.slice(
+    (onboardingCurrentPage - 1) * onboardingPageSize,
+    onboardingCurrentPage * onboardingPageSize
+  );
+
+  // Get unique stages for filter dropdown
+  const uniqueStages = Array.from(
+    new Set(onboardingSuppliers.map(supplier => supplier.stage))
+  );
+
+  // Add new state variables for Certification table
+  const [certifications, setCertifications] = useState([
+    {
+      id: "CERT-001",
+      supplier: "Global Electronics Manufacturing",
+      certification: "ISO 9001",
+      issuedDate: "Aug 15, 2022",
+      expiryDate: "Aug 14, 2025",
+      status: "valid",
+      daysUntilExpiry: 685,
+      renewalProcess: "Not started"
+    },
+    {
+      id: "CERT-002",
+      supplier: "American Industrial Solutions",
+      certification: "ISO 14001",
+      issuedDate: "Mar 22, 2021",
+      expiryDate: "Mar 21, 2024",
+      status: "expiring",
+      daysUntilExpiry: 215,
+      renewalProcess: "In progress"
+    },
+    {
+      id: "CERT-003",
+      supplier: "African Minerals Ltd",
+      certification: "ISO 14001",
+      issuedDate: "Jul 10, 2020",
+      expiryDate: "Jul 9, 2023",
+      status: "expired",
+      daysUntilExpiry: -45,
+      renewalProcess: "Overdue"
+    },
+    {
+      id: "CERT-004",
+      supplier: "EuroTech Components",
+      certification: "ISO 27001",
+      issuedDate: "Jun 05, 2022",
+      expiryDate: "Jun 04, 2025",
+      status: "valid",
+      daysUntilExpiry: 615,
+      renewalProcess: "Not started"
+    },
+    {
+      id: "CERT-005",
+      supplier: "Tokyo Tech Innovations",
+      certification: "ISO 9001",
+      issuedDate: "Apr 30, 2023",
+      expiryDate: "Apr 29, 2026",
+      status: "valid",
+      daysUntilExpiry: 945,
+      renewalProcess: "Not started"
+    },
+    {
+      id: "CERT-006",
+      supplier: "Pacific Logistics Partners",
+      certification: "C-TPAT",
+      issuedDate: "Oct 15, 2021",
+      expiryDate: "Oct 14, 2023",
+      status: "expiring",
+      daysUntilExpiry: 45,
+      renewalProcess: "In progress"
+    },
+    {
+      id: "CERT-007",
+      supplier: "Maple Wood Furniture",
+      certification: "FSC Certified",
+      issuedDate: "Jan 18, 2019",
+      expiryDate: "Jan 17, 2022",
+      status: "expired",
+      daysUntilExpiry: -570,
+      renewalProcess: "Renewal submitted"
+    }
+  ]);
+  const [certSearchTerm, setCertSearchTerm] = useState("");
+  const [certStatusFilter, setCertStatusFilter] = useState("all");
+  const [certificationTypeFilter, setCertificationTypeFilter] = useState("all");
+  const [certCurrentPage, setCertCurrentPage] = useState(1);
+  const [certPageSize, setCertPageSize] = useState(5);
+  const [selectedCertifications, setSelectedCertifications] = useState<string[]>([]);
+
+  // Add new functions for Certification table
+  const filterCertifications = () => {
+    let filtered = certifications;
+    
+    // Apply search filter
+    if (certSearchTerm) {
+      filtered = filtered.filter(cert => 
+        cert.supplier.toLowerCase().includes(certSearchTerm.toLowerCase()) ||
+        cert.certification.toLowerCase().includes(certSearchTerm.toLowerCase()) ||
+        cert.renewalProcess.toLowerCase().includes(certSearchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply status filter
+    if (certStatusFilter !== "all") {
+      filtered = filtered.filter(cert => cert.status === certStatusFilter);
+    }
+    
+    // Apply certification type filter
+    if (certificationTypeFilter !== "all") {
+      filtered = filtered.filter(cert => cert.certification === certificationTypeFilter);
+    }
+    
+    return filtered;
+  };
+
+  const handleCertPageChange = (page: number) => {
+    setCertCurrentPage(page);
+  };
+
+  const handleToggleCertSelection = (certId: string) => {
+    setSelectedCertifications(prev => {
+      if (prev.includes(certId)) {
+        return prev.filter(id => id !== certId);
+      } else {
+        return [...prev, certId];
+      }
+    });
+  };
+
+  const handleCertSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCertSearchTerm(e.target.value);
+    setCertCurrentPage(1); // Reset to first page after search
+  };
+
+  // Calculate pagination for Certifications
+  const filteredCertifications = filterCertifications();
+  const certTotalPages = Math.max(1, Math.ceil(filteredCertifications.length / certPageSize));
+  const paginatedCertifications = filteredCertifications.slice(
+    (certCurrentPage - 1) * certPageSize,
+    certCurrentPage * certPageSize
+  );
+
+  // Get unique certification types for filter dropdown
+  const uniqueCertTypes = Array.from(
+    new Set(certifications.map(cert => cert.certification))
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -3793,93 +4063,321 @@ export default function Suppliers() {
                     </CardContent>
                   </Card>
                   
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Ongoing Onboarding Processes</CardTitle>
-                      <CardDescription>Suppliers currently in the onboarding process</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Supplier Name</TableHead>
-                            <TableHead>Current Stage</TableHead>
-                            <TableHead>Started On</TableHead>
-                            <TableHead>Owner</TableHead>
-                            <TableHead>Progress</TableHead>
-                            <TableHead>Time in Stage</TableHead>
-                            <TableHead>Expected Completion</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell className="font-medium">Green Valley Organics</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">Documentation</Badge>
-                            </TableCell>
-                            <TableCell>Aug 15, 2023</TableCell>
-                            <TableCell>Sarah Johnson</TableCell>
-                            <TableCell className="w-[130px]">
-                              <div className="flex items-center gap-2">
-                                <Progress value={50} className="h-2" />
-                                <span className="text-xs">50%</span>
+
+                      <Card>
+                        <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                          <div>
+                            <CardTitle>Ongoing Onboarding Processes</CardTitle>
+                            <CardDescription>Suppliers currently in the onboarding process</CardDescription>
+                          </div>
+                          <Button variant="outline" size="sm">
+                            <Plus className="h-4 w-4 mr-2" />
+                            New Onboarding
+                          </Button>
+                        </CardHeader>
+                        
+                        <div className="p-6 bg-background py-0 mb-4">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                type="search"
+                                placeholder="Search onboarding..."
+                                className="pl-8 w-full md:w-[300px]"
+                                value={onboardingSearchTerm}
+                                onChange={handleOnboardingSearch}
+                              />
+                            </div>
+                            
+                            <Select value={onboardingStageFilter} onValueChange={setOnboardingStageFilter}>
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Filter by stage" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">All Stages</SelectItem>
+                                {uniqueStages.map(stage => (
+                                  <SelectItem key={stage} value={stage}>{stage}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            
+                            <div className="flex items-center gap-2 ml-auto">
+                              <span className="text-sm font-medium">Rows per page</span>
+                              <Select
+                                value={onboardingPageSize.toString()}
+                                onValueChange={(size) => {
+                                  setOnboardingPageSize(Number(size));
+                                  setOnboardingCurrentPage(1);
+                                }}
+                              >
+                                <SelectTrigger className="h-9 w-[70px]">
+                                  <SelectValue placeholder={onboardingPageSize.toString()} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {[5, 10, 25, 50].map((size) => (
+                                    <SelectItem key={size} value={size.toString()}>
+                                      {size}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Table Component */}
+                        <CardContent className="p-0">
+                          {filteredOnboardingSuppliers.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-64 p-6">
+                              <Users className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                              <h3 className="text-lg font-medium text-center mb-2">No onboarding suppliers found</h3>
+                              <p className="text-sm text-muted-foreground text-center mb-4">
+                                {onboardingSearchTerm || onboardingStageFilter !== "all"
+                                  ? "Try adjusting your search filters to find what you're looking for."
+                                  : "Get started by adding a new supplier onboarding process."}
+                              </p>
+                              {!onboardingSearchTerm && onboardingStageFilter === "all" && (
+                                <Button variant="outline" size="sm">
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  New Onboarding
+                                </Button>
+                              )}
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="overflow-auto">
+                                <table className="w-full">
+                                  <thead className="bg-muted/50 text-sm">
+                                    <tr>
+                                      <th className="py-3 px-4 text-left font-medium w-[40px]">
+                                        <input
+                                          type="checkbox"
+                                          checked={selectedOnboardingSuppliers.length === paginatedOnboardingSuppliers.length && paginatedOnboardingSuppliers.length > 0}
+                                          onChange={(e) => {
+                                            if (e.target.checked) {
+                                              setSelectedOnboardingSuppliers(paginatedOnboardingSuppliers.map(s => s.id));
+                                            } else {
+                                              setSelectedOnboardingSuppliers([]);
+                                            }
+                                          }}
+                                          className="h-4 w-4 rounded border-gray-300"
+                                        />
+                                      </th>
+                                      <th className="py-3 px-4 text-left font-medium">Supplier Name</th>
+                                      <th className="py-3 px-4 text-left font-medium">Current Stage</th>
+                                      <th className="py-3 px-4 text-left font-medium">Started On</th>
+                                      <th className="py-3 px-4 text-left font-medium">Owner</th>
+                                      <th className="py-3 px-4 text-center font-medium">Progress</th>
+                                      <th className="py-3 px-4 text-left font-medium">Time in Stage</th>
+                                      <th className="py-3 px-4 text-left font-medium">Expected Completion</th>
+                                      <th className="py-3 px-4 text-right font-medium w-[100px]">Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y">
+                                    {paginatedOnboardingSuppliers.map((supplier) => (
+                                      <tr 
+                                        key={supplier.id} 
+                                        className="hover:bg-muted/50 transition-colors"
+                                      >
+                                        <td className="py-3 px-4">
+                                          <input
+                                            type="checkbox"
+                                            checked={selectedOnboardingSuppliers.includes(supplier.id)}
+                                            onChange={() => handleToggleOnboardingSupplierSelection(supplier.id)}
+                                            className="h-4 w-4 rounded border-gray-300"
+                                          />
+                                        </td>
+                                        <td className="py-3 px-4 font-medium">{supplier.name}</td>
+                                        <td className="py-3 px-4">
+                                          <Badge variant="outline">
+                                            {supplier.stage}
+                                          </Badge>
+                                        </td>
+                                        <td className="py-3 px-4">{supplier.startDate}</td>
+                                        <td className="py-3 px-4">{supplier.owner}</td>
+                                        <td className="py-3 px-4">
+                                          <div className="flex flex-col items-center">
+                                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[80px]">
+                                              <div 
+                                                className="bg-primary h-2 rounded-full" 
+                                                style={{ width: `${supplier.progress}%` }}
+                                              />
+                                            </div>
+                                            <div className="text-xs mt-1 text-muted-foreground">
+                                              {supplier.progress}%
+                                            </div>
+                                          </div>
+                                        </td>
+                                        <td className="py-3 px-4">{supplier.timeInStage}</td>
+                                        <td className="py-3 px-4">{supplier.expectedCompletion}</td>
+                                        <td className="py-3 px-4 text-right">
+                                          <div className="flex items-center justify-end space-x-2">
+                                            <Button 
+                                              variant="ghost" 
+                                              size="icon" 
+                                              className="h-8 w-8"
+                                              title="View Details"
+                                            >
+                                              <FileText className="h-4 w-4" />
+                                            </Button>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="icon" 
+                                              className="h-8 w-8"
+                                              title="Edit Process"
+                                            >
+                                              <Pencil className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
-                            </TableCell>
-                            <TableCell>5 days</TableCell>
-                            <TableCell>Sep 10, 2023</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="font-medium">MetalWorks Inc.</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">Compliance Check</Badge>
-                            </TableCell>
-                            <TableCell>Aug 8, 2023</TableCell>
-                            <TableCell>Michael Brown</TableCell>
-                            <TableCell className="w-[130px]">
-                              <div className="flex items-center gap-2">
-                                <Progress value={75} className="h-2" />
-                                <span className="text-xs">75%</span>
+                              
+                              <div className="border-t">
+                                <div className="flex items-center justify-between py-4 px-6">
+                                  <div className="flex-1 text-sm text-muted-foreground">
+                                    Showing {Math.min((onboardingCurrentPage - 1) * onboardingPageSize + 1, filteredOnboardingSuppliers.length)} to {Math.min(onboardingCurrentPage * onboardingPageSize, filteredOnboardingSuppliers.length)} of {filteredOnboardingSuppliers.length} {filteredOnboardingSuppliers.length === 1 ? 'supplier' : 'suppliers'}
+                                  </div>
+                                  
+                                  <div className="flex-1 flex justify-center">
+                                    <div className="flex items-center gap-1">
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleOnboardingPageChange(1)}
+                                        disabled={onboardingCurrentPage === 1}
+                                        className="h-8 w-8"
+                                        aria-label="First page"
+                                      >
+                                        <ChevronsLeft className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleOnboardingPageChange(onboardingCurrentPage - 1)}
+                                        disabled={onboardingCurrentPage === 1}
+                                        className="h-8 w-8"
+                                        aria-label="Previous page"
+                                      >
+                                        <ChevronLeft className="h-4 w-4" />
+                                      </Button>
+                                      
+                                      {onboardingTotalPages <= 5 ? (
+                                        // Show all pages if 5 or fewer
+                                        [...Array(onboardingTotalPages)].map((_, i) => (
+                                          <Button
+                                            key={`page-${i+1}`}
+                                            variant={onboardingCurrentPage === i+1 ? "default" : "outline"}
+                                            size="icon"
+                                            onClick={() => handleOnboardingPageChange(i+1)}
+                                            className="h-8 w-8"
+                                            aria-label={`Page ${i+1}`}
+                                            aria-current={onboardingCurrentPage === i+1 ? "page" : undefined}
+                                          >
+                                            {i+1}
+                                          </Button>
+                                        ))
+                                      ) : (
+                                        // Show limited pages with ellipsis
+                                        <>
+                                          <Button
+                                            variant={onboardingCurrentPage === 1 ? "default" : "outline"}
+                                            size="icon"
+                                            onClick={() => handleOnboardingPageChange(1)}
+                                            className="h-8 w-8"
+                                            aria-label="Page 1"
+                                          >
+                                            1
+                                          </Button>
+                                          
+                                          {onboardingCurrentPage > 3 && <span className="mx-1">...</span>}
+                                          
+                                          {onboardingCurrentPage > 2 && (
+                                            <Button
+                                              variant="outline"
+                                              size="icon"
+                                              onClick={() => handleOnboardingPageChange(onboardingCurrentPage - 1)}
+                                              className="h-8 w-8"
+                                              aria-label={`Page ${onboardingCurrentPage - 1}`}
+                                            >
+                                              {onboardingCurrentPage - 1}
+                                            </Button>
+                                          )}
+                                          
+                                          {onboardingCurrentPage !== 1 && onboardingCurrentPage !== onboardingTotalPages && (
+                                            <Button
+                                              variant="default"
+                                              size="icon"
+                                              onClick={() => handleOnboardingPageChange(onboardingCurrentPage)}
+                                              className="h-8 w-8"
+                                              aria-label={`Page ${onboardingCurrentPage}`}
+                                              aria-current="page"
+                                            >
+                                              {onboardingCurrentPage}
+                                            </Button>
+                                          )}
+                                          
+                                          {onboardingCurrentPage < onboardingTotalPages - 1 && (
+                                            <Button
+                                              variant="outline"
+                                              size="icon"
+                                              onClick={() => handleOnboardingPageChange(onboardingCurrentPage + 1)}
+                                              className="h-8 w-8"
+                                              aria-label={`Page ${onboardingCurrentPage + 1}`}
+                                            >
+                                              {onboardingCurrentPage + 1}
+                                            </Button>
+                                          )}
+                                          
+                                          {onboardingCurrentPage < onboardingTotalPages - 2 && <span className="mx-1">...</span>}
+                                          
+                                          <Button
+                                            variant={onboardingCurrentPage === onboardingTotalPages ? "default" : "outline"}
+                                            size="icon"
+                                            onClick={() => handleOnboardingPageChange(onboardingTotalPages)}
+                                            className="h-8 w-8"
+                                            aria-label={`Page ${onboardingTotalPages}`}
+                                          >
+                                            {onboardingTotalPages}
+                                          </Button>
+                                        </>
+                                      )}
+                                      
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleOnboardingPageChange(onboardingCurrentPage + 1)}
+                                        disabled={onboardingCurrentPage === onboardingTotalPages}
+                                        className="h-8 w-8"
+                                        aria-label="Next page"
+                                      >
+                                        <ChevronRight className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleOnboardingPageChange(onboardingTotalPages)}
+                                        disabled={onboardingCurrentPage === onboardingTotalPages}
+                                        className="h-8 w-8"
+                                        aria-label="Last page"
+                                      >
+                                        <ChevronsRight className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex-1 flex justify-end">
+                                  </div>
+                                </div>
                               </div>
-                            </TableCell>
-                            <TableCell>3 days</TableCell>
-                            <TableCell>Aug 28, 2023</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="font-medium">Tech Solutions Ltd</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">Final Approval</Badge>
-                            </TableCell>
-                            <TableCell>Jul 29, 2023</TableCell>
-                            <TableCell>Emily Parker</TableCell>
-                            <TableCell className="w-[130px]">
-                              <div className="flex items-center gap-2">
-                                <Progress value={90} className="h-2" />
-                                <span className="text-xs">90%</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>2 days</TableCell>
-                            <TableCell>Aug 22, 2023</TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
                 </div>
               </TabsContent>
               
@@ -3944,75 +4442,329 @@ export default function Suppliers() {
                 </div>
                 
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Certification Expiry Monitor</CardTitle>
-                    <CardDescription>Tracking upcoming certification renewals</CardDescription>
+                  <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                      <CardTitle>Certification Expiry Monitor</CardTitle>
+                      <CardDescription>Tracking upcoming certification renewals</CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Certification
+                    </Button>
                   </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Supplier</TableHead>
-                          <TableHead>Certification</TableHead>
-                          <TableHead>Issued Date</TableHead>
-                          <TableHead>Expiry Date</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Days Until Expiry</TableHead>
-                          <TableHead>Renewal Process</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">Global Electronics Manufacturing</TableCell>
-                          <TableCell>ISO 9001</TableCell>
-                          <TableCell>Aug 15, 2022</TableCell>
-                          <TableCell>Aug 14, 2025</TableCell>
-                          <TableCell>
-                            <Badge variant="success">Valid</Badge>
-                          </TableCell>
-                          <TableCell>685</TableCell>
-                          <TableCell>Not started</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">American Industrial Solutions</TableCell>
-                          <TableCell>ISO 14001</TableCell>
-                          <TableCell>Mar 22, 2021</TableCell>
-                          <TableCell>Mar 21, 2024</TableCell>
-                          <TableCell>
-                            <Badge variant="warning">Expiring Soon</Badge>
-                          </TableCell>
-                          <TableCell>215</TableCell>
-                          <TableCell>In progress</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">African Minerals Ltd</TableCell>
-                          <TableCell>ISO 14001</TableCell>
-                          <TableCell>Jul 10, 2020</TableCell>
-                          <TableCell>Jul 9, 2023</TableCell>
-                          <TableCell>
-                            <Badge variant="destructive">Expired</Badge>
-                          </TableCell>
-                          <TableCell>-45</TableCell>
-                          <TableCell>Overdue</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
+                  
+                  <div className="p-6 bg-background py-0 mb-4">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="search"
+                          placeholder="Search certifications..."
+                          className="pl-8 w-full md:w-[300px]"
+                          value={certSearchTerm}
+                          onChange={handleCertSearch}
+                        />
+                      </div>
+                      
+                      <Select value={certStatusFilter} onValueChange={setCertStatusFilter}>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="valid">Valid</SelectItem>
+                          <SelectItem value="expiring">Expiring Soon</SelectItem>
+                          <SelectItem value="expired">Expired</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={certificationTypeFilter} onValueChange={setCertificationTypeFilter}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Filter by type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Types</SelectItem>
+                          {uniqueCertTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <div className="flex items-center gap-2 ml-auto">
+                        <span className="text-sm font-medium">Rows per page</span>
+                        <Select
+                          value={certPageSize.toString()}
+                          onValueChange={(size) => {
+                            setCertPageSize(Number(size));
+                            setCertCurrentPage(1);
+                          }}
+                        >
+                          <SelectTrigger className="h-9 w-[70px]">
+                            <SelectValue placeholder={certPageSize.toString()} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[5, 10, 25, 50].map((size) => (
+                              <SelectItem key={size} value={size.toString()}>
+                                {size}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Table Component */}
+                  <CardContent className="p-0">
+                    {filteredCertifications.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-64 p-6">
+                        <CheckCircle className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                        <h3 className="text-lg font-medium text-center mb-2">No certifications found</h3>
+                        <p className="text-sm text-muted-foreground text-center mb-4">
+                          {certSearchTerm || certStatusFilter !== "all" || certificationTypeFilter !== "all"
+                            ? "Try adjusting your search filters to find what you're looking for."
+                            : "Get started by adding a new supplier certification."}
+                        </p>
+                        {!certSearchTerm && certStatusFilter === "all" && certificationTypeFilter === "all" && (
+                          <Button variant="outline" size="sm">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Certification
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="overflow-auto">
+                          <table className="w-full">
+                            <thead className="bg-muted/50 text-sm">
+                              <tr>
+                                <th className="py-3 px-4 text-left font-medium w-[40px]">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedCertifications.length === paginatedCertifications.length && paginatedCertifications.length > 0}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedCertifications(paginatedCertifications.map(c => c.id));
+                                      } else {
+                                        setSelectedCertifications([]);
+                                      }
+                                    }}
+                                    className="h-4 w-4 rounded border-gray-300"
+                                  />
+                                </th>
+                                <th className="py-3 px-4 text-left font-medium">Supplier</th>
+                                <th className="py-3 px-4 text-left font-medium">Certification</th>
+                                <th className="py-3 px-4 text-left font-medium">Issued Date</th>
+                                <th className="py-3 px-4 text-left font-medium">Expiry Date</th>
+                                <th className="py-3 px-4 text-left font-medium">Status</th>
+                                <th className="py-3 px-4 text-center font-medium">Days Until Expiry</th>
+                                <th className="py-3 px-4 text-left font-medium">Renewal Process</th>
+                                <th className="py-3 px-4 text-right font-medium w-[100px]">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                              {paginatedCertifications.map((cert) => {
+                                const statusColor = cert.status === 'valid' ? 'green' : 
+                                  cert.status === 'expiring' ? 'amber' : 'red';
+                                const statusLabel = cert.status === 'valid' ? 'Valid' :
+                                  cert.status === 'expiring' ? 'Expiring Soon' : 'Expired';
+                                
+                                return (
+                                  <tr 
+                                    key={cert.id} 
+                                    className="hover:bg-muted/50 transition-colors"
+                                  >
+                                    <td className="py-3 px-4">
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedCertifications.includes(cert.id)}
+                                        onChange={() => handleToggleCertSelection(cert.id)}
+                                        className="h-4 w-4 rounded border-gray-300"
+                                      />
+                                    </td>
+                                    <td className="py-3 px-4 font-medium">{cert.supplier}</td>
+                                    <td className="py-3 px-4">{cert.certification}</td>
+                                    <td className="py-3 px-4">{cert.issuedDate}</td>
+                                    <td className="py-3 px-4">{cert.expiryDate}</td>
+                                    <td className="py-3 px-4">
+                                      <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
+                                        {statusLabel}
+                                      </Badge>
+                                    </td>
+                                    <td className="py-3 px-4 text-center">
+                                      <span className={cert.daysUntilExpiry < 0 ? 'text-red-500' : 
+                                                      cert.daysUntilExpiry < 60 ? 'text-amber-500' : 
+                                                      'text-green-500'}>
+                                        {cert.daysUntilExpiry}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 px-4">{cert.renewalProcess}</td>
+                                    <td className="py-3 px-4 text-right">
+                                      <div className="flex items-center justify-end space-x-2">
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="h-8 w-8"
+                                          title="View Details"
+                                        >
+                                          <FileText className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="h-8 w-8"
+                                          title="Edit Certification"
+                                        >
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                        
+                        <div className="border-t">
+                          <div className="flex items-center justify-between py-4 px-6">
+                            <div className="flex-1 text-sm text-muted-foreground">
+                              Showing {Math.min((certCurrentPage - 1) * certPageSize + 1, filteredCertifications.length)} to {Math.min(certCurrentPage * certPageSize, filteredCertifications.length)} of {filteredCertifications.length} {filteredCertifications.length === 1 ? 'certification' : 'certifications'}
+                            </div>
+                            
+                            <div className="flex-1 flex justify-center">
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleCertPageChange(1)}
+                                  disabled={certCurrentPage === 1}
+                                  className="h-8 w-8"
+                                  aria-label="First page"
+                                >
+                                  <ChevronsLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleCertPageChange(certCurrentPage - 1)}
+                                  disabled={certCurrentPage === 1}
+                                  className="h-8 w-8"
+                                  aria-label="Previous page"
+                                >
+                                  <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                
+                                {certTotalPages <= 5 ? (
+                                  // Show all pages if 5 or fewer
+                                  [...Array(certTotalPages)].map((_, i) => (
+                                    <Button
+                                      key={`page-${i+1}`}
+                                      variant={certCurrentPage === i+1 ? "default" : "outline"}
+                                      size="icon"
+                                      onClick={() => handleCertPageChange(i+1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${i+1}`}
+                                      aria-current={certCurrentPage === i+1 ? "page" : undefined}
+                                    >
+                                      {i+1}
+                                    </Button>
+                                  ))
+                                ) : (
+                                  // Show limited pages with ellipsis
+                                  <>
+                                    <Button
+                                      variant={certCurrentPage === 1 ? "default" : "outline"}
+                                      size="icon"
+                                      onClick={() => handleCertPageChange(1)}
+                                      className="h-8 w-8"
+                                      aria-label="Page 1"
+                                    >
+                                      1
+                                    </Button>
+                                    
+                                    {certCurrentPage > 3 && <span className="mx-1">...</span>}
+                                    
+                                    {certCurrentPage > 2 && (
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleCertPageChange(certCurrentPage - 1)}
+                                        className="h-8 w-8"
+                                        aria-label={`Page ${certCurrentPage - 1}`}
+                                      >
+                                        {certCurrentPage - 1}
+                                      </Button>
+                                    )}
+                                    
+                                    {certCurrentPage !== 1 && certCurrentPage !== certTotalPages && (
+                                      <Button
+                                        variant="default"
+                                        size="icon"
+                                        onClick={() => handleCertPageChange(certCurrentPage)}
+                                        className="h-8 w-8"
+                                        aria-label={`Page ${certCurrentPage}`}
+                                        aria-current="page"
+                                      >
+                                        {certCurrentPage}
+                                      </Button>
+                                    )}
+                                    
+                                    {certCurrentPage < certTotalPages - 1 && (
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleCertPageChange(certCurrentPage + 1)}
+                                        className="h-8 w-8"
+                                        aria-label={`Page ${certCurrentPage + 1}`}
+                                      >
+                                        {certCurrentPage + 1}
+                                      </Button>
+                                    )}
+                                    
+                                    {certCurrentPage < certTotalPages - 2 && <span className="mx-1">...</span>}
+                                    
+                                    <Button
+                                      variant={certCurrentPage === certTotalPages ? "default" : "outline"}
+                                      size="icon"
+                                      onClick={() => handleCertPageChange(certTotalPages)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${certTotalPages}`}
+                                    >
+                                      {certTotalPages}
+                                    </Button>
+                                  </>
+                                )}
+                                
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleCertPageChange(certCurrentPage + 1)}
+                                  disabled={certCurrentPage === certTotalPages}
+                                  className="h-8 w-8"
+                                  aria-label="Next page"
+                                >
+                                  <ChevronRight className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleCertPageChange(certTotalPages)}
+                                  disabled={certCurrentPage === certTotalPages}
+                                  className="h-8 w-8"
+                                  aria-label="Last page"
+                                >
+                                  <ChevronsRight className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="flex-1 flex justify-end">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

@@ -920,6 +920,7 @@ export default function Warehouse() {
               </div>
             )}
             
+            {/* Table Component */}
             <CardContent className="p-0">
                   {filteredWarehouses.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 p-6">

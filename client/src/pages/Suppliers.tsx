@@ -63,7 +63,9 @@ import {
   ChevronsLeft,
   ChevronLeft,
   ChevronRight,
-  ChevronsRight
+  ChevronsRight,
+  Pencil,
+  Trash2
 } from "lucide-react";
 import {
   BarChart,
@@ -152,6 +154,22 @@ interface QualityMetric {
   qualityScore: number;
   complianceScore: number;
   inspectionResult: "passed" | "conditional" | "failed";
+}
+
+// Define cost optimization initiative interface
+interface CostOptimizationInitiative {
+  id: string;
+  name: string;
+  category: string;
+  targetSavings: number;
+  actualSavings: number;
+  progress: number;
+  roi: string;
+  status: "in_progress" | "completed" | "planned" | "cancelled";
+  startDate: string;
+  endDate: string;
+  owner: string;
+  description?: string;
 }
 
 // Extended supplier data
@@ -641,6 +659,178 @@ const relationshipLengthData = [
   { range: ">10 Years", count: 8 },
 ];
 
+// Cost optimization initiatives data
+const costOptimizationData: CostOptimizationInitiative[] = [
+  {
+    id: "COST-001",
+    name: "Bulk Purchasing",
+    category: "Raw Materials",
+    targetSavings: 120000,
+    actualSavings: 95000,
+    progress: 79,
+    roi: "3.2x",
+    status: "in_progress",
+    startDate: "2023-03-15",
+    endDate: "2023-12-31",
+    owner: "Procurement Team",
+    description: "Consolidating purchases to achieve volume discounts"
+  },
+  {
+    id: "COST-002",
+    name: "Supplier Consolidation",
+    category: "Electronics",
+    targetSavings: 85000,
+    actualSavings: 85000,
+    progress: 100,
+    roi: "2.8x", 
+    status: "completed",
+    startDate: "2023-01-10",
+    endDate: "2023-07-31",
+    owner: "Supply Chain",
+    description: "Reducing the number of suppliers for electronic components"
+  },
+  {
+    id: "COST-003",
+    name: "Just-in-Time Delivery",
+    category: "Logistics",
+    targetSavings: 65000,
+    actualSavings: 45000,
+    progress: 69,
+    roi: "1.9x",
+    status: "in_progress",
+    startDate: "2023-04-01",
+    endDate: "2023-12-15",
+    owner: "Operations",
+    description: "Implementing JIT delivery to reduce inventory costs"
+  },
+  {
+    id: "COST-004",
+    name: "Contract Renegotiation",
+    category: "Office Supplies",
+    targetSavings: 35000,
+    actualSavings: 32000,
+    progress: 91,
+    roi: "2.5x",
+    status: "in_progress",
+    startDate: "2023-05-20",
+    endDate: "2023-09-30",
+    owner: "Procurement Team",
+    description: "Renegotiating contracts with key office supply vendors"
+  },
+  {
+    id: "COST-005",
+    name: "Energy Efficiency",
+    category: "Facilities",
+    targetSavings: 50000,
+    actualSavings: 28000,
+    progress: 56,
+    roi: "1.8x",
+    status: "in_progress",
+    startDate: "2023-02-15",
+    endDate: "2023-11-30",
+    owner: "Facilities Management",
+    description: "Implementing energy-efficient solutions across facilities"
+  },
+  {
+    id: "COST-006",
+    name: "Transportation Optimization",
+    category: "Logistics",
+    targetSavings: 78000,
+    actualSavings: 52000,
+    progress: 67,
+    roi: "2.1x",
+    status: "in_progress",
+    startDate: "2023-03-01",
+    endDate: "2023-10-31",
+    owner: "Logistics Team",
+    description: "Optimizing transportation routes and carrier selection"
+  },
+  {
+    id: "COST-007",
+    name: "Digital Invoicing",
+    category: "Administration",
+    targetSavings: 25000,
+    actualSavings: 23000,
+    progress: 92,
+    roi: "3.0x",
+    status: "completed",
+    startDate: "2023-01-05",
+    endDate: "2023-06-30",
+    owner: "Finance",
+    description: "Transitioning to paperless invoicing processes"
+  },
+  {
+    id: "COST-008",
+    name: "Packaging Redesign",
+    category: "Packaging",
+    targetSavings: 42000,
+    actualSavings: 18000,
+    progress: 43,
+    roi: "1.5x",
+    status: "in_progress",
+    startDate: "2023-04-15",
+    endDate: "2023-12-31",
+    owner: "Product Development",
+    description: "Redesigning packaging to use less material"
+  },
+  {
+    id: "COST-009",
+    name: "Outsourcing Non-Core Services",
+    category: "Operations",
+    targetSavings: 95000,
+    actualSavings: 0,
+    progress: 0,
+    roi: "2.7x",
+    status: "planned",
+    startDate: "2023-09-01",
+    endDate: "2024-06-30",
+    owner: "Operations",
+    description: "Outsourcing non-core business functions to specialized providers"
+  },
+  {
+    id: "COST-010",
+    name: "Inventory Optimization",
+    category: "Warehousing",
+    targetSavings: 110000,
+    actualSavings: 68000,
+    progress: 62,
+    roi: "2.4x",
+    status: "in_progress",
+    startDate: "2023-02-01",
+    endDate: "2023-11-30",
+    owner: "Supply Chain",
+    description: "Optimizing inventory levels to reduce holding costs"
+  },
+  {
+    id: "COST-011",
+    name: "Automated Quality Control",
+    category: "Manufacturing",
+    targetSavings: 72000,
+    actualSavings: 45000,
+    progress: 63,
+    roi: "2.2x",
+    status: "in_progress",
+    startDate: "2023-03-10",
+    endDate: "2023-12-15",
+    owner: "Quality Assurance",
+    description: "Implementing automated quality control processes"
+  },
+  {
+    id: "COST-012",
+    name: "Sustainable Sourcing",
+    category: "Raw Materials",
+    targetSavings: 55000,
+    actualSavings: 12000,
+    progress: 22,
+    roi: "1.7x",
+    status: "in_progress",
+    startDate: "2023-05-01",
+    endDate: "2024-01-31",
+    owner: "Procurement Team",
+    description: "Sourcing eco-friendly materials with long-term cost benefits"
+  }
+];
+
 // Purchase order trends by month
 const purchaseOrderTrends = [
   { month: "Jan", count: 42, value: 245000 },
@@ -732,6 +922,15 @@ export default function Suppliers() {
   const [ratingFilter, setRatingFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   
+  // Cost optimization initiatives states
+  const [costInitiatives, setCostInitiatives] = useState<CostOptimizationInitiative[]>(costOptimizationData);
+  const [costSearchTerm, setCostSearchTerm] = useState("");
+  const [costStatusFilter, setCostStatusFilter] = useState("all");
+  const [costCategoryFilter, setCostCategoryFilter] = useState("all");
+  const [selectedInitiatives, setSelectedInitiatives] = useState<string[]>([]);
+  const [costCurrentPage, setCostCurrentPage] = useState(1);
+  const [costPageSize, setCostPageSize] = useState(5);
+  
   // Add state for the main tab navigation (different sections)
   const [mainTab, setMainTab] = useState("performance");
   
@@ -766,6 +965,70 @@ export default function Suppliers() {
   suppliers.forEach(s => {
     categories[s.category] = (categories[s.category] || 0) + 1;
   });
+  
+  // Cost optimization initiatives handlers
+  
+  // Filter cost initiatives based on search term, status, and category
+  const getFilteredCostInitiatives = () => {
+    let filtered = costInitiatives;
+    
+    // Apply search filter
+    if (costSearchTerm) {
+      filtered = filtered.filter(initiative => 
+        initiative.name.toLowerCase().includes(costSearchTerm.toLowerCase()) ||
+        initiative.category.toLowerCase().includes(costSearchTerm.toLowerCase()) ||
+        initiative.owner.toLowerCase().includes(costSearchTerm.toLowerCase()) ||
+        initiative.description?.toLowerCase().includes(costSearchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply status filter
+    if (costStatusFilter !== "all") {
+      filtered = filtered.filter(initiative => initiative.status === costStatusFilter);
+    }
+    
+    // Apply category filter
+    if (costCategoryFilter !== "all") {
+      filtered = filtered.filter(initiative => 
+        initiative.category.toLowerCase() === costCategoryFilter.toLowerCase()
+      );
+    }
+    
+    return filtered;
+  };
+  
+  // Handle cost initiative pagination
+  const handleCostPageChange = (page: number) => {
+    setCostCurrentPage(page);
+  };
+  
+  // Handle toggle initiative selection
+  const handleToggleInitiativeSelection = (id: string) => {
+    if (selectedInitiatives.includes(id)) {
+      setSelectedInitiatives(selectedInitiatives.filter(i => i !== id));
+    } else {
+      setSelectedInitiatives([...selectedInitiatives, id]);
+    }
+  };
+  
+  // Handle cost search
+  const handleCostSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCostSearchTerm(e.target.value);
+    setCostCurrentPage(1); // Reset to first page after search
+  };
+  
+  // Filter and paginate cost initiatives
+  const filteredCostInitiatives = getFilteredCostInitiatives();
+  const costTotalPages = Math.ceil(filteredCostInitiatives.length / costPageSize);
+  const paginatedCostInitiatives = filteredCostInitiatives.slice(
+    (costCurrentPage - 1) * costPageSize,
+    costCurrentPage * costPageSize
+  );
+  
+  // Get unique categories for the filter dropdown
+  const uniqueCostCategories = Array.from(
+    new Set(costInitiatives.map(initiative => initiative.category))
+  );
   
   // Mock purchase order data
   useEffect(() => {
@@ -1146,6 +1409,503 @@ export default function Suppliers() {
       </Table>
     );
   };
+
+  // Add state for pagination and selection
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Calculate pagination values
+  const filterSuppliers = () => {
+    let filtered = suppliers;
+    
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(supplier => 
+        supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        supplier.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        supplier.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        supplier.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        supplier.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(supplier => supplier.status === statusFilter);
+    }
+    
+    // Apply delivery date filter
+    if (deliveryDateFilter !== "all") {
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const lastWeek = new Date(today);
+      lastWeek.setDate(lastWeek.getDate() - 7);
+      
+      filtered = filtered.filter(supplier => {
+        const deliveryDate = new Date(supplier.lastDelivery);
+        if (deliveryDateFilter === "today") {
+          return deliveryDate.toDateString() === today.toDateString();
+        } else if (deliveryDateFilter === "yesterday") {
+          return deliveryDate.toDateString() === yesterday.toDateString();
+        } else if (deliveryDateFilter === "week") {
+          return deliveryDate >= lastWeek;
+        }
+        return true;
+      });
+    }
+    
+    // Apply rating filter
+    if (ratingFilter !== "all") {
+      if (ratingFilter === "excellent") {
+        filtered = filtered.filter(supplier => supplier.rating >= 4.5);
+      } else if (ratingFilter === "good") {
+        filtered = filtered.filter(supplier => supplier.rating >= 4.0 && supplier.rating < 4.5);
+      } else if (ratingFilter === "average") {
+        filtered = filtered.filter(supplier => supplier.rating < 4.0);
+      }
+    }
+    
+    // Apply category filter
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter(supplier => supplier.category.toLowerCase() === categoryFilter.toLowerCase());
+    }
+    
+    return filtered;
+  };
+
+  const filteredSuppliers = filterSuppliers();
+  const totalPages = Math.max(1, Math.ceil(filteredSuppliers.length / pageSize));
+  const indexOfLastSupplier = currentPage * pageSize;
+  const indexOfFirstSupplier = indexOfLastSupplier - pageSize;
+  const paginatedSuppliers = filteredSuppliers.slice(indexOfFirstSupplier, indexOfLastSupplier);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  // Handle supplier selection toggle
+  const handleToggleSupplierSelection = (supplierId: string) => {
+    setSelectedSuppliers(prev => {
+      if (prev.includes(supplierId)) {
+        return prev.filter(id => id !== supplierId);
+      } else {
+        return [...prev, supplierId];
+      }
+    });
+  };
+
+  // Replace the Supplier Directory Card with this new implementation
+  const renderSupplierDirectory = () => (
+    <Card>
+      <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+        <div>
+          <CardTitle>Supplier Directory</CardTitle>
+          <CardDescription>Complete listing of all supplier information and contacts</CardDescription>
+        </div>
+        <Button onClick={handleAddSupplier}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Supplier
+        </Button>
+      </CardHeader>
+      
+      <div className="p-6 bg-background py-0 mb-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full md:w-auto flex-1 max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search suppliers..."
+              className="pl-8 w-full md:w-[300px]"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
+          
+          <Select defaultValue={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[150px] h-9">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="review">Under Review</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <RenderFilters />
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={(size) => handlePageSizeChange(Number(size))}
+            >
+              <SelectTrigger className="h-9 w-[70px]">
+                <SelectValue placeholder={pageSize.toString()} />
+              </SelectTrigger>
+              <SelectContent>
+                {[5, 10, 25, 50].map((size) => (
+                  <SelectItem key={size} value={size.toString()}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <Button variant="outline" className="h-9 ml-auto" onClick={() => setSuppliers(supplierData)}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+      </div>
+      
+      {/* Batch Operations */}
+      {selectedSuppliers.length > 0 && (
+        <div className="p-3 bg-muted/30 border-b">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center">
+              <Badge variant="secondary" className="mr-2">{selectedSuppliers.length}</Badge>
+              <span className="text-sm font-medium">suppliers selected</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Select defaultValue="" onValueChange={(value) => value && console.log(`Change status to ${value} for ${selectedSuppliers.length} suppliers`)}>
+                <SelectTrigger className="h-8 w-[180px]">
+                  <SelectValue placeholder="Change Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Set Active</SelectItem>
+                  <SelectItem value="review">Set Under Review</SelectItem>
+                  <SelectItem value="inactive">Set Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" className="h-8" onClick={() => setSelectedSuppliers([])}>
+                Clear Selection
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Table Component */}
+      <CardContent className="p-0">
+        {filteredSuppliers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 p-6">
+            <Factory className="h-12 w-12 text-muted-foreground/30 mb-4" />
+            <h3 className="text-lg font-medium text-center mb-2">No suppliers found</h3>
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              {searchTerm || statusFilter !== "all" || categoryFilter !== "all" || ratingFilter !== "all" || deliveryDateFilter !== "all"
+                ? "Try adjusting your search filters to find what you're looking for." 
+                : "Get started by adding your first supplier."}
+            </p>
+            {!searchTerm && statusFilter === "all" && categoryFilter === "all" && ratingFilter === "all" && deliveryDateFilter === "all" && (
+              <Button onClick={handleAddSupplier}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Supplier
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div>
+            <div className="overflow-auto">
+              <table className="w-full">
+                <thead className="bg-muted/50 text-sm">
+                  <tr>
+                    <th className="py-3 px-4 text-left font-medium w-[40px]">
+                      <input
+                        type="checkbox"
+                        checked={selectedSuppliers.length === paginatedSuppliers.length && paginatedSuppliers.length > 0}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedSuppliers(paginatedSuppliers.map(s => s.id.toString()));
+                          } else {
+                            setSelectedSuppliers([]);
+                          }
+                        }}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                    </th>
+                    <th className="py-3 px-4 text-left font-medium w-[60px]">ID</th>
+                    <th className="py-3 px-4 text-left font-medium">Company</th>
+                    <th className="py-3 px-4 text-left font-medium">POC</th>
+                    <th className="py-3 px-4 text-left font-medium">Email</th>
+                    <th className="py-3 px-4 text-left font-medium">Phone</th>
+                    <th className="py-3 px-4 text-left font-medium">Location</th>
+                    <th className="py-3 px-4 text-left font-medium">Category</th>
+                    <th className="py-3 px-4 text-left font-medium">Status</th>
+                    <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {paginatedSuppliers.map((supplier) => {
+                    const statusColor = supplier.status === 'active' ? 'green' : 
+                      supplier.status === 'review' ? 'amber' : 'red';
+                    const statusLabel = supplier.status === 'active' ? 'Active' :
+                      supplier.status === 'review' ? 'Under Review' : 'Inactive';
+                    
+                    return (
+                      <tr 
+                        key={supplier.id} 
+                        className="hover:bg-muted/50 transition-colors"
+                      >
+                        <td className="py-3 px-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedSuppliers.includes(supplier.id.toString())}
+                            onChange={() => handleToggleSupplierSelection(supplier.id.toString())}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                        </td>
+                        <td className="py-3 px-4 text-sm">{supplier.id}</td>
+                        <td className="py-3 px-4">
+                          <div className="font-medium flex items-center">
+                            <Factory className="h-4 w-4 mr-2 text-primary" />
+                            {supplier.name}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">{supplier.contact}</td>
+                        <td className="py-3 px-4">{supplier.email}</td>
+                        <td className="py-3 px-4">{supplier.phone || "No phone"}</td>
+                        <td className="py-3 px-4 text-sm">{supplier.location}</td>
+                        <td className="py-3 px-4 text-sm">{supplier.category}</td>
+                        <td className="py-3 px-4">
+                          <Badge className={`bg-${statusColor}-500/10 text-${statusColor}-500 border-${statusColor}-500/20`}>
+                            {statusLabel}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end space-x-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => console.log("View details for supplier:", supplier)} 
+                              className="h-8 w-8"
+                              title="View Details"
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => {
+                                // Convert PageSupplier to Supplier type
+                                const supplierForModal: Supplier = {
+                                  id: parseInt(supplier.id.replace('SUP-', '')), // Convert string ID to number
+                                  name: supplier.name,
+                                  contactName: supplier.contact,
+                                  email: supplier.email,
+                                  phone: supplier.phone || "",
+                                  address: {
+                                    street: supplier.location.split(',')[0] || "",
+                                    city: supplier.location.split(',')[1]?.trim() || "",
+                                    state: supplier.location.split(',')[2]?.trim() || "",
+                                    postalCode: "",
+                                    country: ""
+                                  },
+                                  category: supplier.category,
+                                  status: supplier.status === "review" ? "pending" : supplier.status, // Map 'review' to 'pending'
+                                  rating: supplier.rating,
+                                  joinDate: supplier.joinDate ? new Date(supplier.joinDate) : new Date(),
+                                  notes: supplier.notes || "",
+                                  products: []
+                                };
+                                setSelectedSupplier(supplierForModal);
+                              }} 
+                              className="h-8 w-8"
+                              title="Edit Supplier"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => console.log("Delete supplier:", supplier)} 
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              title="Delete Supplier"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="border-t">
+              <div className="flex items-center justify-between py-4 px-6">
+                <div className="flex-1 text-sm text-muted-foreground">
+                  Showing {Math.min((currentPage - 1) * pageSize + 1, filteredSuppliers.length)} to {Math.min(currentPage * pageSize, filteredSuppliers.length)} of {filteredSuppliers.length} {filteredSuppliers.length === 1 ? 'supplier' : 'suppliers'}
+                </div>
+                
+                <div className="flex-1 flex justify-center">
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                      className="h-8 w-8"
+                      aria-label="First page"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="h-8 w-8"
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    {totalPages <= 5 ? (
+                      // Show all pages if 5 or fewer
+                      [...Array(totalPages)].map((_, i) => (
+                        <Button
+                          key={`page-${i+1}`}
+                          variant={currentPage === i+1 ? "default" : "outline"}
+                          size="icon"
+                          onClick={() => handlePageChange(i+1)}
+                          className="h-8 w-8"
+                          aria-label={`Page ${i+1}`}
+                          aria-current={currentPage === i+1 ? "page" : undefined}
+                        >
+                          {i+1}
+                        </Button>
+                      ))
+                    ) : (
+                      // Show limited pages with ellipsis
+                      <>
+                        <Button
+                          variant={currentPage === 1 ? "default" : "outline"}
+                          size="icon"
+                          onClick={() => handlePageChange(1)}
+                          className="h-8 w-8"
+                          aria-label="Page 1"
+                        >
+                          1
+                        </Button>
+                        
+                        {currentPage > 3 && <span className="mx-1">...</span>}
+                        
+                        {currentPage > 2 && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            className="h-8 w-8"
+                            aria-label={`Page ${currentPage - 1}`}
+                          >
+                            {currentPage - 1}
+                          </Button>
+                        )}
+                        
+                        {currentPage !== 1 && currentPage !== totalPages && (
+                          <Button
+                            variant="default"
+                            size="icon"
+                            onClick={() => handlePageChange(currentPage)}
+                            className="h-8 w-8"
+                            aria-label={`Page ${currentPage}`}
+                            aria-current="page"
+                          >
+                            {currentPage}
+                          </Button>
+                        )}
+                        
+                        {currentPage < totalPages - 1 && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            className="h-8 w-8"
+                            aria-label={`Page ${currentPage + 1}`}
+                          >
+                            {currentPage + 1}
+                          </Button>
+                        )}
+                        
+                        {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                        
+                        <Button
+                          variant={currentPage === totalPages ? "default" : "outline"}
+                          size="icon"
+                          onClick={() => handlePageChange(totalPages)}
+                          className="h-8 w-8"
+                          aria-label={`Page ${totalPages}`}
+                        >
+                          {totalPages}
+                        </Button>
+                      </>
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="h-8 w-8"
+                      aria-label="Next page"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="h-8 w-8"
+                      aria-label="Last page"
+                    >
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex-1 flex justify-end">
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  // Replace the existing supplier directory in TabsContent with the new one
+  // ... existing code ...
+  <TabsContent value="directory">
+    {mainTab === "directory" && directoryTab === "all" && (
+      <>
+        {directorySubTab === "list" ? (
+          renderSupplierDirectory()
+        ) : (
+          // Keep existing map view
+          <div>
+            {/* Map view component */}
+          </div>
+        )}
+      </>
+    )}
+    {/* Keep other existing tab content */}
+  </TabsContent>
+  // ... existing code ...
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -2227,94 +2987,265 @@ export default function Suppliers() {
               </div>
               
               <Card>
-                <CardHeader>
-                  <CardTitle>Cost Optimization Initiatives</CardTitle>
-                  <CardDescription>Tracking active cost savings programs</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>Cost Optimization Initiatives</CardTitle>
+                    <CardDescription>Tracking active cost savings programs</CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="relative w-[200px]">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="search"
+                        placeholder="Search initiatives..."
+                        className="pl-8 w-full"
+                        value={costSearchTerm}
+                        onChange={handleCostSearch}
+                      />
+                    </div>
+                    <Select value={costStatusFilter} onValueChange={setCostStatusFilter}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="planned">Planned</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={costCategoryFilter} onValueChange={setCostCategoryFilter}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {uniqueCostCategories.map(category => (
+                          <SelectItem key={category} value={category.toLowerCase()}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Initiative</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Target Savings</TableHead>
-                        <TableHead>Actual Savings</TableHead>
-                        <TableHead>Progress</TableHead>
-                        <TableHead>ROI</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell className="font-medium">Bulk Purchasing</TableCell>
-                        <TableCell>Raw Materials</TableCell>
-                        <TableCell>$120,000</TableCell>
-                        <TableCell>$95,000</TableCell>
-                        <TableCell className="w-[180px]">
-                          <div className="flex items-center gap-2">
-                            <Progress value={79} className="h-2" />
-                            <span className="text-xs">79%</span>
+                <CardContent className="p-0">
+                  {filteredCostInitiatives.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-64 p-6">
+                      <Factory className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                      <h3 className="text-lg font-medium text-center mb-2">No initiatives found</h3>
+                      <p className="text-sm text-muted-foreground text-center mb-4">
+                        {costSearchTerm || costStatusFilter !== "all" || costCategoryFilter !== "all" 
+                          ? "Try adjusting your search filters to find what you're looking for." 
+                          : "Get started by adding your first cost optimization initiative."}
+                      </p>
+                      {!costSearchTerm && costStatusFilter === "all" && costCategoryFilter === "all" && (
+                        <Button>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Initiative
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="overflow-auto">
+                        <table className="w-full">
+                          <thead className="bg-muted/50 text-sm">
+                            <tr>
+                              <th className="py-3 px-4 text-left font-medium w-[40px]">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedInitiatives.length === paginatedCostInitiatives.length && paginatedCostInitiatives.length > 0}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedInitiatives(paginatedCostInitiatives.map(i => i.id));
+                                    } else {
+                                      setSelectedInitiatives([]);
+                                    }
+                                  }}
+                                  className="h-4 w-4 rounded border-gray-300"
+                                />
+                              </th>
+                              <th className="py-3 px-4 text-left font-medium w-[60px]">ID</th>
+                              <th className="py-3 px-4 text-left font-medium">Initiative</th>
+                              <th className="py-3 px-4 text-left font-medium">Category</th>
+                              <th className="py-3 px-4 text-left font-medium">Status</th>
+                              <th className="py-3 px-4 text-center font-medium">Target Savings</th>
+                              <th className="py-3 px-4 text-center font-medium">Progress</th>
+                              <th className="py-3 px-4 text-center font-medium">ROI</th>
+                              <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {paginatedCostInitiatives.map((initiative) => {
+                              const statusVariant = 
+                                initiative.status === 'completed' ? 'success' : 
+                                initiative.status === 'in_progress' ? 'default' : 
+                                initiative.status === 'planned' ? 'secondary' : 'destructive';
+                              
+                              const statusLabel = 
+                                initiative.status === 'in_progress' ? 'In Progress' : 
+                                initiative.status === 'completed' ? 'Completed' : 
+                                initiative.status === 'planned' ? 'Planned' : 'Cancelled';
+                              
+                              return (
+                                <tr 
+                                  key={initiative.id} 
+                                  className="hover:bg-muted/50 transition-colors"
+                                >
+                                  <td className="py-3 px-4">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedInitiatives.includes(initiative.id)}
+                                      onChange={() => handleToggleInitiativeSelection(initiative.id)}
+                                      className="h-4 w-4 rounded border-gray-300"
+                                    />
+                                  </td>
+                                  <td className="py-3 px-4 text-sm">{initiative.id}</td>
+                                  <td className="py-3 px-4">
+                                    <div className="font-medium flex items-center">
+                                      <TrendingUp className="h-4 w-4 mr-2 text-primary" />
+                                      {initiative.name}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-1">{initiative.owner}</div>
+                                  </td>
+                                  <td className="py-3 px-4 text-sm">{initiative.category}</td>
+                                  <td className="py-3 px-4">
+                                    <Badge variant={statusVariant}>{statusLabel}</Badge>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">${initiative.targetSavings.toLocaleString()}</td>
+                                  <td className="py-3 px-4">
+                                    <div className="flex flex-col items-center">
+                                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[80px]">
+                                        <div 
+                                          className="bg-primary h-2 rounded-full" 
+                                          style={{ width: `${initiative.progress}%` }}
+                                        />
+                                      </div>
+                                      <div className="text-xs mt-1 text-muted-foreground">
+                                        {initiative.progress}%
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-center">{initiative.roi}</td>
+                                  <td className="py-3 px-4 text-right">
+                                    <div className="flex items-center justify-end space-x-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        title="View Details"
+                                      >
+                                        <FileText className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        title="Edit Initiative"
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                                        title="Delete Initiative"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      <div className="border-t">
+                        <div className="flex items-center justify-between py-4 px-6">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            Showing {Math.min((costCurrentPage - 1) * costPageSize + 1, filteredCostInitiatives.length)} to {Math.min(costCurrentPage * costPageSize, filteredCostInitiatives.length)} of {filteredCostInitiatives.length} {filteredCostInitiatives.length === 1 ? 'initiative' : 'initiatives'}
                           </div>
-                        </TableCell>
-                        <TableCell>3.2x</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">In Progress</Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">Supplier Consolidation</TableCell>
-                        <TableCell>Electronics</TableCell>
-                        <TableCell>$85,000</TableCell>
-                        <TableCell>$85,000</TableCell>
-                        <TableCell className="w-[180px]">
-                          <div className="flex items-center gap-2">
-                            <Progress value={100} className="h-2" />
-                            <span className="text-xs">100%</span>
+                          
+                          <div className="flex-1 flex justify-center">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleCostPageChange(1)}
+                                disabled={costCurrentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="First page"
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleCostPageChange(costCurrentPage - 1)}
+                                disabled={costCurrentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="Previous page"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              
+                              {Array.from({ length: Math.min(5, costTotalPages) }, (_, i) => {
+                                const pageNumber = i + 1;
+                                return (
+                                  <Button
+                                    key={`page-${pageNumber}`}
+                                    variant={costCurrentPage === pageNumber ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handleCostPageChange(pageNumber)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${pageNumber}`}
+                                    aria-current={costCurrentPage === pageNumber ? "page" : undefined}
+                                  >
+                                    {pageNumber}
+                                  </Button>
+                                );
+                              })}
+                              
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleCostPageChange(costCurrentPage + 1)}
+                                disabled={costCurrentPage === costTotalPages}
+                                className="h-8 w-8"
+                                aria-label="Next page"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleCostPageChange(costTotalPages)}
+                                disabled={costCurrentPage === costTotalPages}
+                                className="h-8 w-8"
+                                aria-label="Last page"
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                        </TableCell>
-                        <TableCell>2.8x</TableCell>
-                        <TableCell>
-                          <Badge variant="success">Completed</Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">Just-in-Time Delivery</TableCell>
-                        <TableCell>Logistics</TableCell>
-                        <TableCell>$65,000</TableCell>
-                        <TableCell>$45,000</TableCell>
-                        <TableCell className="w-[180px]">
-                          <div className="flex items-center gap-2">
-                            <Progress value={69} className="h-2" />
-                            <span className="text-xs">69%</span>
+                          
+                          <div className="flex-1 flex justify-end">
+                            <Button variant="outline" size="sm">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Initiative
+                            </Button>
                           </div>
-                        </TableCell>
-                        <TableCell>1.9x</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">In Progress</Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">Contract Renegotiation</TableCell>
-                        <TableCell>Office Supplies</TableCell>
-                        <TableCell>$35,000</TableCell>
-                        <TableCell>$32,000</TableCell>
-                        <TableCell className="w-[180px]">
-                          <div className="flex items-center gap-2">
-                            <Progress value={91} className="h-2" />
-                            <span className="text-xs">91%</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>2.5x</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">In Progress</Badge>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
-            
             <TabsContent value="performance">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <Card>
@@ -2627,120 +3558,6 @@ export default function Suppliers() {
         </TabsContent>
 
         <TabsContent value="directory">
-          <Card>
-            <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
-              <div>
-                <CardTitle>Supplier Directory</CardTitle>
-                <CardDescription>Complete listing of all supplier information and contacts</CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="relative w-full md:w-auto flex-1 max-w-sm">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Search directory..."
-                    className="pl-8 w-full md:w-[300px]"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                  />
-                </div>
-                <Button variant="outline" onClick={handleAddSupplier}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Supplier
-                </Button>
-              </div>
-            </CardHeader>
-            
-            <div className="p-6 bg-background py-0 mb-6">
-              <div className="flex flex-wrap items-center gap-3">
-                <RenderFilters />
-              </div>
-            </div>
-            
-            <CardContent className="p-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Contact Information</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Website</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getFilteredSuppliers().map((supplier) => (
-                    <TableRow key={supplier.id}>
-                      <TableCell>
-                        <div className="font-medium">{supplier.name}</div>
-                        <div className="text-sm text-muted-foreground">ID: {supplier.id}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center">
-                            <span className="font-medium">{supplier.contact}</span>
-                          </div>
-                          <div className="text-sm">{supplier.email}</div>
-                          <div className="text-sm">{supplier.phone || "No phone"}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{supplier.location}</TableCell>
-                      <TableCell>{supplier.category}</TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          supplier.status === 'active' ? 'success' : 
-                          supplier.status === 'review' ? 'warning' : 
-                          'secondary'
-                        }>
-                          {supplier.status === 'active' ? 'Active' :
-                          supplier.status === 'review' ? 'Under Review' :
-                          'Inactive'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {supplier.website ? (
-                          <Button variant="link" className="p-0 h-auto">
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Website
-                          </Button>
-                        ) : (
-                          <span className="text-muted-foreground">Not available</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>View details</DropdownMenuItem>
-                            <DropdownMenuItem>Edit supplier</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>Contact supplier</DropdownMenuItem>
-                            <DropdownMenuItem>Place order</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">Delete supplier</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-            <CardFooter className="border-t py-4 px-6">
-              <div className="text-sm text-muted-foreground">
-                Showing {getFilteredSuppliers().length} of {totalSuppliers} suppliers
-              </div>
-            </CardFooter>
-          </Card>
-
           {/* Additional Directory Analysis Components */}
           <div className="mt-8">
             <Tabs value={directorySubTab} onValueChange={setDirectorySubTab} className="mb-6">
@@ -2752,6 +3569,7 @@ export default function Suppliers() {
               </TabsList>
 
               <TabsContent value="list">
+                {renderSupplierDirectory()}
                 <Card className="mt-6">
                   <CardHeader>
                     <CardTitle>Supplier Quick Overview</CardTitle>

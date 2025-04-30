@@ -2177,6 +2177,324 @@ export default function Suppliers() {
     new Set(certifications.map(cert => cert.certification))
   );
 
+  // Add these new state variables inside the Suppliers function component
+  // State for Supplier Performance Comparison table
+  const [supplierPerformanceData] = useState([
+    { 
+      id: "S001",
+      supplier: 'Tech Solutions Inc.', 
+      orderCount: 24, 
+      spend: 182500, 
+      leadTime: 12, 
+      onTime: 92, 
+      costEfficiency: 'High',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S002",
+      supplier: 'Global Logistics', 
+      orderCount: 18, 
+      spend: 143000, 
+      leadTime: 8, 
+      onTime: 97, 
+      costEfficiency: 'Medium',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S003",
+      supplier: 'EcoPackaging', 
+      orderCount: 31, 
+      spend: 76500, 
+      leadTime: 15, 
+      onTime: 86, 
+      costEfficiency: 'Medium',
+      riskLevel: 'Medium' 
+    },
+    { 
+      id: "S004",
+      supplier: 'FastTrack Delivery', 
+      orderCount: 15, 
+      spend: 58200, 
+      leadTime: 5, 
+      onTime: 99, 
+      costEfficiency: 'High',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S005",
+      supplier: 'Quality Materials', 
+      orderCount: 22, 
+      spend: 127000, 
+      leadTime: 10, 
+      onTime: 94, 
+      costEfficiency: 'High',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S006",
+      supplier: 'Innovative Solutions', 
+      orderCount: 17, 
+      spend: 98400, 
+      leadTime: 9, 
+      onTime: 91, 
+      costEfficiency: 'Medium',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S007",
+      supplier: 'Premier Components', 
+      orderCount: 26, 
+      spend: 165300, 
+      leadTime: 11, 
+      onTime: 93, 
+      costEfficiency: 'High',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S008",
+      supplier: 'ValueTech Supplies', 
+      orderCount: 14, 
+      spend: 82600, 
+      leadTime: 14, 
+      onTime: 87, 
+      costEfficiency: 'Medium',
+      riskLevel: 'Medium' 
+    },
+    { 
+      id: "S009",
+      supplier: 'Global Distributors', 
+      orderCount: 21, 
+      spend: 138000, 
+      leadTime: 7, 
+      onTime: 96, 
+      costEfficiency: 'High',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S010",
+      supplier: 'Eco-Friendly Packaging', 
+      orderCount: 19, 
+      spend: 67800, 
+      leadTime: 13, 
+      onTime: 89, 
+      costEfficiency: 'Medium',
+      riskLevel: 'Medium' 
+    }
+  ]);
+  const [performanceSearchTerm, setPerformanceSearchTerm] = useState("");
+  const [performanceCurrentPage, setPerformanceCurrentPage] = useState(1);
+  const [performancePageSize] = useState(5);
+  const [selectedPerformanceSuppliers, setSelectedPerformanceSuppliers] = useState<string[]>([]);
+  const [performanceEfficiencyFilter, setPerformanceEfficiencyFilter] = useState("all");
+  const [performanceRiskFilter, setPerformanceRiskFilter] = useState("all");
+  
+  // Filter functions for Supplier Performance Comparison table
+  const filterPerformanceData = () => {
+    let filtered = supplierPerformanceData;
+    
+    // Apply search filter
+    if (performanceSearchTerm) {
+      filtered = filtered.filter(supplier => 
+        supplier.supplier.toLowerCase().includes(performanceSearchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply efficiency filter
+    if (performanceEfficiencyFilter !== "all") {
+      filtered = filtered.filter(supplier => 
+        supplier.costEfficiency.toLowerCase() === performanceEfficiencyFilter.toLowerCase()
+      );
+    }
+    
+    // Apply risk filter
+    if (performanceRiskFilter !== "all") {
+      filtered = filtered.filter(supplier => 
+        supplier.riskLevel.toLowerCase() === performanceRiskFilter.toLowerCase()
+      );
+    }
+    
+    return filtered;
+  };
+
+  // Handle page change for performance table
+  const handlePerformancePageChange = (page: number) => {
+    setPerformanceCurrentPage(page);
+  };
+
+  // Handle selection toggle for performance table
+  const handleTogglePerformanceSupplierSelection = (supplierId: string) => {
+    setSelectedPerformanceSuppliers(prev => {
+      if (prev.includes(supplierId)) {
+        return prev.filter(id => id !== supplierId);
+      } else {
+        return [...prev, supplierId];
+      }
+    });
+  };
+
+  // Handle search for performance table
+  const handlePerformanceSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPerformanceSearchTerm(e.target.value);
+    setPerformanceCurrentPage(1); // Reset to first page after search
+  };
+
+  // Calculate pagination for performance table
+  const filteredPerformanceData = filterPerformanceData();
+  const performanceTotalPages = Math.max(1, Math.ceil(filteredPerformanceData.length / performancePageSize));
+  const paginatedPerformanceData = filteredPerformanceData.slice(
+    (performanceCurrentPage - 1) * performancePageSize,
+    performanceCurrentPage * performancePageSize
+  );
+
+  // Add these state variables inside the Suppliers function component
+  // State for Supplier Comparison table
+  const [supplierComparisonData] = useState([
+    { 
+      id: "S001",
+      supplier: 'Tech Solutions Inc.', 
+      orderCount: 24, 
+      spend: 182500, 
+      leadTime: 12, 
+      onTime: 92, 
+      costEfficiency: 'High',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S002",
+      supplier: 'Global Logistics', 
+      orderCount: 18, 
+      spend: 143000, 
+      leadTime: 8, 
+      onTime: 97, 
+      costEfficiency: 'Medium',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S003",
+      supplier: 'EcoPackaging', 
+      orderCount: 31, 
+      spend: 76500, 
+      leadTime: 15, 
+      onTime: 86, 
+      costEfficiency: 'Medium',
+      riskLevel: 'Medium' 
+    },
+    { 
+      id: "S004",
+      supplier: 'FastTrack Delivery', 
+      orderCount: 15, 
+      spend: 58200, 
+      leadTime: 5, 
+      onTime: 99, 
+      costEfficiency: 'High',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S005",
+      supplier: 'Quality Materials', 
+      orderCount: 22, 
+      spend: 127000, 
+      leadTime: 10, 
+      onTime: 94, 
+      costEfficiency: 'High',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S006",
+      supplier: 'Innovative Solutions', 
+      orderCount: 17, 
+      spend: 98400, 
+      leadTime: 9, 
+      onTime: 91, 
+      costEfficiency: 'Medium',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S007",
+      supplier: 'Premier Components', 
+      orderCount: 26, 
+      spend: 165300, 
+      leadTime: 11, 
+      onTime: 93, 
+      costEfficiency: 'High',
+      riskLevel: 'Low' 
+    },
+    { 
+      id: "S008",
+      supplier: 'ValueTech Supplies', 
+      orderCount: 14, 
+      spend: 82600, 
+      leadTime: 14, 
+      onTime: 87, 
+      costEfficiency: 'Medium',
+      riskLevel: 'Medium' 
+    }
+  ]);
+  const [comparisonSearchTerm, setComparisonSearchTerm] = useState("");
+  const [comparisonCurrentPage, setComparisonCurrentPage] = useState(1);
+  const [comparisonPageSize] = useState(5);
+  const [selectedComparisonSuppliers, setSelectedComparisonSuppliers] = useState<string[]>([]);
+  const [comparisonEfficiencyFilter, setComparisonEfficiencyFilter] = useState("all");
+  const [comparisonRiskFilter, setComparisonRiskFilter] = useState("all");
+  
+  // Filter functions for Supplier Comparison table
+  const filterComparisonData = () => {
+    let filtered = supplierComparisonData;
+    
+    // Apply search filter
+    if (comparisonSearchTerm) {
+      filtered = filtered.filter(supplier => 
+        supplier.supplier.toLowerCase().includes(comparisonSearchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply efficiency filter
+    if (comparisonEfficiencyFilter !== "all") {
+      filtered = filtered.filter(supplier => 
+        supplier.costEfficiency.toLowerCase() === comparisonEfficiencyFilter.toLowerCase()
+      );
+    }
+    
+    // Apply risk filter
+    if (comparisonRiskFilter !== "all") {
+      filtered = filtered.filter(supplier => 
+        supplier.riskLevel.toLowerCase() === comparisonRiskFilter.toLowerCase()
+      );
+    }
+    
+    return filtered;
+  };
+
+  // Handle page change for comparison table
+  const handleComparisonPageChange = (page: number) => {
+    setComparisonCurrentPage(page);
+  };
+
+  // Handle selection toggle for comparison table
+  const handleToggleComparisonSupplierSelection = (supplierId: string) => {
+    setSelectedComparisonSuppliers(prev => {
+      if (prev.includes(supplierId)) {
+        return prev.filter(id => id !== supplierId);
+      } else {
+        return [...prev, supplierId];
+      }
+    });
+  };
+
+  // Handle search for comparison table
+  const handleComparisonSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setComparisonSearchTerm(e.target.value);
+    setComparisonCurrentPage(1); // Reset to first page after search
+  };
+
+  // Calculate pagination for comparison table
+  const filteredComparisonData = filterComparisonData();
+  const comparisonTotalPages = Math.max(1, Math.ceil(filteredComparisonData.length / comparisonPageSize));
+  const paginatedComparisonData = filteredComparisonData.slice(
+    (comparisonCurrentPage - 1) * comparisonPageSize,
+    comparisonCurrentPage * comparisonPageSize
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -5252,113 +5570,362 @@ export default function Suppliers() {
                 </div>
                 
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Supplier Performance Comparison</CardTitle>
-                    <CardDescription>Key metrics across top suppliers</CardDescription>
+                  <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-6">
+                    <div>
+                      <CardTitle>Supplier Comparison</CardTitle>
+                      <CardDescription>Key metrics across top suppliers</CardDescription>
+                    </div>
+                    <Button variant="outline" className="h-9">
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Export Data
+                    </Button>
                   </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Supplier</TableHead>
-                          <TableHead>Order Count</TableHead>
-                          <TableHead>Total Spend</TableHead>
-                          <TableHead>Avg. Lead Time</TableHead>
-                          <TableHead>On-Time Delivery</TableHead>
-                          <TableHead>Cost Efficiency</TableHead>
-                          <TableHead>Risk Level</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {[
-                          { 
-                            supplier: 'Tech Solutions Inc.', 
-                            orderCount: 24, 
-                            spend: 182500, 
-                            leadTime: 12, 
-                            onTime: 92, 
-                            costEfficiency: 'High',
-                            riskLevel: 'Low' 
-                          },
-                          { 
-                            supplier: 'Global Logistics', 
-                            orderCount: 18, 
-                            spend: 143000, 
-                            leadTime: 8, 
-                            onTime: 97, 
-                            costEfficiency: 'Medium',
-                            riskLevel: 'Low' 
-                          },
-                          { 
-                            supplier: 'EcoPackaging', 
-                            orderCount: 31, 
-                            spend: 76500, 
-                            leadTime: 15, 
-                            onTime: 86, 
-                            costEfficiency: 'Medium',
-                            riskLevel: 'Medium' 
-                          },
-                          { 
-                            supplier: 'FastTrack Delivery', 
-                            orderCount: 15, 
-                            spend: 58200, 
-                            leadTime: 5, 
-                            onTime: 99, 
-                            costEfficiency: 'High',
-                            riskLevel: 'Low' 
-                          },
-                          { 
-                            supplier: 'Quality Materials', 
-                            orderCount: 22, 
-                            spend: 127000, 
-                            leadTime: 10, 
-                            onTime: 94, 
-                            costEfficiency: 'High',
-                            riskLevel: 'Low' 
-                          }
-                        ].map((item) => (
-                          <TableRow key={item.supplier}>
-                            <TableCell className="font-medium">{item.supplier}</TableCell>
-                            <TableCell>{item.orderCount}</TableCell>
-                            <TableCell>${item.spend.toLocaleString()}</TableCell>
-                            <TableCell>{item.leadTime} days</TableCell>
-                            <TableCell>
-                              <div className="flex items-center">
-                                <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                  <div 
-                                    className={`h-2.5 rounded-full ${
-                                      item.onTime >= 95 ? 'bg-green-500' :
-                                      item.onTime >= 90 ? 'bg-yellow-500' :
-                                      'bg-red-500'
-                                    }`}
-                                    style={{ width: `${item.onTime}%` }}
-                                  ></div>
-                                </div>
-                                <span className="text-xs">{item.onTime}%</span>
+                  
+                  <div className="p-6 bg-background py-0 mb-6">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="relative w-full md:w-auto flex-1 max-w-sm">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="search"
+                          placeholder="Search suppliers..."
+                          className="pl-8 w-full md:w-[300px]"
+                          value={comparisonSearchTerm}
+                          onChange={handleComparisonSearch}
+                        />
+                      </div>
+                      
+                      <Select value={comparisonEfficiencyFilter} onValueChange={setComparisonEfficiencyFilter}>
+                        <SelectTrigger className="w-[150px] h-9">
+                          <SelectValue placeholder="Cost Efficiency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Efficiency</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={comparisonRiskFilter} onValueChange={setComparisonRiskFilter}>
+                        <SelectTrigger className="w-[150px] h-9">
+                          <SelectValue placeholder="Risk Level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Risk Levels</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Button variant="outline" className="h-9 ml-auto" onClick={() => {
+                        setComparisonSearchTerm("");
+                        setComparisonEfficiencyFilter("all");
+                        setComparisonRiskFilter("all");
+                      }}>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Reset Filters
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {selectedComparisonSuppliers.length > 0 && (
+                    <div className="p-3 bg-muted/30 border-b">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center">
+                          <Badge variant="secondary" className="mr-2">{selectedComparisonSuppliers.length}</Badge>
+                          <span className="text-sm font-medium">suppliers selected</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" size="sm" onClick={() => console.log("Compare selected suppliers")}>
+                            Compare
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-8" onClick={() => setSelectedComparisonSuppliers([])}>
+                            Clear Selection
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Table Component */}
+                  <CardContent className="p-0">
+                    {filteredComparisonData.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-64 p-6">
+                        <Factory className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                        <h3 className="text-lg font-medium text-center mb-2">No suppliers found</h3>
+                        <p className="text-sm text-muted-foreground text-center mb-4">
+                          {comparisonSearchTerm || comparisonEfficiencyFilter !== "all" || comparisonRiskFilter !== "all"
+                            ? "Try adjusting your search filters to find what you're looking for." 
+                            : "No supplier comparison data available."}
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="overflow-auto">
+                          <table className="w-full">
+                            <thead className="bg-muted/50 text-sm">
+                              <tr>
+                                <th className="py-3 px-4 text-left font-medium w-[40px]">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedComparisonSuppliers.length === paginatedComparisonData.length && paginatedComparisonData.length > 0}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedComparisonSuppliers(paginatedComparisonData.map(s => s.id));
+                                      } else {
+                                        setSelectedComparisonSuppliers([]);
+                                      }
+                                    }}
+                                    className="h-4 w-4 rounded border-gray-300"
+                                  />
+                                </th>
+                                <th className="py-3 px-4 text-left font-medium w-[60px]">ID</th>
+                                <th className="py-3 px-4 text-left font-medium">Supplier</th>
+                                <th className="py-3 px-4 text-center font-medium">Order Count</th>
+                                <th className="py-3 px-4 text-center font-medium">Total Spend</th>
+                                <th className="py-3 px-4 text-center font-medium">Avg. Lead Time</th>
+                                <th className="py-3 px-4 text-center font-medium">On-Time Delivery</th>
+                                <th className="py-3 px-4 text-center font-medium">Cost Efficiency</th>
+                                <th className="py-3 px-4 text-center font-medium">Risk Level</th>
+                                <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                              {paginatedComparisonData.map((item) => {
+                                const efficiencyColor = item.costEfficiency === 'High' ? 'green' : 
+                                  item.costEfficiency === 'Medium' ? 'amber' : 'red';
+                                
+                                const riskColor = item.riskLevel === 'Low' ? 'green' : 
+                                  item.riskLevel === 'Medium' ? 'amber' : 'red';
+                                
+                                return (
+                                  <tr 
+                                    key={item.id} 
+                                    className="hover:bg-muted/50 transition-colors"
+                                  >
+                                    <td className="py-3 px-4">
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedComparisonSuppliers.includes(item.id)}
+                                        onChange={() => handleToggleComparisonSupplierSelection(item.id)}
+                                        className="h-4 w-4 rounded border-gray-300"
+                                      />
+                                    </td>
+                                    <td className="py-3 px-4 text-sm">{item.id}</td>
+                                    <td className="py-3 px-4">
+                                      <div className="font-medium flex items-center">
+                                        <Factory className="h-4 w-4 mr-2 text-primary" />
+                                        {item.supplier}
+                                      </div>
+                                    </td>
+                                    <td className="py-3 px-4 text-center">{item.orderCount}</td>
+                                    <td className="py-3 px-4 text-center">${item.spend.toLocaleString()}</td>
+                                    <td className="py-3 px-4 text-center">{item.leadTime} days</td>
+                                    <td className="py-3 px-4">
+                                      <div className="flex flex-col items-center">
+                                        <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[80px]">
+                                          <div 
+                                            className={`h-2 rounded-full ${
+                                              item.onTime >= 95 ? 'bg-green-500' :
+                                              item.onTime >= 90 ? 'bg-yellow-500' :
+                                              'bg-red-500'
+                                            }`}
+                                            style={{ width: `${item.onTime}%` }}
+                                          />
+                                        </div>
+                                        <div className="text-xs mt-1 text-muted-foreground">
+                                          {item.onTime}%
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="py-3 px-4 text-center">
+                                      <Badge className={`bg-${efficiencyColor}-500/10 text-${efficiencyColor}-500 border-${efficiencyColor}-500/20`}>
+                                        {item.costEfficiency}
+                                      </Badge>
+                                    </td>
+                                    <td className="py-3 px-4 text-center">
+                                      <Badge className={`bg-${riskColor}-500/10 text-${riskColor}-500 border-${riskColor}-500/20`}>
+                                        {item.riskLevel}
+                                      </Badge>
+                                    </td>
+                                    <td className="py-3 px-4 text-right">
+                                      <div className="flex items-center justify-end space-x-2">
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          onClick={() => console.log("View details for supplier:", item)} 
+                                          className="h-8 w-8"
+                                          title="View Details"
+                                        >
+                                          <FileText className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          onClick={() => console.log("Show performance metrics:", item)} 
+                                          className="h-8 w-8"
+                                          title="Performance Metrics"
+                                        >
+                                          <BarChart3 className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          onClick={() => console.log("Place order with supplier:", item)} 
+                                          className="h-8 w-8"
+                                          title="Place Order"
+                                        >
+                                          <ShoppingCart className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                        
+                        <div className="border-t">
+                          <div className="flex items-center justify-between py-4 px-6">
+                            <div className="flex-1 text-sm text-muted-foreground">
+                              Showing {Math.min((comparisonCurrentPage - 1) * comparisonPageSize + 1, filteredComparisonData.length)} to {Math.min(comparisonCurrentPage * comparisonPageSize, filteredComparisonData.length)} of {filteredComparisonData.length} {filteredComparisonData.length === 1 ? 'supplier' : 'suppliers'}
+                            </div>
+                            
+                            <div className="flex-1 flex justify-center">
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleComparisonPageChange(1)}
+                                  disabled={comparisonCurrentPage === 1}
+                                  className="h-8 w-8"
+                                  aria-label="First page"
+                                >
+                                  <ChevronsLeft className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleComparisonPageChange(comparisonCurrentPage - 1)}
+                                  disabled={comparisonCurrentPage === 1}
+                                  className="h-8 w-8"
+                                  aria-label="Previous page"
+                                >
+                                  <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                
+                                {comparisonTotalPages <= 5 ? (
+                                  // Show all pages if 5 or fewer
+                                  [...Array(comparisonTotalPages)].map((_, i) => (
+                                    <Button
+                                      key={`page-${i+1}`}
+                                      variant={comparisonCurrentPage === i+1 ? "default" : "outline"}
+                                      size="icon"
+                                      onClick={() => handleComparisonPageChange(i+1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${i+1}`}
+                                      aria-current={comparisonCurrentPage === i+1 ? "page" : undefined}
+                                    >
+                                      {i+1}
+                                    </Button>
+                                  ))
+                                ) : (
+                                  // Show limited pages with ellipsis
+                                  <>
+                                    <Button
+                                      variant={comparisonCurrentPage === 1 ? "default" : "outline"}
+                                      size="icon"
+                                      onClick={() => handleComparisonPageChange(1)}
+                                      className="h-8 w-8"
+                                      aria-label="Page 1"
+                                    >
+                                      1
+                                    </Button>
+                                    
+                                    {comparisonCurrentPage > 3 && <span className="mx-1">...</span>}
+                                    
+                                    {comparisonCurrentPage > 2 && (
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleComparisonPageChange(comparisonCurrentPage - 1)}
+                                        className="h-8 w-8"
+                                        aria-label={`Page ${comparisonCurrentPage - 1}`}
+                                      >
+                                        {comparisonCurrentPage - 1}
+                                      </Button>
+                                    )}
+                                    
+                                    {comparisonCurrentPage !== 1 && comparisonCurrentPage !== comparisonTotalPages && (
+                                      <Button
+                                        variant="default"
+                                        size="icon"
+                                        onClick={() => handleComparisonPageChange(comparisonCurrentPage)}
+                                        className="h-8 w-8"
+                                        aria-label={`Page ${comparisonCurrentPage}`}
+                                        aria-current="page"
+                                      >
+                                        {comparisonCurrentPage}
+                                      </Button>
+                                    )}
+                                    
+                                    {comparisonCurrentPage < comparisonTotalPages - 1 && (
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleComparisonPageChange(comparisonCurrentPage + 1)}
+                                        className="h-8 w-8"
+                                        aria-label={`Page ${comparisonCurrentPage + 1}`}
+                                      >
+                                        {comparisonCurrentPage + 1}
+                                      </Button>
+                                    )}
+                                    
+                                    {comparisonCurrentPage < comparisonTotalPages - 2 && <span className="mx-1">...</span>}
+                                    
+                                    <Button
+                                      variant={comparisonCurrentPage === comparisonTotalPages ? "default" : "outline"}
+                                      size="icon"
+                                      onClick={() => handleComparisonPageChange(comparisonTotalPages)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${comparisonTotalPages}`}
+                                    >
+                                      {comparisonTotalPages}
+                                    </Button>
+                                  </>
+                                )}
+                                
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleComparisonPageChange(comparisonCurrentPage + 1)}
+                                  disabled={comparisonCurrentPage === comparisonTotalPages}
+                                  className="h-8 w-8"
+                                  aria-label="Next page"
+                                >
+                                  <ChevronRight className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleComparisonPageChange(comparisonTotalPages)}
+                                  disabled={comparisonCurrentPage === comparisonTotalPages}
+                                  className="h-8 w-8"
+                                  aria-label="Last page"
+                                >
+                                  <ChevronsRight className="h-4 w-4" />
+                                </Button>
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={
-                                item.costEfficiency === 'High' ? 'success' :
-                                item.costEfficiency === 'Medium' ? 'warning' :
-                                'destructive'
-                              }>
-                                {item.costEfficiency}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={
-                                item.riskLevel === 'Low' ? 'success' :
-                                item.riskLevel === 'Medium' ? 'warning' :
-                                'destructive'
-                              }>
-                                {item.riskLevel}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                            </div>
+                            
+                            <div className="flex-1 flex justify-end">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

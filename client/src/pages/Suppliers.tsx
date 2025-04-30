@@ -1524,43 +1524,205 @@ export default function Suppliers() {
               </div>
 
               <Card>
-                <CardHeader>
-                  <CardTitle>Top Performing Suppliers</CardTitle>
-                  <CardDescription>Ranked by overall performance score</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <div>
+                    <CardTitle>Top Performing Suppliers</CardTitle>
+                    <CardDescription>Ranked by overall performance score</CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="relative w-[200px]">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="search"
+                        placeholder="Search suppliers..."
+                        className="pl-8 w-full"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                      />
+                    </div>
+                    <Select defaultValue="all">
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        <SelectItem value="electronics">Electronics</SelectItem>
+                        <SelectItem value="industrial">Industrial</SelectItem>
+                        <SelectItem value="logistics">Logistics</SelectItem>
+                        <SelectItem value="rawmaterials">Raw Materials</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Supplier</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>On-Time %</TableHead>
-                        <TableHead>Quality Score</TableHead>
-                        <TableHead>Communication</TableHead>
-                        <TableHead>Overall Score</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {suppliers
-                        .filter(s => s.status === 'active')
-                        .sort((a, b) => (b.performanceScore || 0) - (a.performanceScore || 0))
-                        .slice(0, 5)
-                        .map(supplier => (
-                          <TableRow key={supplier.id}>
-                            <TableCell className="font-medium">{supplier.name}</TableCell>
-                            <TableCell>{supplier.category}</TableCell>
-                            <TableCell>{supplier.onTimeRate}%</TableCell>
-                            <TableCell>{supplier.qualityScore || "-"}</TableCell>
-                            <TableCell>{supplier.communicationScore || "-"}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center">
-                                <span className="font-medium">{supplier.performanceScore || "-"}</span>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
+                <CardContent className="p-0">
+                  {suppliers.filter(s => s.status === 'active').length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-64 p-6">
+                      <Factory className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                      <h3 className="text-lg font-medium text-center mb-2">No suppliers found</h3>
+                      <p className="text-sm text-muted-foreground text-center mb-4">
+                        {searchTerm 
+                          ? "Try adjusting your search filters to find what you're looking for." 
+                          : "Get started by adding your first supplier."}
+                      </p>
+                      {!searchTerm && (
+                        <Button onClick={handleAddSupplier}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Supplier
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="overflow-auto">
+                        <table className="w-full">
+                          <thead className="bg-muted/50 text-sm">
+                            <tr>
+                              <th className="py-3 px-4 text-left font-medium w-[40px]">
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4 rounded border-gray-300"
+                                />
+                              </th>
+                              <th className="py-3 px-4 text-left font-medium">Supplier</th>
+                              <th className="py-3 px-4 text-left font-medium">Category</th>
+                              <th className="py-3 px-4 text-left font-medium">On-Time %</th>
+                              <th className="py-3 px-4 text-left font-medium">Quality Score</th>
+                              <th className="py-3 px-4 text-left font-medium">Communication</th>
+                              <th className="py-3 px-4 text-center font-medium">Overall Score</th>
+                              <th className="py-3 px-4 text-right font-medium w-[140px]">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {suppliers
+                              .filter(s => s.status === 'active')
+                              .sort((a, b) => (b.performanceScore || 0) - (a.performanceScore || 0))
+                              .slice(0, 5)
+                              .map(supplier => (
+                                <tr key={supplier.id} className="hover:bg-muted/50 transition-colors">
+                                  <td className="py-3 px-4">
+                                    <input
+                                      type="checkbox"
+                                      className="h-4 w-4 rounded border-gray-300"
+                                    />
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <div className="font-medium flex items-center">
+                                      <Factory className="h-4 w-4 mr-2 text-primary" />
+                                      {supplier.name}
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-sm">{supplier.category}</td>
+                                  <td className="py-3 px-4 text-sm">{supplier.onTimeRate}%</td>
+                                  <td className="py-3 px-4 text-sm">{supplier.qualityScore || "-"}</td>
+                                  <td className="py-3 px-4 text-sm">{supplier.communicationScore || "-"}</td>
+                                  <td className="py-3 px-4 text-center">
+                                    <div className="flex flex-col items-center">
+                                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700 max-w-[80px]">
+                                        <div 
+                                          className="bg-primary h-2 rounded-full" 
+                                          style={{ width: `${supplier.performanceScore}%` }}
+                                        />
+                                      </div>
+                                      <div className="text-xs mt-1 text-muted-foreground">
+                                        {supplier.performanceScore || "-"}%
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4 text-right">
+                                    <div className="flex items-center justify-end space-x-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        title="View Details"
+                                      >
+                                        <FileText className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        title="Performance History"
+                                      >
+                                        <TrendingUp className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-8 w-8"
+                                        title="Contact Supplier"
+                                      >
+                                        <ExternalLink className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      <div className="border-t">
+                        <div className="flex items-center justify-between py-4 px-6">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            Showing 1 to {Math.min(5, suppliers.filter(s => s.status === 'active').length)} of {suppliers.filter(s => s.status === 'active').length} suppliers
+                          </div>
+                          
+                          <div className="flex-1 flex justify-center">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label="First page"
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label="Previous page"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              
+                              <Button
+                                variant="default"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label="Page 1"
+                                aria-current="page"
+                              >
+                                1
+                              </Button>
+                              
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label="Next page"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label="Last page"
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1 flex justify-end">
+                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

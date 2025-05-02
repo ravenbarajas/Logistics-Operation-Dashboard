@@ -139,235 +139,225 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
     let emissionsByVehicleChart: any;
     let efficiencyTrendChart: any;
     
-    if (isDataLoaded && window.ApexCharts) {
-      // Initialize all charts based on the active tab
-      if (activeTab === "emissions" && emissionsTrendChartRef.current) {
+    if (window.ApexCharts) {
+      // Emissions trend chart
+      if (emissionsTrendChartRef.current) {
         // Destroy any existing chart
         if (emissionsTrendChart) {
           emissionsTrendChart.destroy();
         }
         
-        // Emissions trend chart
-        emissionsTrendChart = new window.ApexCharts(emissionsTrendChartRef.current, {
-          series: [{
-            name: 'Carbon Emissions',
-            data: sustainabilityData.map(d => d.carbonEmissions)
-          }],
-          chart: {
-            height: 280,
-            type: 'area',
-            toolbar: {
-              show: false
-            },
-            animations: {
-              enabled: true,
-              speed: 500
-            }
-          },
-          dataLabels: {
-            enabled: false
-          },
-          stroke: {
-            curve: 'smooth',
-            width: 3
-          },
-          colors: ['#10b981'],
-          fill: {
-            type: 'gradient',
-            gradient: {
-              shadeIntensity: 1,
-              opacityFrom: 0.7,
-              opacityTo: 0.2,
-              stops: [0, 90, 100]
-            }
-          },
-          xaxis: {
-            categories: sustainabilityData.map(d => d.quarter),
-            labels: {
-              style: {
-                fontSize: '12px',
-                fontFamily: 'inherit',
-              }
-            }
-          },
-          yaxis: {
-            labels: {
-              formatter: function(val: number) {
-                return val.toFixed(0);
+        // Check if data is available before rendering
+        if (sustainabilityData.length > 0) {
+          emissionsTrendChart = new window.ApexCharts(emissionsTrendChartRef.current, {
+            series: [{
+              name: 'Carbon Emissions',
+              data: sustainabilityData.map(d => d.carbonEmissions)
+            }],
+            chart: {
+              height: 280,
+              type: 'area',
+              toolbar: {
+                show: false
               },
-              style: {
-                fontSize: '12px',
-                fontFamily: 'inherit',
+              animations: {
+                enabled: true,
+                speed: 500
               }
-            }
-          },
-          tooltip: {
-            theme: 'dark',
-            shared: true,
-            intersect: false,
-            y: {
-              formatter: function(val: number) {
-                return val.toFixed(0) + ' tonnes';
+            },
+            dataLabels: {
+              enabled: false
+            },
+            stroke: {
+              curve: 'smooth',
+              width: 3
+            },
+            colors: ['#10b981'],
+            fill: {
+              type: 'gradient',
+              gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.2,
+                stops: [0, 90, 100]
               }
+            },
+            xaxis: {
+              categories: sustainabilityData.map(d => d.quarter),
+              labels: {
+                style: {
+                  fontSize: '12px',
+                  fontFamily: 'inherit',
+                }
+              }
+            },
+            yaxis: {
+              labels: {
+                formatter: function(val: number) {
+                  return val.toFixed(0);
+                },
+                style: {
+                  fontSize: '12px',
+                  fontFamily: 'inherit',
+                }
+              }
+            },
+            tooltip: {
+              theme: 'dark',
+              shared: true,
+              intersect: false,
+              y: {
+                formatter: function(val: number) {
+                  return val.toFixed(0) + ' tonnes';
+                }
+              }
+            },
+            legend: {
+              position: 'top',
+              horizontalAlign: 'right',
+              fontSize: '12px',
+              fontFamily: 'inherit'
             }
-          },
-          legend: {
-            position: 'top',
-            horizontalAlign: 'right',
-            fontSize: '12px',
-            fontFamily: 'inherit'
-          }
-        });
-        emissionsTrendChart.render();
+          });
+          emissionsTrendChart.render();
+        }
       }
       
       // Emissions by vehicle type chart
-      if (activeTab === "fleet" && emissionsByVehicleChartRef.current) {
+      if (emissionsByVehicleChartRef.current) {
         // Destroy any existing chart
         if (emissionsByVehicleChart) {
           emissionsByVehicleChart.destroy();
         }
         
-        emissionsByVehicleChart = new window.ApexCharts(emissionsByVehicleChartRef.current, {
-          series: [{
-            name: 'Carbon Emissions',
-            data: emissionsByVehicleData.map(d => d.emissions)
-          }],
-          chart: {
-            type: 'bar',
-            height: 280,
-            toolbar: {
+        // Check if data is available before rendering
+        if (emissionsByVehicleData.length > 0) {
+          emissionsByVehicleChart = new window.ApexCharts(emissionsByVehicleChartRef.current, {
+            series: [{
+              name: 'Carbon Emissions',
+              data: emissionsByVehicleData.map(d => d.emissions)
+            }],
+            chart: {
+              type: 'bar',
+              height: 280,
+              toolbar: {
+                show: false
+              },
+              animations: {
+                speed: 500
+              }
+            },
+            plotOptions: {
+              bar: {
+                horizontal: true,
+                barHeight: '60%',
+                distributed: true,
+                borderRadius: 4,
+                dataLabels: {
+                  position: 'top'
+                }
+              }
+            },
+            colors: ['#ef4444', '#f59e0b', '#3b82f6', '#a855f7', '#10b981'],
+            dataLabels: {
+              enabled: true,
+              formatter: function(val: number) {
+                return val.toFixed(2) + ' kg/km';
+              },
+              offsetX: 20,
+              style: {
+                fontSize: '11px',
+                fontFamily: 'inherit',
+                fontWeight: 'normal',
+                colors: ['#fff']
+              }
+            },
+            legend: {
               show: false
             },
-            animations: {
-              speed: 500
-            }
-          },
-          plotOptions: {
-            bar: {
-              horizontal: true,
-              barHeight: '60%',
-              distributed: true,
-              borderRadius: 4,
-              dataLabels: {
-                position: 'top'
-              }
-            }
-          },
-          colors: ['#ef4444', '#f59e0b', '#3b82f6', '#a855f7', '#10b981'],
-          dataLabels: {
-            enabled: true,
-            formatter: function(val: number) {
-              return val.toFixed(2) + ' kg/km';
-            },
-            offsetX: 20,
-            style: {
-              fontSize: '11px',
-              fontFamily: 'inherit',
-              fontWeight: 'normal',
-              colors: ['#fff']
-            }
-          },
-          legend: {
-            show: false
-          },
-          xaxis: {
-            categories: emissionsByVehicleData.map(d => d.type),
-            labels: {
-              style: {
-                fontSize: '12px',
-                fontFamily: 'inherit',
-              }
-            }
-          },
-          yaxis: {
-            labels: {
-              style: {
-                fontSize: '12px',
-                fontFamily: 'inherit',
-              }
-            }
-          },
-          tooltip: {
-            theme: 'dark',
-            y: {
-              formatter: function(val: number) {
-                return val.toFixed(2) + ' kg CO2/km';
+            xaxis: {
+              categories: emissionsByVehicleData.map(d => d.type),
+              labels: {
+                style: {
+                  fontSize: '12px',
+                  fontFamily: 'inherit',
+                }
               }
             },
-            x: {
-              show: true
+            yaxis: {
+              labels: {
+                style: {
+                  fontSize: '12px',
+                  fontFamily: 'inherit',
+                }
+              }
+            },
+            tooltip: {
+              theme: 'dark',
+              y: {
+                formatter: function(val: number) {
+                  return val.toFixed(2) + ' kg CO2/km';
+                }
+              },
+              x: {
+                show: true
+              }
             }
-          }
-        });
-        emissionsByVehicleChart.render();
+          });
+          emissionsByVehicleChart.render();
+        }
       }
       
       // Efficiency trend chart
-      if (activeTab === "efficiency" && efficiencyTrendChartRef.current) {
+      if (efficiencyTrendChartRef.current) {
         // Destroy any existing chart
         if (efficiencyTrendChart) {
           efficiencyTrendChart.destroy();
         }
         
-        efficiencyTrendChart = new window.ApexCharts(efficiencyTrendChartRef.current, {
-          series: [
-            {
-              name: 'Fuel Efficiency',
+        // Check if data is available before rendering
+        if (sustainabilityData.length > 0) {
+          efficiencyTrendChart = new window.ApexCharts(efficiencyTrendChartRef.current, {
+            series: [
+              {
+                name: 'Fuel Efficiency',
+                type: 'line',
+                data: sustainabilityData.map(d => d.fuelEfficiency)
+              },
+              {
+                name: 'Electric Vehicles',
+                type: 'column',
+                data: sustainabilityData.map(d => d.electricVehicles)
+              },
+              {
+                name: 'Renewable Energy',
+                type: 'column',
+                data: sustainabilityData.map(d => d.renewableEnergy)
+              }
+            ],
+            chart: {
+              height: 280,
               type: 'line',
-              data: sustainabilityData.map(d => d.fuelEfficiency)
-            },
-            {
-              name: 'Electric Vehicles',
-              type: 'column',
-              data: sustainabilityData.map(d => d.electricVehicles)
-            },
-            {
-              name: 'Renewable Energy',
-              type: 'column',
-              data: sustainabilityData.map(d => d.renewableEnergy)
-            }
-          ],
-          chart: {
-            height: 280,
-            type: 'line',
-            stacked: false,
-            toolbar: {
-              show: false
-            },
-            animations: {
-              speed: 500
-            }
-          },
-          plotOptions: {
-            bar: {
-              columnWidth: '50%',
-              borderRadius: 4
-            }
-          },
-          stroke: {
-            width: [3, 0, 0]
-          },
-          colors: ['#10b981', '#3b82f6', '#f59e0b'],
-          xaxis: {
-            categories: sustainabilityData.map(d => d.quarter),
-            labels: {
-              style: {
-                fontSize: '12px',
-                fontFamily: 'inherit',
-              }
-            }
-          },
-          yaxis: [
-            {
-              title: {
-                text: 'Fuel Efficiency (L/100km)',
+              stacked: false,
+              toolbar: {
+                show: false
               },
-              seriesName: 'Fuel Efficiency',
-              min: 7.5,
-              max: 9,
-              tickAmount: 4,
-              decimalsInFloat: 1,
+              animations: {
+                speed: 500
+              }
+            },
+            plotOptions: {
+              bar: {
+                columnWidth: '50%',
+                borderRadius: 4
+              }
+            },
+            stroke: {
+              width: [3, 0, 0]
+            },
+            colors: ['#10b981', '#3b82f6', '#f59e0b'],
+            xaxis: {
+              categories: sustainabilityData.map(d => d.quarter),
               labels: {
                 style: {
                   fontSize: '12px',
@@ -375,45 +365,63 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
                 }
               }
             },
-            {
-              seriesName: 'Electric Vehicles',
-              show: false
-            },
-            {
-              opposite: true,
-              title: {
-                text: 'Percentage (%)'
+            yaxis: [
+              {
+                title: {
+                  text: 'Fuel Efficiency (L/100km)',
+                },
+                seriesName: 'Fuel Efficiency',
+                min: 7.5,
+                max: 9,
+                tickAmount: 4,
+                decimalsInFloat: 1,
+                labels: {
+                  style: {
+                    fontSize: '12px',
+                    fontFamily: 'inherit',
+                  }
+                }
               },
-              min: 0,
-              max: 35,
-              seriesName: 'Renewable Energy',
-              labels: {
-                style: {
-                  fontSize: '12px',
-                  fontFamily: 'inherit',
+              {
+                seriesName: 'Electric Vehicles',
+                show: false
+              },
+              {
+                opposite: true,
+                title: {
+                  text: 'Percentage (%)'
+                },
+                min: 0,
+                max: 35,
+                seriesName: 'Renewable Energy',
+                labels: {
+                  style: {
+                    fontSize: '12px',
+                    fontFamily: 'inherit',
+                  }
                 }
               }
+            ],
+            tooltip: {
+              theme: 'dark',
+              shared: true,
+              intersect: false,
+              fixed: {
+                enabled: true,
+                position: 'topLeft',
+                offsetY: 30,
+                offsetX: 60
+              }
+            },
+            legend: {
+              position: 'top',
+              horizontalAlign: 'right',
+              fontSize: '12px',
+              fontFamily: 'inherit'
             }
-          ],
-          tooltip: {
-            theme: 'dark',
-            shared: true,
-            intersect: false,
-            fixed: {
-              enabled: true,
-              position: 'topLeft',
-              offsetY: 30,
-              offsetX: 60
-            }
-          },
-          legend: {
-            position: 'top',
-            horizontalAlign: 'right',
-            fontSize: '12px',
-            fontFamily: 'inherit'
-          }
-        });
-        efficiencyTrendChart.render();
+          });
+          efficiencyTrendChart.render();
+        }
       }
     }
     
@@ -429,7 +437,7 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
         efficiencyTrendChart.destroy();
       }
     };
-  }, [isDataLoaded, period, activeTab]);
+  }, [period]);
   
   return (
     <div className="space-y-4">
@@ -574,62 +582,41 @@ export default function SustainabilityMetrics({ period, isDataLoaded }: Sustaina
         </Card>
       </div>
       
-      {/* Tabs for detailed metrics */}
-      <Tabs defaultValue="emissions" className="space-y-4" onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 w-full md:w-auto">
-          <TabsTrigger value="emissions" className="flex items-center gap-1">
-            <BarChart3 className="h-4 w-4" />
-            <span>Emissions</span>
-          </TabsTrigger>
-          <TabsTrigger value="fleet" className="flex items-center gap-1">
-            <Truck className="h-4 w-4" />
-            <span>Fleet Analysis</span>
-          </TabsTrigger>
-          <TabsTrigger value="efficiency" className="flex items-center gap-1">
-            <BarChart4 className="h-4 w-4" />
-            <span>Efficiency</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        {/* Emissions Tab */}
-        <TabsContent value="emissions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Carbon Emissions Trend</CardTitle>
-              <CardDescription>Quarterly CO2 emissions with year-over-year comparison</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div ref={emissionsTrendChartRef} className="h-[280px]" />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Fleet Analysis Tab */}
-        <TabsContent value="fleet" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Emissions by Vehicle Type</CardTitle>
-              <CardDescription>Carbon intensity per kilometer by vehicle classification</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div ref={emissionsByVehicleChartRef} className="h-[280px]" />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Efficiency Trends Tab */}
-        <TabsContent value="efficiency" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sustainability Initiatives</CardTitle>
-              <CardDescription>Quarterly progress on key sustainability metrics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div ref={efficiencyTrendChartRef} className="h-[280px]" />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Sustainability Metrics in a single row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Emissions Component */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Carbon Emissions Trend</CardTitle>
+            <CardDescription>Quarterly CO2 emissions with year-over-year comparison</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div ref={emissionsTrendChartRef} className="h-[280px]" />
+          </CardContent>
+        </Card>
+
+        {/* Fleet Analysis Component */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Emissions by Vehicle Type</CardTitle>
+            <CardDescription>Carbon intensity per kilometer by vehicle classification</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div ref={emissionsByVehicleChartRef} className="h-[280px]" />
+          </CardContent>
+        </Card>
+
+        {/* Efficiency Trends Component */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Sustainability Initiatives</CardTitle>
+            <CardDescription>Quarterly progress on key sustainability metrics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div ref={efficiencyTrendChartRef} className="h-[280px]" />
+          </CardContent>
+        </Card>
+      </div>
       
       {/* ESG Impact & Reporting */}
       <Card>

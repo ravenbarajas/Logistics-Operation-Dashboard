@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { fleetService, FleetSummary } from "@/services/fleetService";
 import { Vehicle } from "@shared/schema";
-import { VehicleModal } from "@/components/vehicles/VehicleModal";
+import { VehicleModal, VehicleDetails } from "@/components/vehicles";
 import { EnhancedTable } from "@/components/table/EnhancedTable";
 import { FleetAnalytics } from "@/components/fleet/FleetAnalytics";
 import { MaintenanceTracker } from "@/components/fleet/MaintenanceTracker";

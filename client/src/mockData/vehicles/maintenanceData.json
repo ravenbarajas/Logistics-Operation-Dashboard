@@ -1,0 +1,117 @@
+{
+  "maintenanceRecords": [
+    {
+      "id": 1,
+      "vehicleId": 1,
+      "vehicleName": "Delivery Truck 1",
+      "type": "routine",
+      "status": "completed",
+      "date": "2023-12-15",
+      "cost": 450,
+      "description": "Regular maintenance and oil change",
+      "technician": "Mike Johnson"
+    },
+    {
+      "id": 2,
+      "vehicleId": 2,
+      "vehicleName": "Delivery Van 1",
+      "type": "repair",
+      "status": "completed",
+      "date": "2023-11-28",
+      "cost": 825,
+      "description": "Brake replacement and suspension check",
+      "technician": "Sarah Rodriguez"
+    },
+    {
+      "id": 3,
+      "vehicleId": 3,
+      "vehicleName": "Cargo Truck 1",
+      "type": "inspection",
+      "status": "scheduled",
+      "date": "2024-02-12",
+      "description": "Annual safety inspection",
+      "technician": "Quality Fleet Services"
+    },
+    {
+      "id": 4,
+      "vehicleId": 4,
+      "vehicleName": "Refrigerated Truck",
+      "type": "emergency",
+      "status": "completed",
+      "date": "2024-01-05",
+      "cost": 1250,
+      "description": "Cooling system repair",
+      "technician": "TechCool Repairs"
+    },
+    {
+      "id": 5,
+      "vehicleId": 1,
+      "vehicleName": "Delivery Truck 1",
+      "type": "routine",
+      "status": "scheduled",
+      "date": "2024-03-10",
+      "description": "Regular maintenance and filter replacement"
+    },
+    {
+      "id": 6,
+      "vehicleId": 5,
+      "vehicleName": "Electric Van",
+      "type": "inspection",
+      "status": "overdue",
+      "date": "2024-01-20",
+      "description": "Battery system check"
+    },
+    {
+      "id": 7,
+      "vehicleId": 7,
+      "vehicleName": "City Delivery Van",
+      "type": "repair",
+      "status": "scheduled",
+      "date": "2024-02-28",
+      "cost": 350,
+      "description": "Door latch replacement and alignment"
+    }
+  ],
+  "upcomingMaintenance": [
+    { 
+      "id": 101, 
+      "vehicleName": "Delivery Truck 2", 
+      "type": "Oil Change", 
+      "date": "2024-03-15", 
+      "estimatedCost": 150, 
+      "status": "scheduled"
+    },
+    { 
+      "id": 102, 
+      "vehicleName": "Van 3", 
+      "type": "Tire Rotation", 
+      "date": "2024-03-18", 
+      "estimatedCost": 80, 
+      "status": "scheduled"
+    },
+    { 
+      "id": 103, 
+      "vehicleName": "Cargo Truck", 
+      "type": "Inspection", 
+      "date": "2024-03-21", 
+      "estimatedCost": 120, 
+      "status": "scheduled"
+    },
+    { 
+      "id": 104, 
+      "vehicleName": "Delivery Truck 3", 
+      "type": "Brake Service", 
+      "date": "2024-03-25", 
+      "estimatedCost": 350, 
+      "status": "pending"
+    }
+  ],
+  "vehicleActivityData": [
+    { "date": "2024-02-01", "active": 6, "maintenance": 3, "inactive": 1 },
+    { "date": "2024-02-08", "active": 7, "maintenance": 2, "inactive": 1 },
+    { "date": "2024-02-15", "active": 8, "maintenance": 1, "inactive": 1 },
+    { "date": "2024-02-22", "active": 7, "maintenance": 2, "inactive": 1 },
+    { "date": "2024-03-01", "active": 6, "maintenance": 3, "inactive": 1 },
+    { "date": "2024-03-08", "active": 7, "maintenance": 2, "inactive": 1 }
+  ]
+} 

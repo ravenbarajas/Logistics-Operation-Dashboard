@@ -42,34 +42,7 @@ cd logidash
 npm install
 ```
 
-### 3. Set up environment variables
-
-Create a `.env` file in the root directory with the following content:
-
-```env
-# Database configuration
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/logidash
-
-# Node environment
-NODE_ENV=development
-
-# Server port
-PORT=5000
-
-# JWT secret for authentication (if implemented later)
-JWT_SECRET=your_jwt_secret_key_here
-```
-
-### 4. Set up the database
-
-First, make sure PostgreSQL is running. Then run:
-
-```bash
-# Create database and tables
-npm run db:setup
-```
-
-### 5. Run the application in development mode
+### 3. Run the application in development mode
 
 ```bash
 npm run dev
@@ -87,60 +60,6 @@ LogiDash uses a PostgreSQL database with the following tables:
 - **inventory**: Inventory items stored in warehouses
 - **shipments**: Shipment tracking information
 - **routes**: Route planning and optimization data
-
-## API Endpoints
-
-### Users
-
-- `GET /api/users/:id`: Get a user by ID
-- `POST /api/users`: Create a new user
-
-### Vehicles
-
-- `GET /api/vehicles`: Get all vehicles
-- `GET /api/vehicles/:id`: Get a vehicle by ID
-- `POST /api/vehicles`: Create a new vehicle
-- `PUT /api/vehicles/:id`: Update a vehicle
-- `DELETE /api/vehicles/:id`: Delete a vehicle
-
-### Warehouses
-
-- `GET /api/warehouses`: Get all warehouses
-- `GET /api/warehouses/:id`: Get a warehouse by ID
-- `POST /api/warehouses`: Create a new warehouse
-- `PUT /api/warehouses/:id`: Update a warehouse
-- `DELETE /api/warehouses/:id`: Delete a warehouse
-
-### Inventory
-
-- `GET /api/inventory`: Get all inventory items
-- `GET /api/inventory?warehouseId=1`: Get inventory items for a specific warehouse
-- `GET /api/inventory/:id`: Get an inventory item by ID
-- `POST /api/inventory`: Create a new inventory item
-- `PUT /api/inventory/:id`: Update an inventory item
-- `DELETE /api/inventory/:id`: Delete an inventory item
-
-### Shipments
-
-- `GET /api/shipments`: Get all shipments
-- `GET /api/shipments/:id`: Get a shipment by ID
-- `GET /api/shipments/:id?type=tracking`: Get a shipment by tracking number
-- `POST /api/shipments`: Create a new shipment
-- `PUT /api/shipments/:id`: Update a shipment
-- `DELETE /api/shipments/:id`: Delete a shipment
-
-### Routes
-
-- `GET /api/routes`: Get all routes
-- `GET /api/routes?vehicleId=1`: Get routes for a specific vehicle
-- `GET /api/routes/:id`: Get a route by ID
-- `POST /api/routes`: Create a new route
-- `PUT /api/routes/:id`: Update a route
-- `DELETE /api/routes/:id`: Delete a route
-
-### Dashboard
-
-- `GET /api/dashboard/summary`: Get a summary of all key metrics
 
 ## Production Deployment
 

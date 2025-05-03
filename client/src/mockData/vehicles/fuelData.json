@@ -1,0 +1,105 @@
+{
+  "fuelRecords": [
+    {
+      "id": 1,
+      "vehicleId": 1,
+      "vehicleName": "Delivery Truck 1",
+      "date": "2024-01-05",
+      "gallons": 45.6,
+      "cost": 147.2,
+      "mileage": 46500
+    },
+    {
+      "id": 2,
+      "vehicleId": 1,
+      "vehicleName": "Delivery Truck 1",
+      "date": "2024-01-15",
+      "gallons": 50.2,
+      "cost": 161.6,
+      "mileage": 47250,
+      "mpg": 14.9
+    },
+    {
+      "id": 3,
+      "vehicleId": 2,
+      "vehicleName": "Delivery Van 1",
+      "date": "2024-01-08",
+      "gallons": 28.4,
+      "cost": 91.5,
+      "mileage": 39200
+    },
+    {
+      "id": 4,
+      "vehicleId": 2,
+      "vehicleName": "Delivery Van 1",
+      "date": "2024-01-20",
+      "gallons": 25.7,
+      "cost": 82.8,
+      "mileage": 39850,
+      "mpg": 25.3
+    },
+    {
+      "id": 5,
+      "vehicleId": 4,
+      "vehicleName": "Refrigerated Truck",
+      "date": "2024-01-12",
+      "gallons": 42.3,
+      "cost": 136.2,
+      "mileage": 35800
+    },
+    {
+      "id": 6,
+      "vehicleId": 4,
+      "vehicleName": "Refrigerated Truck",
+      "date": "2024-01-25",
+      "gallons": 38.9,
+      "cost": 125.3,
+      "mileage": 36420,
+      "mpg": 15.9
+    }
+  ],
+  "vehicleFuelData": [
+    {
+      "id": 1,
+      "name": "Heavy Trucks",
+      "type": "Heavy Duty",
+      "currentFuelLevel": 72,
+      "averageMPG": 12.5,
+      "monthlyFuelCost": [1250, 1350, 1480, 1320, 1460, 1520],
+      "fuelConsumption": [310, 325, 350, 320, 340, 365]
+    },
+    {
+      "id": 2,
+      "name": "Medium Trucks",
+      "type": "Medium Duty",
+      "currentFuelLevel": 45,
+      "averageMPG": 16.8,
+      "monthlyFuelCost": [980, 1050, 1120, 980, 1040, 1150],
+      "fuelConsumption": [240, 255, 275, 240, 255, 280]
+    },
+    {
+      "id": 3,
+      "name": "Light Vans",
+      "type": "Light Duty",
+      "currentFuelLevel": 88,
+      "averageMPG": 23.5,
+      "monthlyFuelCost": [620, 580, 650, 690, 720, 750],
+      "fuelConsumption": [160, 150, 170, 180, 190, 195]
+    }
+  ],
+  "monthlyFuelData": [
+    { "month": "Jan", "consumption": 2850, "cost": 9245, "avgPrice": 3.25, "vehicles": 8 },
+    { "month": "Feb", "consumption": 2650, "cost": 8745, "avgPrice": 3.30, "vehicles": 8 },
+    { "month": "Mar", "consumption": 2950, "cost": 9835, "avgPrice": 3.33, "vehicles": 9 },
+    { "month": "Apr", "consumption": 2750, "cost": 9350, "avgPrice": 3.40, "vehicles": 9 },
+    { "month": "May", "consumption": 2800, "cost": 9520, "avgPrice": 3.40, "vehicles": 9 },
+    { "month": "Jun", "consumption": 3100, "cost": 10695, "avgPrice": 3.45, "vehicles": 10 }
+  ],
+  "vehicleFuelConsumption": [
+    { "id": "TR-101", "name": "Heavy Truck #101", "type": "Heavy Duty", "lastMonth": 485, "thisMonth": 512, "efficiency": 92 },
+    { "id": "TR-102", "name": "Heavy Truck #102", "type": "Heavy Duty", "lastMonth": 465, "thisMonth": 478, "efficiency": 88 },
+    { "id": "VN-201", "name": "Delivery Van #201", "type": "Light Duty", "lastMonth": 225, "thisMonth": 238, "efficiency": 95 },
+    { "id": "VN-202", "name": "Delivery Van #202", "type": "Light Duty", "lastMonth": 215, "thisMonth": 225, "efficiency": 94 },
+    { "id": "TR-103", "name": "Medium Truck #103", "type": "Medium Duty", "lastMonth": 345, "thisMonth": 368, "efficiency": 90 }
+  ]
+} 

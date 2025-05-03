@@ -1,0 +1,39 @@
+{
+  "vehicleTypes": [
+    { "name": "Heavy Truck", "value": 3 },
+    { "name": "Medium Truck", "value": 3 },
+    { "name": "Light Van", "value": 3 },
+    { "name": "Specialty", "value": 1 }
+  ],
+  "vehicleStatus": [
+    { "name": "Active", "value": 7 },
+    { "name": "Maintenance", "value": 2 },
+    { "name": "Inactive", "value": 1 }
+  ],
+  "fuelConsumption": [
+    { "name": "Heavy Trucks", "value": 365 },
+    { "name": "Medium Trucks", "value": 280 },
+    { "name": "Light Vans", "value": 195 },
+    { "name": "Specialty", "value": 120 }
+  ],
+  "monthlyMileage": [
+    { "name": "Sep", "value": 28500 },
+    { "name": "Oct", "value": 32400 },
+    { "name": "Nov", "value": 30200 },
+    { "name": "Dec", "value": 27800 },
+    { "name": "Jan", "value": 34200 },
+    { "name": "Feb", "value": 36500 }
+  ],
+  "metrics": {
+    "fuelEfficiency": [12.2, 16.4, 22.8, 11.9, 15.8, 22.5, 12.5, 16.9, 23.1, 12.8, 17.2, 23.5],
+    "maintenanceCosts": [4500, 3200, 1800, 3800, 2900, 1400, 5200, 3600, 2100, 4800, 3100, 1700],
+    "utilizationRate": [85, 75, 65, 82, 78, 68, 88, 80, 72, 90, 82, 76],
+    "idleTime": [8.5, 7.2, 6.1, 9.2, 5.4]
+  },
+  "vehicleAssignmentStats": [
+    { "departmentName": "Distribution", "totalVehicles": 4, "activeVehicles": 3, "utilization": 85 },
+    { "departmentName": "Sales", "totalVehicles": 3, "activeVehicles": 2, "utilization": 62 },
+    { "departmentName": "Support", "totalVehicles": 2, "activeVehicles": 2, "utilization": 90 },
+    { "departmentName": "Administration", "totalVehicles": 1, "activeVehicles": 1, "utilization": 45 }
+  ]
+} 

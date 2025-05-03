@@ -21,8 +21,14 @@ interface ShipmentTrackingProps {
   onRefresh?: () => void;
 }
 
-// Mock location updates for the shipment
-const generateMockLocations = (origin: { lat: number, lng: number }, destination: { lat: number, lng: number }, count: number = 10) => {
+interface TrackingLocation {
+  lat: number;
+  lng: number;
+  timestamp: string;
+}
+
+// Generate locations between origin and destination for tracking
+const generateLocations = (origin: { lat: number, lng: number }, destination: { lat: number, lng: number }, count: number = 10): TrackingLocation[] => {
   const locations = [];
   
   for (let i = 0; i <= count; i++) {
@@ -39,7 +45,7 @@ const generateMockLocations = (origin: { lat: number, lng: number }, destination
 
 export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps) {
   const [activeTab, setActiveTab] = useState("map");
-  const [trackingHistory, setTrackingHistory] = useState<any[]>([]);
+  const [trackingHistory, setTrackingHistory] = useState<TrackingLocation[]>([]);
   const [progressPercent, setProgressPercent] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<string>("");
   const [currentLocation, setCurrentLocation] = useState<{ lat: number, lng: number } | null>(null);
@@ -69,9 +75,9 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
         setProgressPercent(0);
     }
     
-    // Generate mock tracking history
+    // Generate tracking history
     if (shipment.originLocation && shipment.destinationLocation) {
-      const mockData = generateMockLocations(
+      const locations = generateLocations(
         shipment.originLocation as { lat: number, lng: number },
         shipment.destinationLocation as { lat: number, lng: number }
       );
@@ -89,13 +95,13 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
           historyLimit = 7;
           break;
         case "delivered":
-          historyLimit = mockData.length;
+          historyLimit = locations.length;
           break;
         default:
           historyLimit = 0;
       }
       
-      const filteredHistory = mockData.slice(0, historyLimit);
+      const filteredHistory = locations.slice(0, historyLimit);
       setTrackingHistory(filteredHistory);
       
       // Set current location to the last tracked position
@@ -248,24 +254,26 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
                       <div className="mr-4 relative">
                         <div className={`w-3 h-3 rounded-full ${index === trackingHistory.length - 1 ? 'bg-primary' : 'bg-gray-300'}`} />
                         {index < trackingHistory.length - 1 && (
-                          <div className="absolute top-3 left-1.5 bottom-0 w-px bg-gray-300 -ml-px h-full" />
+                          <div className="absolute top-3 left-1.5 w-0.5 h-full -ml-0.5 bg-gray-200" />
                         )}
                       </div>
                       <div className="pb-4 w-full">
-                        <div className="flex justify-between text-sm">
-                          <div className="font-medium">Location Update</div>
-                          <div className="text-muted-foreground">{formatDateTime(event.timestamp)}</div>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Coordinates: {formatCoordinates({ lat: event.lat, lng: event.lng })}
-                        </div>
+                        <div className="text-sm font-medium">{index === 0 ? 'Shipment Departed' : 
+                                                               index === trackingHistory.length - 1 ? 'Current Location' : 
+                                                               `Checkpoint ${index}`}</div>
+                        <div className="text-xs text-muted-foreground mb-1">{formatDateTime(event.timestamp)}</div>
+                        <div className="text-xs">Location: {formatCoordinates({lat: event.lat, lng: event.lng})}</div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-6">
-                    <AlertTriangleIcon className="h-10 w-10 text-muted-foreground mb-2 mx-auto" />
-                    <p className="text-muted-foreground">No tracking updates available</p>
+                  <div className="py-6 text-center text-muted-foreground">
+                    <div className="mb-2">No tracking updates available</div>
+                    <div className="text-xs">
+                      {shipment.status === "pending" ? "Shipment is pending processing" : 
+                       shipment.status === "cancelled" ? "Shipment has been cancelled" :
+                       "Tracking information will appear here"}
+                    </div>
                   </div>
                 )}
               </div>

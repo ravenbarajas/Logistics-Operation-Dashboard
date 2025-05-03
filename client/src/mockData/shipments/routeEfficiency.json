@@ -1,0 +1,180 @@
+{
+  "metrics": [
+    {
+      "name": "On-Time Delivery",
+      "value": 92.4,
+      "target": 95,
+      "unit": "%",
+      "delta": -2.6,
+      "status": "negative"
+    },
+    {
+      "name": "Avg Fuel Consumption",
+      "value": 8.7,
+      "target": 8.0,
+      "unit": "mpg",
+      "delta": 0.7,
+      "status": "positive"
+    },
+    {
+      "name": "Route Adherence",
+      "value": 97.2,
+      "target": 98,
+      "unit": "%",
+      "delta": -0.8,
+      "status": "negative"
+    },
+    {
+      "name": "Avg Load Factor",
+      "value": 82.5,
+      "target": 85,
+      "unit": "%",
+      "delta": -2.5,
+      "status": "negative"
+    },
+    {
+      "name": "Delivery Time Variance",
+      "value": 35,
+      "target": 30,
+      "unit": "min",
+      "delta": -5,
+      "status": "negative"
+    },
+    {
+      "name": "Stops per Route",
+      "value": 5.8,
+      "target": 6.0,
+      "unit": "stops",
+      "delta": -0.2,
+      "status": "neutral"
+    }
+  ],
+  "routeData": [
+    {
+      "route": "Northeast Corridor",
+      "plannedTime": 8,
+      "actualTime": 8.5,
+      "efficiency": 92,
+      "fuelConsumption": 8.2,
+      "distance": 320,
+      "loadFactor": 86
+    },
+    {
+      "route": "West Coast Express",
+      "plannedTime": 7,
+      "actualTime": 6.8,
+      "efficiency": 96,
+      "fuelConsumption": 9.1,
+      "distance": 280,
+      "loadFactor": 92
+    },
+    {
+      "route": "Southern Circuit",
+      "plannedTime": 9,
+      "actualTime": 9.6,
+      "efficiency": 88,
+      "fuelConsumption": 7.6,
+      "distance": 410,
+      "loadFactor": 78
+    },
+    {
+      "route": "Midwest Route",
+      "plannedTime": 6,
+      "actualTime": 6.2,
+      "efficiency": 94,
+      "fuelConsumption": 8.8,
+      "distance": 240,
+      "loadFactor": 85
+    },
+    {
+      "route": "Coastal Highway",
+      "plannedTime": 10,
+      "actualTime": 10.5,
+      "efficiency": 91,
+      "fuelConsumption": 8.3,
+      "distance": 450,
+      "loadFactor": 82
+    }
+  ],
+  "weeklyComparison": [
+    {
+      "name": "Mon",
+      "actual": 92,
+      "target": 95,
+      "fuelUsage": 280,
+      "timeVariance": -5
+    },
+    {
+      "name": "Tue",
+      "actual": 94,
+      "target": 95,
+      "fuelUsage": 290,
+      "timeVariance": 0
+    },
+    {
+      "name": "Wed",
+      "actual": 89,
+      "target": 95,
+      "fuelUsage": 310,
+      "timeVariance": 15
+    },
+    {
+      "name": "Thu",
+      "actual": 91,
+      "target": 95,
+      "fuelUsage": 300,
+      "timeVariance": 5
+    },
+    {
+      "name": "Fri",
+      "actual": 88,
+      "target": 95,
+      "fuelUsage": 320,
+      "timeVariance": 10
+    },
+    {
+      "name": "Sat",
+      "actual": 93,
+      "target": 95,
+      "fuelUsage": 270,
+      "timeVariance": -10
+    },
+    {
+      "name": "Sun",
+      "actual": 95,
+      "target": 95,
+      "fuelUsage": 260,
+      "timeVariance": -5
+    }
+  ],
+  "monthlyComparison": [
+    {
+      "name": "Week 1",
+      "actual": 91,
+      "target": 95,
+      "fuelUsage": 1250,
+      "timeVariance": 5
+    },
+    {
+      "name": "Week 2",
+      "actual": 93,
+      "target": 95,
+      "fuelUsage": 1200,
+      "timeVariance": -2
+    },
+    {
+      "name": "Week 3",
+      "actual": 90,
+      "target": 95,
+      "fuelUsage": 1280,
+      "timeVariance": 8
+    },
+    {
+      "name": "Week 4",
+      "actual": 94,
+      "target": 95,
+      "fuelUsage": 1180,
+      "timeVariance": -4
+    }
+  ]
+} 

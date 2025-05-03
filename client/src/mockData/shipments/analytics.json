@@ -1,0 +1,115 @@
+{
+  "summary": {
+    "totalShipments": 128,
+    "inTransit": 42,
+    "delivered": 65,
+    "pending": 21,
+    "onTimeDeliveryRate": 94.2,
+    "averageDeliveryTime": 32.6,
+    "totalDistance": 39840,
+    "delayedShipments": 7
+  },
+  "performanceByMonth": [
+    {
+      "month": "Jan",
+      "totalShipments": 120,
+      "onTimeDelivery": 112,
+      "delayedDelivery": 6,
+      "cancelled": 2
+    },
+    {
+      "month": "Feb",
+      "totalShipments": 135,
+      "onTimeDelivery": 128,
+      "delayedDelivery": 5,
+      "cancelled": 2
+    },
+    {
+      "month": "Mar",
+      "totalShipments": 118,
+      "onTimeDelivery": 110,
+      "delayedDelivery": 6,
+      "cancelled": 2
+    },
+    {
+      "month": "Apr",
+      "totalShipments": 142,
+      "onTimeDelivery": 136,
+      "delayedDelivery": 4,
+      "cancelled": 2
+    },
+    {
+      "month": "May",
+      "totalShipments": 156,
+      "onTimeDelivery": 145,
+      "delayedDelivery": 8,
+      "cancelled": 3
+    },
+    {
+      "month": "Jun",
+      "totalShipments": 124,
+      "onTimeDelivery": 118,
+      "delayedDelivery": 5,
+      "cancelled": 1
+    }
+  ],
+  "volumeByRegion": [
+    {
+      "region": "West",
+      "count": 45,
+      "percentage": 35.2
+    },
+    {
+      "region": "Midwest",
+      "count": 28,
+      "percentage": 21.9
+    },
+    {
+      "region": "Northeast",
+      "count": 31,
+      "percentage": 24.2
+    },
+    {
+      "region": "South",
+      "count": 24,
+      "percentage": 18.7
+    }
+  ],
+  "topCustomers": [
+    {
+      "name": "Acme Corp",
+      "shipments": 24,
+      "totalDistance": 6840,
+      "averageDeliveryTime": 28.5
+    },
+    {
+      "name": "Tech Solutions",
+      "shipments": 18,
+      "totalDistance": 4680,
+      "averageDeliveryTime": 26.2
+    },
+    {
+      "name": "Global Industries",
+      "shipments": 16,
+      "totalDistance": 5120,
+      "averageDeliveryTime": 34.8
+    },
+    {
+      "name": "Medical Supplies Inc",
+      "shipments": 12,
+      "totalDistance": 3480,
+      "averageDeliveryTime": 30.1
+    },
+    {
+      "name": "Electronics Retailers",
+      "shipments": 10,
+      "totalDistance": 2890,
+      "averageDeliveryTime": 29.7
+    }
+  ],
+  "performanceMetrics": {
+    "fuelEfficiency": 8.4,
+    "operationalCosts": 12680,
+    "loadUtilization": 84.6
+  }
+} 

@@ -44,6 +44,7 @@ import {
   Pie,
   Cell
 } from "recharts";
+import { shipmentService } from "@/services/shipmentService";
 
 interface ShipmentExceptionHandlerProps {
   shipments: Shipment[];
@@ -83,6 +84,7 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
     avgResolutionTime: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [exceptionsData, setExceptionsData] = useState<any>(null);
   
   // Colors for severity
   const severityColors = {
@@ -96,15 +98,35 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
   const COLORS = ['#4CAF50', '#FF9800', '#F44336', '#2196F3', '#9C27B0', '#607D8B'];
   
   useEffect(() => {
-    generateExceptions();
+    loadExceptionData();
   }, [shipments]);
+  
+  useEffect(() => {
+    if (exceptionsData) {
+      generateExceptions();
+    }
+  }, [exceptionsData, shipments]);
   
   useEffect(() => {
     applyFilters();
   }, [exceptions, activeTab, searchQuery, typeFilter, severityFilter]);
   
+  const loadExceptionData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await shipmentService.getExceptionsData();
+      setExceptionsData(data);
+    } catch (error) {
+      console.error('Error loading exception data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const generateExceptions = () => {
-    // Create mock exceptions based on shipments
+    if (!exceptionsData) return;
+    
+    // Create exceptions based on shipments data and exceptions reference data
     const exceptionTypes: ExceptionType[] = ['delay', 'damage', 'route-deviation', 'weather', 'mechanical', 'administrative'];
     const severityLevels = ['low', 'medium', 'high', 'critical'];
     const statuses = ['new', 'in-progress', 'resolved', 'monitoring'];
@@ -132,7 +154,21 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
             status = statuses[Math.floor(Math.random() * (statuses.length - 1))]; // Exclude resolved for active shipments more often
           }
           
-          const description = generateExceptionDescription(type, severity);
+          // Get description from exception data
+          const descriptions = exceptionsData.exceptionTypes[type];
+          const description = descriptions[Math.floor(Math.random() * descriptions.length)];
+          
+          // Get impact description based on severity
+          const impacts = exceptionsData.impactDescriptions[severity as keyof typeof exceptionsData.impactDescriptions];
+          const impact = impacts[Math.floor(Math.random() * impacts.length)];
+          
+          // Get correction action based on type
+          const corrections = exceptionsData.correctionActions[type];
+          const correctionAction = corrections[Math.floor(Math.random() * corrections.length)];
+          
+          // Get random agent
+          const agents = exceptionsData.agents;
+          const assignedTo = agents[Math.floor(Math.random() * agents.length)];
           
           generatedExceptions.push({
             id: exceptionId++,
@@ -144,9 +180,9 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
             description,
             created: new Date(Date.now() - Math.floor(Math.random() * 10) * 86400000), // 0-10 days ago
             estimatedResolutionTime: Math.floor(Math.random() * 48) + 1, // 1-48 hours
-            assignedTo: getRandomAgent(),
-            impact: generateImpactDescription(severity as 'low' | 'medium' | 'high' | 'critical'),
-            correctionAction: generateCorrectionAction(type)
+            assignedTo,
+            impact,
+            correctionAction
           });
         }
       }
@@ -154,18 +190,23 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
     
     setExceptions(generatedExceptions);
     
-    // Calculate metrics
-    const resolved = generatedExceptions.filter(ex => ex.status === 'resolved').length;
-    const active = generatedExceptions.length - resolved;
-    const critical = generatedExceptions.filter(ex => ex.severity === 'critical').length;
-    
-    setExceptionMetrics({
-      total: generatedExceptions.length,
-      active,
-      resolved,
-      critical,
-      avgResolutionTime: Math.round(generatedExceptions.reduce((sum, ex) => sum + (ex.estimatedResolutionTime || 0), 0) / generatedExceptions.length)
-    });
+    // Set metrics - either use metrics from data or calculate
+    if (exceptionsData.metrics) {
+      setExceptionMetrics(exceptionsData.metrics);
+    } else {
+      // Calculate metrics
+      const resolved = generatedExceptions.filter(ex => ex.status === 'resolved').length;
+      const active = generatedExceptions.length - resolved;
+      const critical = generatedExceptions.filter(ex => ex.severity === 'critical').length;
+      
+      setExceptionMetrics({
+        total: generatedExceptions.length,
+        active,
+        resolved,
+        critical,
+        avgResolutionTime: Math.round(generatedExceptions.reduce((sum, ex) => sum + (ex.estimatedResolutionTime || 0), 0) / generatedExceptions.length)
+      });
+    }
   };
   
   const applyFilters = () => {
@@ -232,136 +273,10 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
     }
   };
   
-  // Helper functions to generate realistic data
-  const generateExceptionDescription = (type: ExceptionType, severity: string): string => {
-    const descriptions = {
-      'delay': [
-        'Shipment delayed due to heavy traffic',
-        'Loading process taking longer than expected',
-        'Carrier experiencing schedule delays',
-        'Customs clearance delay'
-      ],
-      'damage': [
-        'Package shows signs of external damage',
-        'Water damage detected on packaging',
-        'Product damaged during handling',
-        'Packaging integrity compromised'
-      ],
-      'route-deviation': [
-        'Vehicle detected on unplanned route',
-        'Significant deviation from planned route',
-        'Route changed due to road closure',
-        'Detour required due to construction'
-      ],
-      'weather': [
-        'Severe weather conditions affecting delivery',
-        'Snowstorm delaying transportation',
-        'Flooding on primary delivery route',
-        'Hurricane warning issued for destination area'
-      ],
-      'mechanical': [
-        'Vehicle breakdown reported',
-        'Engine malfunction in delivery truck',
-        'Refrigeration system failure',
-        'Tire replacement required'
-      ],
-      'administrative': [
-        'Missing documentation for customs',
-        'Address verification required',
-        'Payment issue detected',
-        'Regulatory compliance check pending'
-      ]
-    };
-    
-    const options = descriptions[type];
-    return options[Math.floor(Math.random() * options.length)];
-  };
-  
-  const generateImpactDescription = (severity: 'low' | 'medium' | 'high' | 'critical'): string => {
-    const impacts = {
-      'low': [
-        'Minor delay expected',
-        'No significant impact on delivery time',
-        'Minimal financial impact'
-      ],
-      'medium': [
-        'Expected delay of 1-2 days',
-        'Moderate increased operational costs',
-        'May require partial rerouting'
-      ],
-      'high': [
-        'Significant delay of 3+ days expected',
-        'Substantial financial impact',
-        'Customer satisfaction likely affected'
-      ],
-      'critical': [
-        'Delivery at serious risk',
-        'Major financial and operational impact',
-        'Urgent intervention required to salvage delivery'
-      ]
-    };
-    
-    const options = impacts[severity];
-    return options[Math.floor(Math.random() * options.length)];
-  };
-  
-  const generateCorrectionAction = (type: ExceptionType): string => {
-    const actions = {
-      'delay': [
-        'Expedite shipping for remaining journey',
-        'Notify customer of updated ETA',
-        'Assign priority status for processing'
-      ],
-      'damage': [
-        'Inspect cargo at next checkpoint',
-        'Arrange for replacement shipment',
-        'Document damage for insurance claim'
-      ],
-      'route-deviation': [
-        'Contact driver to confirm current route',
-        'Recalculate optimal path to destination',
-        'Update geofence parameters'
-      ],
-      'weather': [
-        'Identify alternative routes avoiding weather system',
-        'Hold shipment until weather clears',
-        'Switch to alternative transportation mode'
-      ],
-      'mechanical': [
-        'Dispatch maintenance team',
-        'Transfer cargo to replacement vehicle',
-        'Schedule repair at nearest service center'
-      ],
-      'administrative': [
-        'Contact customer for additional documentation',
-        'Expedite paperwork processing',
-        'Assign admin team for resolution'
-      ]
-    };
-    
-    const options = actions[type];
-    return options[Math.floor(Math.random() * options.length)];
-  };
-  
-  const getRandomAgent = (): string => {
-    const agents = [
-      'Sara Johnson',
-      'Michael Chen',
-      'Robert Garcia',
-      'Lisa Wong',
-      'David Smith',
-      'Maria Rodriguez'
-    ];
-    
-    return agents[Math.floor(Math.random() * agents.length)];
-  };
-  
-  // Format date for display
   const formatDate = (date: Date): string => {
     return new Date(date).toLocaleString();
   };
   
-  // Get icon for exception type
   const getExceptionIcon = (type: ExceptionType) => {
     switch (type) {
       case 'delay':
@@ -373,157 +288,96 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
       case 'weather':
         return <CloudIcon className="h-4 w-4 text-blue-500" />;
       case 'mechanical':
-        return <TruckIcon className="h-4 w-4 text-slate-500" />;
+        return <TruckIcon className="h-4 w-4 text-orange-500" />;
       case 'administrative':
-        return <ClipboardIcon className="h-4 w-4 text-green-500" />;
+        return <ClipboardIcon className="h-4 w-4 text-gray-500" />;
       default:
-        return <AlertCircleIcon className="h-4 w-4 text-gray-500" />;
+        return <AlertTriangleIcon className="h-4 w-4 text-gray-500" />;
     }
   };
   
-  // Generate data for charts
   const getExceptionTypeData = () => {
-    const typeCounts: { [key: string]: number } = {};
+    const typeCount: Record<string, number> = {};
     
-    exceptions.forEach(ex => {
-      typeCounts[ex.type] = (typeCounts[ex.type] || 0) + 1;
+    exceptions.forEach(exception => {
+      typeCount[exception.type] = (typeCount[exception.type] || 0) + 1;
     });
     
-    return Object.keys(typeCounts).map(type => ({
-      name: type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' '),
-      value: typeCounts[type]
+    return Object.entries(typeCount).map(([type, count]) => ({
+      name: type,
+      value: count
     }));
   };
   
   const getExceptionSeverityData = () => {
-    return [
-      { 
-        name: 'Critical', 
-        count: exceptions.filter(ex => ex.severity === 'critical').length 
-      },
-      { 
-        name: 'High', 
-        count: exceptions.filter(ex => ex.severity === 'high').length 
-      },
-      { 
-        name: 'Medium', 
-        count: exceptions.filter(ex => ex.severity === 'medium').length 
-      },
-      { 
-        name: 'Low', 
-        count: exceptions.filter(ex => ex.severity === 'low').length 
-      }
-    ];
+    const severityCount: Record<string, number> = {};
+    
+    exceptions.forEach(exception => {
+      severityCount[exception.severity] = (severityCount[exception.severity] || 0) + 1;
+    });
+    
+    return Object.entries(severityCount).map(([severity, count]) => ({
+      name: severity,
+      value: count
+    }));
   };
   
   return (
     <div className="overflow-hidden">
-      <CardContent className="p-0">
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <TrendingUpIcon className="h-5 w-5 mr-2 text-blue-500" />
-                <span className="font-medium">Exception Analytics</span>
-              </div>
-            </div>
-            <div className="h-64 border rounded-lg p-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={getExceptionSeverityData()}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="name" 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <YAxis 
-                    className="text-xs" 
-                    tick={{fill: 'hsl(var(--foreground))'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="count" name="Number of Exceptions" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
+      <div className="p-0 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="border rounded-md p-4">
+            <div className="text-sm font-medium text-muted-foreground mb-1">Total Exceptions</div>
+            <div className="text-2xl font-bold">{exceptionMetrics.total}</div>
+            <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+              <div className="h-full bg-blue-500" style={{ width: '100%' }} />
             </div>
           </div>
           
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <PieChartIcon className="h-5 w-5 mr-2 text-purple-500" />
-                <span className="font-medium">Exception Types</span>
-              </div>
+          <div className="border rounded-md p-4">
+            <div className="text-sm font-medium text-muted-foreground mb-1">Active Exceptions</div>
+            <div className="text-2xl font-bold text-amber-500">{exceptionMetrics.active}</div>
+            <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+              <div className="h-full bg-amber-500" style={{ width: `${(exceptionMetrics.active / exceptionMetrics.total) * 100}%` }} />
             </div>
-            <div className="h-64 border rounded-lg p-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={getExceptionTypeData()}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {getExceptionTypeData().map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+          </div>
+          
+          <div className="border rounded-md p-4">
+            <div className="text-sm font-medium text-muted-foreground mb-1">Critical Issues</div>
+            <div className="text-2xl font-bold text-red-500">{exceptionMetrics.critical}</div>
+            <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+              <div className="h-full bg-red-500" style={{ width: `${(exceptionMetrics.critical / exceptionMetrics.total) * 100}%` }} />
+            </div>
+          </div>
+          
+          <div className="border rounded-md p-4">
+            <div className="text-sm font-medium text-muted-foreground mb-1">Avg. Resolution Time</div>
+            <div className="text-2xl font-bold">{exceptionMetrics.avgResolutionTime} hrs</div>
+            <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
+              <div className="h-full bg-green-500" style={{ width: `${Math.min(100, (exceptionMetrics.avgResolutionTime / 24) * 100)}%` }} />
             </div>
           </div>
         </div>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-            <TabsList className="mb-0">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="critical">Critical</TabsTrigger>
-              <TabsTrigger value="resolved">Resolved</TabsTrigger>
-            </TabsList>
-            
-            <div className="flex flex-col md:flex-row gap-2">
-              <div className="relative">
-                <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="w-full md:w-2/3">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center space-x-2">
                 <Input
                   placeholder="Search exceptions..."
-                  className="pl-8 h-9 md:w-[200px] lg:w-[250px]"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-64"
                 />
-              </div>
-              
-              <div className="flex gap-2">
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-[130px] h-9">
-                    <div className="flex items-center">
+                  <SelectTrigger className="w-40">
+                    <span className="flex items-center">
                       <FilterIcon className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Type" />
-                    </div>
+                      {typeFilter === 'all' ? 'All types' : typeFilter}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     <SelectItem value="delay">Delay</SelectItem>
                     <SelectItem value="damage">Damage</SelectItem>
                     <SelectItem value="route-deviation">Route Deviation</SelectItem>
@@ -532,104 +386,278 @@ export function ShipmentExceptionHandler({ shipments, onResolveException, onRefr
                     <SelectItem value="administrative">Administrative</SelectItem>
                   </SelectContent>
                 </Select>
-                
                 <Select value={severityFilter} onValueChange={setSeverityFilter}>
-                  <SelectTrigger className="w-[130px] h-9">
-                    <div className="flex items-center">
-                      <AlertCircleIcon className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Severity" />
-                    </div>
+                  <SelectTrigger className="w-40">
+                    <span className="flex items-center">
+                      <AlertTriangleIcon className="h-4 w-4 mr-2" />
+                      {severityFilter === 'all' ? 'All severity' : severityFilter}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="all">All severity</SelectItem>
                     <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              <Button 
+                onClick={handleRefresh} 
+                variant="outline" 
+                size="sm"
+                disabled={isLoading}
+              >
+                <RefreshCwIcon className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
             </div>
+            
+            <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="active" className="flex items-center">
+                  <AlertCircleIcon className="h-4 w-4 mr-2" />
+                  Active
+                </TabsTrigger>
+                <TabsTrigger value="critical" className="flex items-center">
+                  <AlertTriangleIcon className="h-4 w-4 mr-2" />
+                  Critical
+                </TabsTrigger>
+                <TabsTrigger value="resolved" className="flex items-center">
+                  <CheckCircleIcon className="h-4 w-4 mr-2" />
+                  Resolved
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="active" className="pt-4">
+                {filteredExceptions.length > 0 ? (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-16">Severity</TableHead>
+                          <TableHead className="w-32">Type</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Tracking #</TableHead>
+                          <TableHead className="w-32">Created</TableHead>
+                          <TableHead className="w-32">Status</TableHead>
+                          <TableHead className="w-24 text-right">Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredExceptions.map((exception) => (
+                          <TableRow key={exception.id}>
+                            <TableCell>
+                              <Badge variant="outline" className={severityColors[exception.severity]}>
+                                {exception.severity}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center">
+                                {getExceptionIcon(exception.type)}
+                                <span className="ml-2 capitalize">{exception.type}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">{exception.description}</TableCell>
+                            <TableCell>{exception.trackingNumber}</TableCell>
+                            <TableCell>{formatDate(exception.created)}</TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={exception.status === 'new' ? 'default' : 
+                                        exception.status === 'in-progress' ? 'secondary' : 
+                                        exception.status === 'resolved' ? 'outline' : 'default'}
+                                className={exception.status === 'resolved' ? 'bg-green-500' : ''}
+                              >
+                                {exception.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleResolveException(exception.id)}
+                              >
+                                <CheckCircleIcon className="h-4 w-4 mr-2" />
+                                Resolve
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border rounded-md">
+                    <AlertCircleIcon className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">No active exceptions found</p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="critical" className="pt-4">
+                {filteredExceptions.length > 0 ? (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-32">Type</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Impact</TableHead>
+                          <TableHead className="w-32">Status</TableHead>
+                          <TableHead className="w-32">Assigned to</TableHead>
+                          <TableHead className="w-24 text-right">Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredExceptions.map((exception) => (
+                          <TableRow key={exception.id}>
+                            <TableCell>
+                              <div className="flex items-center">
+                                {getExceptionIcon(exception.type)}
+                                <span className="ml-2 capitalize">{exception.type}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">{exception.description}</TableCell>
+                            <TableCell className="text-red-500">{exception.impact}</TableCell>
+                            <TableCell>
+                              <Badge variant="default">
+                                {exception.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{exception.assignedTo}</TableCell>
+                            <TableCell className="text-right">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleResolveException(exception.id)}
+                              >
+                                <CheckCircleIcon className="h-4 w-4 mr-2" />
+                                Resolve
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border rounded-md">
+                    <AlertTriangleIcon className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">No critical exceptions found</p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="resolved" className="pt-4">
+                {filteredExceptions.length > 0 ? (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-32">Type</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Resolution</TableHead>
+                          <TableHead className="w-32">Tracking #</TableHead>
+                          <TableHead className="w-32">Resolved</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredExceptions.map((exception) => (
+                          <TableRow key={exception.id}>
+                            <TableCell>
+                              <div className="flex items-center">
+                                {getExceptionIcon(exception.type)}
+                                <span className="ml-2 capitalize">{exception.type}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">{exception.description}</TableCell>
+                            <TableCell className="text-green-500">{exception.correctionAction}</TableCell>
+                            <TableCell>{exception.trackingNumber}</TableCell>
+                            <TableCell>{formatDate(exception.created)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border rounded-md">
+                    <CheckCircleIcon className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">No resolved exceptions found</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
           
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">ID</TableHead>
-                  <TableHead className="w-[140px]">Tracking #</TableHead>
-                  <TableHead className="w-[140px]">Type</TableHead>
-                  <TableHead className="w-[100px]">Severity</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="w-[180px]">Created</TableHead>
-                  <TableHead className="w-[140px]">Status</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredExceptions.length > 0 ? (
-                  filteredExceptions.map((exception) => (
-                    <TableRow key={exception.id}>
-                      <TableCell className="font-medium">{exception.id}</TableCell>
-                      <TableCell>{exception.trackingNumber}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          {getExceptionIcon(exception.type)}
-                          <span className="ml-2 capitalize">{exception.type.replace('-', ' ')}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={severityColors[exception.severity]}>
-                          {exception.severity}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{exception.description}</TableCell>
-                      <TableCell>{formatDate(exception.created)}</TableCell>
-                      <TableCell>
-                        <Badge 
-                          className={
-                            exception.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                            exception.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-                            exception.status === 'monitoring' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' :
-                            'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300'
-                          }
-                        >
-                          {exception.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {exception.status !== 'resolved' ? (
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-8"
-                            onClick={() => handleResolveException(exception.id)}
-                          >
-                            <CheckCircleIcon className="h-3.5 w-3.5 mr-1" />
-                            Resolve
-                          </Button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-6">
-                      <div className="flex flex-col items-center justify-center text-muted-foreground">
-                        <XCircleIcon className="h-8 w-8 mb-2" />
-                        <p>No exceptions found</p>
-                        <p className="text-sm">Try adjusting your filters or search query</p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+          <div className="w-full md:w-1/3 space-y-4">
+            <div className="border rounded-md p-4">
+              <div className="text-sm font-medium mb-3">Exception Types</div>
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={getExceptionTypeData()}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={25}
+                      outerRadius={50}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {getExceptionTypeData().map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            
+            <div className="border rounded-md p-4">
+              <div className="text-sm font-medium mb-3">Severity Distribution</div>
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={getExceptionSeverityData()}
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={80} />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#2196F3" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            
+            <div className="border rounded-md p-4">
+              <div className="text-sm font-medium mb-3">Exception Handling Tips</div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start">
+                  <AlertTriangleIcon className="h-4 w-4 mr-2 text-amber-500 mt-0.5" />
+                  <span>Critical issues require immediate attention and escalation</span>
+                </li>
+                <li className="flex items-start">
+                  <ClockIcon className="h-4 w-4 mr-2 text-blue-500 mt-0.5" />
+                  <span>Resolve delay issues by providing customers with updated ETAs</span>
+                </li>
+                <li className="flex items-start">
+                  <PackageIcon className="h-4 w-4 mr-2 text-red-500 mt-0.5" />
+                  <span>Document all damage evidence before processing claims</span>
+                </li>
+                <li className="flex items-start">
+                  <RouteIcon className="h-4 w-4 mr-2 text-purple-500 mt-0.5" />
+                  <span>Route deviations may require updating associated shipments</span>
+                </li>
+              </ul>
+            </div>
           </div>
-        </Tabs>
-      </CardContent>
+        </div>
+      </div>
     </div>
   );
 } 

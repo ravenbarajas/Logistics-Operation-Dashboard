@@ -1,58 +1,32 @@
-# Mock Data Structure
+# Mock Data Directory
 
-This directory contains mock data for the application, organized by feature area. Each feature area has its own directory with one or more JSON files and an `index.ts` file that handles loading and preparing the data.
+This directory contains mock data used throughout the application for development and testing purposes.
 
-## Directory Structure
+## Structure
 
-```
-mockData/
-├── vehicles/
-│   ├── fleetData.json         - Vehicle fleet data
-│   ├── maintenanceData.json   - Maintenance records and activities
-│   ├── fuelData.json          - Fuel consumption and efficiency data
-│   ├── analyticsData.json     - Analytics and statistics data
-│   ├── driversData.json       - Driver profiles and performance data
-│   └── index.ts               - Data loader and exporter
-└── README.md                  - This file
-```
+- **shipments/** - Mock data related to shipment features
+  - `shipments.json` - Basic shipment records with tracking information
+  - `analytics.json` - Performance and analytics data for shipments
+  - `routeEfficiency.json` - Data for route efficiency analysis
+  - `environmentalImpact.json` - Environmental impact metrics and charts
+  - `exceptions.json` - Shipment exceptions and resolution data
+  - `index.ts` - Exports all mock data with type conversion (e.g., strings to Date objects)
 
 ## Usage
 
-Import the mock data in your component:
+Import the mock data directly from the index files:
 
 ```typescript
-// Import individual data sets
-import { 
-  expandedFleetData, 
-  maintenanceRecords, 
-  fuelRecords,
-  drivers 
-} from '@/mockData/vehicles';
-
-// Or import everything as a namespaced object
-import vehicleMockData from '@/mockData/vehicles';
-
-// Then use the data
-const vehicles = vehicleMockData.fleet.vehicles;
-const maintenance = vehicleMockData.maintenance.records;
-const drivers = vehicleMockData.drivers;
+import { shipments } from '@/mockData/shipments';
 ```
 
-## Data Conversion
+## Benefits of External JSON Files
 
-The `index.ts` file in each directory handles any necessary data conversions, such as converting string dates to JavaScript Date objects. This ensures that the mock data closely resembles what would be returned from a real API.
+1. **Separation of Concerns**: Keeps large data sets separate from UI components
+2. **Reusability**: Enables the same data to be used across multiple components
+3. **Maintainability**: Makes it easier to update mock data in one place
+4. **Testing**: Facilitates consistent test data
 
-## Benefits
+## Future Improvements
 
-- **Modularity**: Mock data is separated from component code
-- **Reusability**: The same mock data can be used across multiple components
-- **Maintenance**: Easy to update mock data in a single location
-- **Type Safety**: TypeScript types ensure data consistency
-
-## Adding New Mock Data
-
-To add new mock data:
-
-1. Create a new JSON file in the appropriate directory
-2. Update the `index.ts` file to include your new data
-3. Export the data with appropriate conversions if needed 
+The mock data structure is designed to be eventually replaced with real API calls, with minimal changes to the components that consume the data. 

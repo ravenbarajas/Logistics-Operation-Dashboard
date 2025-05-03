@@ -1,0 +1,123 @@
+{
+  "exceptionTypes": {
+    "delay": [
+      "Shipment delayed due to heavy traffic",
+      "Loading process taking longer than expected",
+      "Carrier experiencing schedule delays",
+      "Customs clearance delay"
+    ],
+    "damage": [
+      "Package shows signs of external damage",
+      "Water damage detected on packaging",
+      "Product damaged during handling",
+      "Packaging integrity compromised"
+    ],
+    "route-deviation": [
+      "Driver had to take alternate route due to road closure",
+      "GPS routing error caused deviation from planned route",
+      "Weather conditions forced route change",
+      "Unplanned detour due to traffic conditions"
+    ],
+    "weather": [
+      "Severe weather warning in delivery area",
+      "Snowstorm delaying transportation",
+      "Flooding on planned route",
+      "Extreme temperature affecting cargo condition"
+    ],
+    "mechanical": [
+      "Vehicle breakdown reported",
+      "Flat tire causing delay",
+      "Engine issues requiring maintenance",
+      "Fuel system malfunction"
+    ],
+    "administrative": [
+      "Missing documentation delaying processing",
+      "Permit issue at border crossing",
+      "Staff shortage at loading facility",
+      "System outage affecting shipment tracking"
+    ]
+  },
+  "impactDescriptions": {
+    "low": [
+      "Minor delay expected, no significant impact on delivery timeframe",
+      "Issue can be resolved within normal operations",
+      "No customer impact anticipated",
+      "Minimal additional costs incurred"
+    ],
+    "medium": [
+      "Delivery likely to be delayed by 1-2 days",
+      "Customer notification recommended",
+      "Moderate additional costs expected",
+      "May affect connected shipments"
+    ],
+    "high": [
+      "Significant delivery delay expected (3+ days)",
+      "Customer impact requiring immediate notification",
+      "Substantial cost implications",
+      "Will impact downstream supply chain operations"
+    ],
+    "critical": [
+      "Shipment at risk of cancellation or severe delay",
+      "Immediate customer escalation required",
+      "Major financial impact and potential penalties",
+      "Emergency response team activation needed"
+    ]
+  },
+  "correctionActions": {
+    "delay": [
+      "Expedited shipping arranged at no additional cost",
+      "Alternative carrier has been assigned",
+      "Priority handling flagged at next checkpoint",
+      "Delivery time window extended with customer approval"
+    ],
+    "damage": [
+      "Replacement items dispatched to customer",
+      "Product inspection scheduled at next checkpoint",
+      "Repackaging authorized at distribution center",
+      "Damage assessment team dispatched to location"
+    ],
+    "route-deviation": [
+      "Routing optimization performed to minimize impact",
+      "Driver provided with updated navigation instructions",
+      "Traffic monitoring activated to avoid further delays",
+      "Alternate route calculated with estimated time adjustment"
+    ],
+    "weather": [
+      "Shipment rerouted to avoid weather system",
+      "Hold placed until weather conditions improve",
+      "Climate-controlled vehicle assigned",
+      "Additional protective packaging applied"
+    ],
+    "mechanical": [
+      "Maintenance team dispatched to vehicle location",
+      "Cargo transferred to replacement vehicle",
+      "Local service provider engaged for quick repairs",
+      "Towing service arranged to nearest service center"
+    ],
+    "administrative": [
+      "Missing documents expedited through system",
+      "Manager override approval obtained",
+      "Temporary exemption granted with follow-up required",
+      "Digital documentation substituted where permissible"
+    ]
+  },
+  "agents": [
+    "Alex Morgan",
+    "Jamie Rodriguez",
+    "Taylor Washington",
+    "Casey Kim",
+    "Jordan Smith",
+    "Riley Johnson",
+    "Quinn Williams",
+    "Avery Thompson",
+    "Dakota Lee",
+    "Morgan Chen"
+  ],
+  "metrics": {
+    "total": 43,
+    "active": 18,
+    "resolved": 25,
+    "critical": 4,
+    "avgResolutionTime": 12
+  }
+} 

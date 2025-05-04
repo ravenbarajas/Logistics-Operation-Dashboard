@@ -4,4 +4,5 @@ export { VehicleFormAssignments } from "./VehicleFormAssignments";
 export { VehicleFormBasic } from "./VehicleFormBasic";
 export { VehicleFormDetails } from "./VehicleFormDetails";
 export { VehicleFormDocuments } from "./VehicleFormDocuments";
-export { VehicleModal } from "./VehicleModal"; 
+export { VehicleModal } from "./VehicleModal";
+export { FuelTab } from "./FuelTab"; 

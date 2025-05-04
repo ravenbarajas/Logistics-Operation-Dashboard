@@ -4,7 +4,8 @@ import {
   analyticsData,
   routeEfficiencyData,
   environmentalImpactData,
-  exceptionsData
+  exceptionsData,
+  efficiencyMetrics
 } from '@/mockData/shipments';
 
 // New types for analytics
@@ -141,5 +142,10 @@ export const shipmentService = {
   // Helper method to get exceptions data
   async getExceptionsData() {
     return exceptionsData;
+  },
+  
+  // Helper method to get efficiency metrics data
+  async getEfficiencyMetrics() {
+    return efficiencyMetrics;
   }
 }; 

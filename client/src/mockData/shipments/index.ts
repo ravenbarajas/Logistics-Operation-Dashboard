@@ -3,6 +3,7 @@ import analyticsData from './analytics.json';
 import routeEfficiencyData from './routeEfficiency.json';
 import environmentalImpactData from './environmentalImpact.json';
 import exceptionsData from './exceptions.json';
+import efficiencyMetricsData from './efficiencyMetrics.json';
 
 // Convert all date strings in shipments back to Date objects
 const processedShipments = shipmentsData.map(shipment => ({
@@ -18,5 +19,6 @@ export {
   analyticsData,
   routeEfficiencyData,
   environmentalImpactData,
-  exceptionsData 
+  exceptionsData,
+  efficiencyMetricsData as efficiencyMetrics
 }; 

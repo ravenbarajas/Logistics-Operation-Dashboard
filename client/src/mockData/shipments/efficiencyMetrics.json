@@ -1,0 +1,107 @@
+{
+  "summary": {
+    "routeOptimization": 10.8,
+    "loadUtilization": 89.5,
+    "onTimeDelivery": 92.4,
+    "fuelEfficiency": 8.7
+  },
+  "driverPerformance": [
+    { "driver": "John Smith", "onTime": 96, "fuelEfficiency": 9.2, "deliveryAccuracy": 99 },
+    { "driver": "Maria Garcia", "onTime": 92, "fuelEfficiency": 8.7, "deliveryAccuracy": 98 },
+    { "driver": "Robert Johnson", "onTime": 88, "fuelEfficiency": 8.9, "deliveryAccuracy": 97 },
+    { "driver": "Liu Wei", "onTime": 94, "fuelEfficiency": 9.4, "deliveryAccuracy": 99 },
+    { "driver": "Sarah Adams", "onTime": 90, "fuelEfficiency": 8.5, "deliveryAccuracy": 96 }
+  ],
+  "routeOptimization": [
+    { "date": "2023-07-01", "actualDistance": 4250, "optimizedDistance": 3820, "savingsPercentage": 10.1 },
+    { "date": "2023-07-08", "actualDistance": 4320, "optimizedDistance": 3850, "savingsPercentage": 10.9 },
+    { "date": "2023-07-15", "actualDistance": 4180, "optimizedDistance": 3720, "savingsPercentage": 11.0 },
+    { "date": "2023-07-22", "actualDistance": 4400, "optimizedDistance": 3950, "savingsPercentage": 10.2 },
+    { "date": "2023-07-29", "actualDistance": 4280, "optimizedDistance": 3790, "savingsPercentage": 11.4 },
+    { "date": "2023-08-05", "actualDistance": 4150, "optimizedDistance": 3680, "savingsPercentage": 11.3 }
+  ],
+  "loadUtilization": [
+    { "vehicle": "Box Truck - Small", "capacity": 1000, "utilized": 920, "efficiency": 92 },
+    { "vehicle": "Box Truck - Large", "capacity": 1600, "utilized": 1440, "efficiency": 90 },
+    { "vehicle": "Semi Trailer", "capacity": 2800, "utilized": 2380, "efficiency": 85 },
+    { "vehicle": "Flatbed", "capacity": 2200, "utilized": 1980, "efficiency": 90 },
+    { "vehicle": "Refrigerated Truck", "capacity": 1800, "utilized": 1530, "efficiency": 85 },
+    { "vehicle": "Van", "capacity": 800, "utilized": 760, "efficiency": 95 }
+  ],
+  "timeWindowAnalysis": [
+    { "timeWindow": "Morning (6-10)", "deliveries": 280, "onTime": 94, "avgDelay": 8 },
+    { "timeWindow": "Mid-day (10-2)", "deliveries": 320, "onTime": 92, "avgDelay": 12 },
+    { "timeWindow": "Afternoon (2-6)", "deliveries": 350, "onTime": 89, "avgDelay": 15 },
+    { "timeWindow": "Evening (6-10)", "deliveries": 220, "onTime": 91, "avgDelay": 10 },
+    { "timeWindow": "Night (10-6)", "deliveries": 180, "onTime": 95, "avgDelay": 5 }
+  ],
+  "fuelConsumptionTrends": [
+    { "distance": "50 miles", "Box Truck": 5.2, "Semi Trailer": 6.3, "Van": 3.1 },
+    { "distance": "100 miles", "Box Truck": 10.5, "Semi Trailer": 12.8, "Van": 7.8 },
+    { "distance": "150 miles", "Box Truck": 16.1, "Semi Trailer": 19.3, "Van": 12.3 },
+    { "distance": "200 miles", "Box Truck": 21.8, "Semi Trailer": 25.5, "Van": 16.9 }
+  ],
+  "fuelConsumptionRaw": [
+    { "distance": 50, "consumption": 5.2, "vehicle": "Box Truck" },
+    { "distance": 120, "consumption": 12.8, "vehicle": "Box Truck" },
+    { "distance": 180, "consumption": 19.2, "vehicle": "Box Truck" },
+    { "distance": 75, "consumption": 6.3, "vehicle": "Semi Trailer" },
+    { "distance": 150, "consumption": 13.1, "vehicle": "Semi Trailer" },
+    { "distance": 230, "consumption": 21.5, "vehicle": "Semi Trailer" },
+    { "distance": 40, "consumption": 3.1, "vehicle": "Van" },
+    { "distance": 90, "consumption": 7.1, "vehicle": "Van" },
+    { "distance": 130, "consumption": 10.9, "vehicle": "Van" }
+  ],
+  "vehicleEfficiencyComparison": [
+    { "vehicle": "Box Truck", "fuelEfficiency": 8.5, "co2Emissions": 105, "maintenanceCost": 0.12 },
+    { "vehicle": "Semi Trailer", "fuelEfficiency": 6.3, "co2Emissions": 152, "maintenanceCost": 0.18 },
+    { "vehicle": "Van", "fuelEfficiency": 12.8, "co2Emissions": 68, "maintenanceCost": 0.08 },
+    { "vehicle": "Flatbed", "fuelEfficiency": 7.1, "co2Emissions": 125, "maintenanceCost": 0.15 },
+    { "vehicle": "Refrigerated Truck", "fuelEfficiency": 6.8, "co2Emissions": 158, "maintenanceCost": 0.21 }
+  ],
+  "routeEfficiencyByRegion": [
+    { "region": "Northeast", "efficiency": 87.5, "distanceSavings": 11.2, "timeSavings": 18.5 },
+    { "region": "Southeast", "efficiency": 92.1, "distanceSavings": 8.5, "timeSavings": 14.3 },
+    { "region": "Midwest", "efficiency": 89.3, "distanceSavings": 9.8, "timeSavings": 16.2 },
+    { "region": "Southwest", "efficiency": 85.7, "distanceSavings": 12.3, "timeSavings": 20.1 },
+    { "region": "West", "efficiency": 93.2, "distanceSavings": 7.9, "timeSavings": 13.5 }
+  ],
+  "historicalTrends": {
+    "routeOptimization": [
+      { "month": "Jan", "value": 9.2 },
+      { "month": "Feb", "value": 9.5 },
+      { "month": "Mar", "value": 9.7 },
+      { "month": "Apr", "value": 10.1 },
+      { "month": "May", "value": 10.3 },
+      { "month": "Jun", "value": 10.6 },
+      { "month": "Jul", "value": 10.8 }
+    ],
+    "loadUtilization": [
+      { "month": "Jan", "value": 85.1 },
+      { "month": "Feb", "value": 85.8 },
+      { "month": "Mar", "value": 86.5 },
+      { "month": "Apr", "value": 87.2 },
+      { "month": "May", "value": 88.3 },
+      { "month": "Jun", "value": 89.0 },
+      { "month": "Jul", "value": 89.5 }
+    ],
+    "onTimeDelivery": [
+      { "month": "Jan", "value": 90.1 },
+      { "month": "Feb", "value": 90.5 },
+      { "month": "Mar", "value": 91.2 },
+      { "month": "Apr", "value": 91.5 },
+      { "month": "May", "value": 91.9 },
+      { "month": "Jun", "value": 92.2 },
+      { "month": "Jul", "value": 92.4 }
+    ],
+    "fuelEfficiency": [
+      { "month": "Jan", "value": 8.2 },
+      { "month": "Feb", "value": 8.3 },
+      { "month": "Mar", "value": 8.4 },
+      { "month": "Apr", "value": 8.5 },
+      { "month": "May", "value": 8.6 },
+      { "month": "Jun", "value": 8.6 },
+      { "month": "Jul", "value": 8.7 }
+    ]
+  }
+} 

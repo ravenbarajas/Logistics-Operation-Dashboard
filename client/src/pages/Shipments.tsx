@@ -49,6 +49,8 @@ import { ShipmentTracking } from "@/components/shipments/ShipmentTracking";
 import { RouteEfficiencyAnalyzer } from "@/components/shipments/RouteEfficiencyAnalyzer";
 import { EnvironmentalImpactCalculator } from "@/components/shipments/EnvironmentalImpactCalculator";
 import { ShipmentExceptionHandler } from "@/components/shipments/ShipmentExceptionHandler";
+import { ShipmentLoadUtilization } from "@/components/shipments/ShipmentLoadUtilization";
+import { DeliveryTimePerformance } from "@/components/shipments/DeliveryTimePerformance";
 import { useLocation } from "wouter";
 
 // Extended Shipment interface with additional properties that might be needed
@@ -1123,6 +1125,40 @@ export default function Shipments({ shipment, onRefresh }: ShipmentManagementPro
                 <div className="text-center p-4">Loading efficiency data...</div>
               ) : (
                 <RouteEfficiencyAnalyzer shipments={shipments} />
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Truck className="h-5 w-5 mr-2 text-primary" />
+                Load Utilization
+              </CardTitle>
+              <CardDescription>Optimize cargo space and load distribution</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center p-4">Loading utilization data...</div>
+              ) : (
+                <ShipmentLoadUtilization shipments={shipments} />
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Clock className="h-5 w-5 mr-2 text-primary" />
+                Delivery Time Performance
+              </CardTitle>
+              <CardDescription>Track delivery performance and identify optimization opportunities</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center p-4">Loading delivery performance data...</div>
+              ) : (
+                <DeliveryTimePerformance shipments={shipments} />
               )}
             </CardContent>
           </Card>

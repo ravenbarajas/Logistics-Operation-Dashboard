@@ -71,7 +71,7 @@ interface ExtendedShipment extends Shipment {
 }
 
 interface ShipmentManagementProps {
-  shipment: Shipment;
+  shipment?: Shipment;
   onRefresh?: () => void;
 }
 

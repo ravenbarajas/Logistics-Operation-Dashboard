@@ -5,10 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 type HeaderProps = {
-  onMenuClick: () => void;
+  onMenuClick?: () => void;
+  title?: string;
+  isStandalone?: boolean;
 };
 
-export default function Header({ onMenuClick }: HeaderProps) {
+export default function Header({ onMenuClick, title, isStandalone = false }: HeaderProps) {
   const { theme, setTheme } = useTheme();
   const [notifications] = useState(1); // Mock notification count
   
@@ -18,31 +20,45 @@ export default function Header({ onMenuClick }: HeaderProps) {
   
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 border-b border-border bg-card/80 backdrop-blur-sm">
-      <div className="flex items-center md:hidden">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onMenuClick}
-          aria-label="Toggle menu"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-      </div>
-      
-      <div className="hidden md:flex">
-        <nav aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm">
-            <li>
-              <a href="#" className="text-muted-foreground hover:text-foreground">Home</a>
-            </li>
-            <li className="text-muted-foreground">
-              <span>/</span>
-            </li>
-            <li>
-              <a href="#" className="font-medium">Dashboard</a>
-            </li>
-          </ol>
-        </nav>
+      <div className="flex items-center">
+        {onMenuClick && !isStandalone && (
+          <div className="md:hidden mr-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onMenuClick}
+              aria-label="Toggle menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
+        
+        {/* Title for standalone mode */}
+        {isStandalone && title && (
+          <div className="flex items-center">
+            <h1 className="text-lg font-medium">{title}</h1>
+          </div>
+        )}
+        
+        {/* Breadcrumb for non-standalone mode */}
+        {!isStandalone && (
+          <div className="hidden md:flex">
+            <nav aria-label="Breadcrumb">
+              <ol className="flex items-center space-x-2 text-sm">
+                <li>
+                  <a href="#" className="text-muted-foreground hover:text-foreground">Home</a>
+                </li>
+                <li className="text-muted-foreground">
+                  <span>/</span>
+                </li>
+                <li>
+                  <a href="#" className="font-medium">{title || 'Dashboard'}</a>
+                </li>
+              </ol>
+            </nav>
+          </div>
+        )}
       </div>
       
       <div className="flex items-center space-x-2">

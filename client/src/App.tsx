@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route, useLocation, useRoute } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -18,6 +18,7 @@ import Reports from "@/pages/Reports";
 import Analytics from "@/pages/Analytics";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
+import { DEFAULT_MODULE, MODULE_ROUTES, MODULE_TITLES, ModuleType } from "./config";
 
 // Wrapper component to conditionally center content
 function ContentWrapper({ children }: { children: React.ReactNode }) {
@@ -129,23 +130,28 @@ export const STANDALONE_LINKS = {
 function Router() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [location] = useLocation();
+  // Check if we're at the root path to handle the default module redirect
+  const [isRootPath] = useRoute("/");
+  
+  // Redirect to the default module when visiting the root path
+  useEffect(() => {
+    if (isRootPath && DEFAULT_MODULE !== "dashboard") {
+      // Only redirect if the default module is not dashboard
+      window.location.pathname = MODULE_ROUTES[DEFAULT_MODULE];
+    }
+  }, [isRootPath]);
   
   // Check if current route should be standalone (without sidebar)
   const isStandalone = STANDALONE_ROUTES.some(route => location === route || location.startsWith(route));
   
-  // Get the module title for header
+  // Get the module title for header from our configuration
   const getModuleTitle = () => {
-    if (location.startsWith("/vehicles")) return "Fleet Management";
-    if (location.startsWith("/shipments")) return "Shipment Management";
-    if (location.startsWith("/customers")) return "Customer Management";
-    if (location.startsWith("/suppliers")) return "Supplier Management";
-    if (location.startsWith("/warehouse")) return "Warehouse Management";
-    if (location.startsWith("/orders")) return "Order Management";
-    if (location.startsWith("/routes")) return "Route Optimization";
-    if (location.startsWith("/reports")) return "Reports";
-    if (location.startsWith("/analytics")) return "Analytics";
-    if (location.startsWith("/settings")) return "Settings";
-    return "Dashboard";
+    for (const [module, path] of Object.entries(MODULE_ROUTES)) {
+      if (location === path || location.startsWith(path)) {
+        return MODULE_TITLES[module as ModuleType];
+      }
+    }
+    return MODULE_TITLES.dashboard;
   };
   
   // Close sidebar when clicking outside on mobile

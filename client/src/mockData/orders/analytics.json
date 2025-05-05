@@ -1,0 +1,141 @@
+{
+  "orderStatusData": [
+    { "name": "Processing", "value": 35 },
+    { "name": "Shipped", "value": 28 },
+    { "name": "Delivered", "value": 32 },
+    { "name": "Cancelled", "value": 5 }
+  ],
+  "orderVolumeData": [
+    { "date": "Aug 12", "orders": 32, "revenue": 9800 },
+    { "date": "Aug 13", "orders": 28, "revenue": 8600 },
+    { "date": "Aug 14", "orders": 35, "revenue": 11200 },
+    { "date": "Aug 15", "orders": 42, "revenue": 13500 },
+    { "date": "Aug 16", "orders": 38, "revenue": 12100 },
+    { "date": "Aug 17", "orders": 45, "revenue": 14800 },
+    { "date": "Aug 18", "orders": 40, "revenue": 13200 }
+  ],
+  "shippingMethodsData": [
+    { "name": "FedEx", "value": 38 },
+    { "name": "UPS", "value": 32 },
+    { "name": "DHL", "value": 18 },
+    { "name": "USPS", "value": 12 }
+  ],
+  "weeklyOrderTrends": [
+    { "week": "Week 1", "thisYear": 245, "lastYear": 210, "growth": 16.7 },
+    { "week": "Week 2", "thisYear": 285, "lastYear": 232, "growth": 22.8 },
+    { "week": "Week 3", "thisYear": 255, "lastYear": 258, "growth": -1.2 },
+    { "week": "Week 4", "thisYear": 290, "lastYear": 240, "growth": 20.8 }
+  ],
+  "deliveryPerformance": [
+    { "month": "Jan", "time": 3.2, "target": 3.0 },
+    { "month": "Feb", "time": 3.3, "target": 3.0 },
+    { "month": "Mar", "time": 3.0, "target": 3.0 },
+    { "month": "Apr", "time": 2.8, "target": 2.8 },
+    { "month": "May", "time": 2.7, "target": 2.8 },
+    { "month": "Jun", "time": 2.5, "target": 2.8 },
+    { "month": "Jul", "time": 2.4, "target": 2.5 },
+    { "month": "Aug", "time": 2.5, "target": 2.5 }
+  ],
+  "volumeAndRevenue": [
+    { "date": "Aug 12", "orders": 32, "revenue": 9800, "target": 30, "forecast": 32, "anomaly": false },
+    { "date": "Aug 13", "orders": 28, "revenue": 8600, "target": 30, "forecast": 31, "anomaly": false },
+    { "date": "Aug 14", "orders": 35, "revenue": 11200, "target": 30, "forecast": 33, "anomaly": false },
+    { "date": "Aug 15", "orders": 42, "revenue": 13500, "target": 32, "forecast": 35, "anomaly": true },
+    { "date": "Aug 16", "orders": 38, "revenue": 12100, "target": 32, "forecast": 34, "anomaly": false },
+    { "date": "Aug 17", "orders": 45, "revenue": 14800, "target": 32, "forecast": 36, "anomaly": true },
+    { "date": "Aug 18", "orders": 40, "revenue": 13200, "target": 34, "forecast": 38, "anomaly": false }
+  ],
+  "timelineData": [
+    {
+      "stage": "Order Verification",
+      "hours": 1.2,
+      "minHours": 0.9,
+      "maxHours": 1.8,
+      "target": 1.0,
+      "status": "warning",
+      "processRate": 92,
+      "nodeType": "start",
+      "dependencies": [],
+      "sla": 1.0,
+      "description": "Validation of order details and fraud check"
+    },
+    {
+      "stage": "Payment Processing",
+      "hours": 0.4,
+      "minHours": 0.3,
+      "maxHours": 0.7,
+      "target": 0.5,
+      "status": "optimal",
+      "processRate": 98,
+      "nodeType": "process",
+      "dependencies": ["Order Verification"],
+      "sla": 0.5,
+      "description": "Payment gateway processing and verification"
+    },
+    {
+      "stage": "Inventory Allocation",
+      "hours": 0.8,
+      "minHours": 0.5,
+      "maxHours": 1.3,
+      "target": 1.0,
+      "status": "optimal",
+      "processRate": 95,
+      "nodeType": "process",
+      "dependencies": ["Payment Processing"],
+      "sla": 1.0,
+      "description": "Reserved inventory assignment from available stock"
+    },
+    {
+      "stage": "Picking & Packing",
+      "hours": 1.5,
+      "minHours": 0.8,
+      "maxHours": 2.4,
+      "target": 1.0,
+      "status": "critical",
+      "processRate": 75,
+      "nodeType": "bottleneck",
+      "dependencies": ["Inventory Allocation"],
+      "sla": 1.0,
+      "description": "Physical collection and packaging of items"
+    },
+    {
+      "stage": "Shipping Preparation",
+      "hours": 0.6,
+      "minHours": 0.4,
+      "maxHours": 1.0,
+      "target": 0.5,
+      "status": "warning",
+      "processRate": 88,
+      "nodeType": "process",
+      "dependencies": ["Picking & Packing"],
+      "sla": 0.5,
+      "description": "Label generation and carrier assignment"
+    },
+    {
+      "stage": "Carrier Pickup",
+      "hours": 5.5,
+      "minHours": 3.5,
+      "maxHours": 8.2,
+      "target": 4.0,
+      "status": "critical",
+      "processRate": 65,
+      "nodeType": "external",
+      "dependencies": ["Shipping Preparation"],
+      "sla": 4.0,
+      "description": "Awaiting carrier collection from facility"
+    },
+    {
+      "stage": "In Transit",
+      "hours": 58.2,
+      "minHours": 48.5,
+      "maxHours": 72.0,
+      "target": 60.0,
+      "status": "optimal",
+      "processRate": 97,
+      "nodeType": "external",
+      "dependencies": ["Carrier Pickup"],
+      "sla": 72.0,
+      "description": "Package en route to delivery destination"
+    }
+  ]
+} 

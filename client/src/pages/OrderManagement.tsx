@@ -42,69 +42,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { 
-  ShoppingCart, 
-  Search, 
-  MoreHorizontal, 
-  TrendingUp, 
-  Truck, 
-  Clock, 
-  Package,
-  DollarSign,
-  Calendar as CalendarIcon,
-  Plus,
-  RefreshCw,
-  AlertTriangle,
-  Clipboard,
-  Filter,
-  CheckCircle2,
-  XCircle,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  FileText,
-  Pencil,
-  Trash2,
-  FileEdit,
-  BarChartBig,
-  SendHorizonal,
-  ArrowDown,
-  ArrowUp,
-  ArrowBigRight,
-  CalendarDays,
-  CircleCheck,
-  Globe,
-  PieChart,
-  Activity,
-  ArrowUpDown,
-  MapPin
+  ShoppingCart, Search, MoreHorizontal, TrendingUp, Truck, Clock, Package,DollarSign,Calendar as CalendarIcon,
+  Plus, RefreshCw, AlertTriangle, Clipboard, Filter, CheckCircle2, XCircle, ChevronLeft, ChevronRight, ChevronsLeft,
+  ChevronsRight, FileText, Pencil, Trash2, FileEdit, BarChartBig, SendHorizonal, ArrowDown, ArrowUp, ArrowBigRight,
+  CalendarDays, CircleCheck, Globe, PieChart, Activity, ArrowUpDown, MapPin
 } from "lucide-react";
 import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Scatter,
-  ScatterChart,
-  ZAxis,
-  ComposedChart,
-  ReferenceLine
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart,
+  Pie, Cell, AreaChart, Area, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Scatter, ScatterChart,
+  ZAxis, ComposedChart, ReferenceLine
 } from 'recharts';
 import {
   Tooltip as RechartsTooltip,
@@ -130,6 +76,26 @@ import { OrderDetailsWrapper } from "@/components/orders/OrderDetailsWrapper";
 // Import the OrderFinancialAnalytics component
 import { OrderFinancialAnalytics } from "@/components/orders/OrderFinancialAnalytics";
 
+// Import mock data from the new JSON files
+import {
+  orders,
+  orderStatusData,
+  orderVolumeData,
+  shippingMethodsData,
+  timelineData as timelineDataImport,
+  fulfillmentComplianceData,
+  regionalPerformanceData,
+  returnsRefundsData,
+  profitabilityData,
+  profitTrendsData,
+  discountAnalysisData,
+  fulfillmentCostsData,
+  weeklyOrderTrends,
+  deliveryPerformance,
+  volumeAndRevenue,
+  COLORS
+} from "@/mockData/orders";
+
 // Define order type
 interface Order {
   id: string;
@@ -147,256 +113,6 @@ interface Order {
   address?: string;
   notes?: string;
 }
-
-// Order data - expanded with more details
-const orders: Order[] = [
-  {
-    id: "ORD-8761",
-    customer: "Acme Inc.",
-    customerEmail: "orders@acmeinc.com",
-    items: 12,
-    total: "$4,320.00",
-    date: "Aug 18, 2023",
-    status: "processing",
-    payment: "completed",
-    shipping: "fedex",
-    trackingNumber: "FDX7891237894",
-    expectedDelivery: "Aug 24, 2023",
-    products: ["Heavy Duty Shelving", "Packing Materials", "Shipping Containers"],
-    address: "123 Industrial Blvd, Chicago, IL 60007",
-    notes: "Deliver to loading dock B"
-  },
-  {
-    id: "ORD-8760",
-    customer: "TechCorp",
-    customerEmail: "supply@techcorp.com",
-    items: 8,
-    total: "$2,748.50",
-    date: "Aug 17, 2023",
-    status: "shipped",
-    payment: "completed",
-    shipping: "ups",
-    trackingNumber: "UPS1Z12345678901234567",
-    expectedDelivery: "Aug 20, 2023",
-    products: ["Server Racks", "Network Cables", "Power Supplies"],
-    address: "456 Tech Way, San Jose, CA 95123",
-    notes: "Call before delivery"
-  },
-  {
-    id: "ORD-8759",
-    customer: "GlobalTrade",
-    customerEmail: "purchasing@globaltrade.net",
-    items: 15,
-    total: "$5,125.75",
-    date: "Aug 17, 2023",
-    status: "processing",
-    payment: "pending",
-    shipping: "dhl",
-    expectedDelivery: "Aug 25, 2023",
-    products: ["Shipping Pallets", "Industrial Containers", "Packaging Systems"],
-    address: "789 Global Ave, Miami, FL 33101",
-    notes: ""
-  },
-  {
-    id: "ORD-8758",
-    customer: "Metro Supplies",
-    customerEmail: "orders@metrosupplies.co",
-    items: 6,
-    total: "$1,845.20",
-    date: "Aug 16, 2023",
-    status: "delivered",
-    payment: "completed",
-    shipping: "fedex",
-    trackingNumber: "FDX9876543210",
-    expectedDelivery: "Aug 19, 2023",
-    products: ["Office Furniture", "Filing Cabinets", "Desk Organizers"],
-    address: "101 Main St, Boston, MA 02108",
-    notes: "Delivered to reception"
-  },
-  {
-    id: "ORD-8757",
-    customer: "East Coast Distribution",
-    customerEmail: "supply@eastcoastdist.com",
-    items: 9,
-    total: "$3,214.80",
-    date: "Aug 15, 2023",
-    status: "delivered",
-    payment: "completed",
-    shipping: "ups",
-    trackingNumber: "UPS1Z98765432109876543",
-    expectedDelivery: "Aug 18, 2023",
-    products: ["Warehouse Shelving", "Pallet Jacks", "Packaging Materials"],
-    address: "202 Dock St, Newark, NJ 07102",
-    notes: ""
-  },
-  {
-    id: "ORD-8756",
-    customer: "Western Logistics",
-    customerEmail: "orders@westernlog.com",
-    items: 18,
-    total: "$6,480.60",
-    date: "Aug 15, 2023",
-    status: "processing",
-    payment: "completed",
-    shipping: "usps",
-    expectedDelivery: "Aug 22, 2023",
-    products: ["Shipping Labels", "Packaging Supplies", "Mailing Envelopes"],
-    address: "303 Shipping Lane, Seattle, WA 98101",
-    notes: "Business hours delivery only"
-  },
-  {
-    id: "ORD-8755",
-    customer: "NorthStar Freight",
-    customerEmail: "shipping@northstar.org",
-    items: 22,
-    total: "$7,150.25",
-    date: "Aug 14, 2023",
-    status: "shipped",
-    payment: "completed",
-    shipping: "dhl",
-    trackingNumber: "DHL5432167890",
-    expectedDelivery: "Aug 21, 2023",
-    products: ["Heavy Machinery Parts", "Industrial Supplies", "Safety Equipment"],
-    address: "404 Industrial Park, Minneapolis, MN 55401",
-    notes: "Requires forklift for unloading"
-  },
-  {
-    id: "ORD-8754",
-    customer: "Southern Distributors",
-    customerEmail: "purchase@southerndist.com",
-    items: 14,
-    total: "$4,890.75",
-    date: "Aug 13, 2023",
-    status: "delivered",
-    payment: "completed",
-    shipping: "fedex",
-    trackingNumber: "FDX1122334455",
-    expectedDelivery: "Aug 17, 2023",
-    products: ["Industrial Fasteners", "Construction Supplies", "Tool Sets"],
-    address: "505 Commerce St, Atlanta, GA 30303",
-    notes: ""
-  },
-  {
-    id: "ORD-8753",
-    customer: "Central Manufacturing",
-    customerEmail: "orders@centralmfg.com",
-    items: 10,
-    total: "$3,450.00",
-    date: "Aug 12, 2023",
-    status: "cancelled",
-    payment: "failed",
-    shipping: "ups",
-    products: ["Metal Components", "Assembly Parts", "Industrial Adhesives"],
-    address: "606 Factory Rd, Detroit, MI 48202",
-    notes: "Payment issue - order cancelled"
-  },
-  {
-    id: "ORD-8752",
-    customer: "Pacific Supply Chain",
-    customerEmail: "logistics@pacificsupply.net",
-    items: 20,
-    total: "$8,215.40",
-    date: "Aug 11, 2023",
-    status: "delivered",
-    payment: "completed",
-    shipping: "dhl",
-    trackingNumber: "DHL9988776655",
-    expectedDelivery: "Aug 16, 2023",
-    products: ["Container Systems", "Packaging Equipment", "Shipping Supplies"],
-    address: "707 Ocean Dr, San Diego, CA 92101",
-    notes: "Deliver to warehouse entrance"
-  },
-  {
-    id: "ORD-8751",
-    customer: "Mountain Traders",
-    customerEmail: "purchase@mountaintraders.com",
-    items: 7,
-    total: "$2,180.50",
-    date: "Aug 10, 2023",
-    status: "cancelled",
-    payment: "pending",
-    shipping: "fedex",
-    products: ["Outdoor Equipment", "Storage Solutions", "Safety Gear"],
-    address: "808 Highland Ave, Denver, CO 80202",
-    notes: "Customer requested cancellation"
-  },
-  {
-    id: "ORD-8750",
-    customer: "City Supplies Co.",
-    customerEmail: "orders@citysupplies.biz",
-    items: 16,
-    total: "$5,750.25",
-    date: "Aug 10, 2023",
-    status: "shipped",
-    payment: "completed",
-    shipping: "usps",
-    trackingNumber: "USPS9205500000000000000000",
-    expectedDelivery: "Aug 18, 2023",
-    products: ["Office Equipment", "Business Supplies", "Shipping Materials"],
-    address: "909 Municipal Way, Philadelphia, PA 19103",
-    notes: ""
-  },
-  {
-    id: "ORD-8749",
-    customer: "Lakeside Logistics",
-    customerEmail: "purchases@lakesidelog.com",
-    items: 11,
-    total: "$3,870.00",
-    date: "Aug 09, 2023",
-    status: "processing",
-    payment: "completed",
-    shipping: "ups",
-    expectedDelivery: "Aug 21, 2023",
-    products: ["Storage Containers", "Transport Equipment", "Packing Supplies"],
-    address: "101 Harbor Blvd, Cleveland, OH 44113",
-    notes: "Requires delivery appointment"
-  },
-  {
-    id: "ORD-8748",
-    customer: "Desert Distribution",
-    customerEmail: "sales@desertdist.com",
-    items: 9,
-    total: "$3,240.75",
-    date: "Aug 08, 2023",
-    status: "shipped",
-    payment: "completed",
-    shipping: "fedex",
-    trackingNumber: "FDX2233445566",
-    expectedDelivery: "Aug 15, 2023",
-    products: ["Climate Control Units", "Insulation Materials", "Protective Packaging"],
-    address: "202 Desert Way, Phoenix, AZ 85001",
-    notes: ""
-  }
-];
-// Order status data for pie chart
-const orderStatusData = [
-  { name: 'Processing', value: 35 },
-  { name: 'Shipped', value: 28 },
-  { name: 'Delivered', value: 32 },
-  { name: 'Cancelled', value: 5 },
-];
-
-// Daily order volume
-const orderVolumeData = [
-  { date: 'Aug 12', orders: 32, revenue: 9800 },
-  { date: 'Aug 13', orders: 28, revenue: 8600 },
-  { date: 'Aug 14', orders: 35, revenue: 11200 },
-  { date: 'Aug 15', orders: 42, revenue: 13500 },
-  { date: 'Aug 16', orders: 38, revenue: 12100 },
-  { date: 'Aug 17', orders: 45, revenue: 14800 },
-  { date: 'Aug 18', orders: 40, revenue: 13200 },
-];
-
-// Shipping methods breakdown
-const shippingMethodsData = [
-  { name: 'FedEx', value: 38 },
-  { name: 'UPS', value: 32 },
-  { name: 'DHL', value: 18 },
-  { name: 'USPS', value: 12 },
-];
-
-// Chart colors
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 // Add a NewOrderModal component
 function NewOrderModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClose: () => void, onSuccess: (order: Order) => void }) {
@@ -588,120 +304,6 @@ interface FulfillmentCompliance {
   status: 'optimal' | 'good' | 'warning' | 'critical';
 }
 
-// Sample data for Fulfillment Service Level Compliance table
-const fulfillmentComplianceData: FulfillmentCompliance[] = [
-  {
-    id: 'FSL-001',
-    shippingMethod: 'Express Air',
-    priority: 'High',
-    targetTime: '24 hours',
-    actualTime: '22.5 hours',
-    variance: '-1.5 hours',
-    varianceValue: -1.5,
-    compliance: 100,
-    status: 'optimal'
-  },
-  {
-    id: 'FSL-002',
-    shippingMethod: 'Ground Premium',
-    priority: 'Medium',
-    targetTime: '48 hours',
-    actualTime: '45.2 hours',
-    variance: '-2.8 hours',
-    varianceValue: -2.8,
-    compliance: 97.5,
-    status: 'optimal'
-  },
-  {
-    id: 'FSL-003',
-    shippingMethod: 'Standard Ground',
-    priority: 'Regular',
-    targetTime: '5 days',
-    actualTime: '5.4 days',
-    variance: '+0.4 days',
-    varianceValue: 0.4,
-    compliance: 91.8,
-    status: 'warning'
-  },
-  {
-    id: 'FSL-004',
-    shippingMethod: 'Economy',
-    priority: 'Low',
-    targetTime: '7 days',
-    actualTime: '8.2 days',
-    variance: '+1.2 days',
-    varianceValue: 1.2,
-    compliance: 85.3,
-    status: 'critical'
-  },
-  {
-    id: 'FSL-005',
-    shippingMethod: 'International',
-    priority: 'Medium',
-    targetTime: '10 days',
-    actualTime: '11.5 days',
-    variance: '+1.5 days',
-    varianceValue: 1.5,
-    compliance: 88.9,
-    status: 'warning'
-  },
-  {
-    id: 'FSL-006',
-    shippingMethod: 'Express Local',
-    priority: 'High',
-    targetTime: '12 hours',
-    actualTime: '11.8 hours',
-    variance: '-0.2 hours',
-    varianceValue: -0.2,
-    compliance: 99.5,
-    status: 'optimal'
-  },
-  {
-    id: 'FSL-007',
-    shippingMethod: 'Same Day Delivery',
-    priority: 'High',
-    targetTime: '6 hours',
-    actualTime: '5.8 hours',
-    variance: '-0.2 hours',
-    varianceValue: -0.2,
-    compliance: 99.8,
-    status: 'optimal'
-  },
-  {
-    id: 'FSL-008',
-    shippingMethod: 'Rail Freight',
-    priority: 'Medium',
-    targetTime: '72 hours',
-    actualTime: '74.5 hours',
-    variance: '+2.5 hours',
-    varianceValue: 2.5,
-    compliance: 93.2,
-    status: 'warning'
-  },
-  {
-    id: 'FSL-009',
-    shippingMethod: 'Ocean Standard',
-    priority: 'Low',
-    targetTime: '14 days',
-    actualTime: '15.3 days',
-    variance: '+1.3 days',
-    varianceValue: 1.3,
-    compliance: 86.5,
-    status: 'warning'
-  },
-  {
-    id: 'FSL-010',
-    shippingMethod: 'Priority Mail',
-    priority: 'Medium',
-    targetTime: '3 days',
-    actualTime: '3.1 days',
-    variance: '+0.1 days',
-    varianceValue: 0.1,
-    compliance: 96.7,
-    status: 'good'
-  }
-];
-
 // Interface for Regional Performance Metrics
 interface RegionalPerformanceMetrics {
   id: string;
@@ -716,130 +318,6 @@ interface RegionalPerformanceMetrics {
   status: 'optimal' | 'good' | 'warning' | 'critical';
 }
 
-// Sample data for Regional Performance Metrics
-const regionalPerformanceData: RegionalPerformanceMetrics[] = [
-  {
-    id: 'NE-001',
-    region: 'Northeast',
-    orderVolume: 4521,
-    avgOrderValue: 218.45,
-    fulfillmentRate: 98.4,
-    deliveryTime: 2.8,
-    returnRate: 3.2,
-    yoyGrowth: 8.5,
-    customerSatisfaction: 92,
-    status: 'optimal'
-  },
-  {
-    id: 'SE-001',
-    region: 'Southeast',
-    orderVolume: 1932,
-    avgOrderValue: 185.20,
-    fulfillmentRate: 92.1,
-    deliveryTime: 3.5,
-    returnRate: 4.1,
-    yoyGrowth: 12.3,
-    customerSatisfaction: 88,
-    status: 'warning'
-  },
-  {
-    id: 'MW-001',
-    region: 'Midwest',
-    orderVolume: 1614,
-    avgOrderValue: 205.30,
-    fulfillmentRate: 97.8,
-    deliveryTime: 3.2,
-    returnRate: 2.8,
-    yoyGrowth: 5.2,
-    customerSatisfaction: 91,
-    status: 'good'
-  },
-  {
-    id: 'SW-001',
-    region: 'Southwest',
-    orderVolume: 1291,
-    avgOrderValue: 230.15,
-    fulfillmentRate: 95.6,
-    deliveryTime: 3.0,
-    returnRate: 3.5,
-    yoyGrowth: 23.4,
-    customerSatisfaction: 89,
-    status: 'good'
-  },
-  {
-    id: 'W-001',
-    region: 'West',
-    orderVolume: 1398,
-    avgOrderValue: 245.80,
-    fulfillmentRate: 96.3,
-    deliveryTime: 2.9,
-    returnRate: 2.9,
-    yoyGrowth: 15.7,
-    customerSatisfaction: 93,
-    status: 'optimal'
-  },
-  {
-    id: 'NE-002',
-    region: 'Northeast-Metro',
-    orderVolume: 2845,
-    avgOrderValue: 232.60,
-    fulfillmentRate: 97.8,
-    deliveryTime: 2.5,
-    returnRate: 3.0,
-    yoyGrowth: 9.2,
-    customerSatisfaction: 94,
-    status: 'optimal'
-  },
-  {
-    id: 'SE-002',
-    region: 'Southeast-Coastal',
-    orderVolume: 1245,
-    avgOrderValue: 192.40,
-    fulfillmentRate: 91.5,
-    deliveryTime: 3.8,
-    returnRate: 4.5,
-    yoyGrowth: 10.8,
-    customerSatisfaction: 86,
-    status: 'warning'
-  },
-  {
-    id: 'MW-002',
-    region: 'Midwest-Central',
-    orderVolume: 982,
-    avgOrderValue: 198.75,
-    fulfillmentRate: 96.9,
-    deliveryTime: 3.4,
-    returnRate: 3.1,
-    yoyGrowth: 4.8,
-    customerSatisfaction: 90,
-    status: 'good'
-  },
-  {
-    id: 'SW-002',
-    region: 'Southwest-Desert',
-    orderVolume: 865,
-    avgOrderValue: 225.90,
-    fulfillmentRate: 94.8,
-    deliveryTime: 3.2,
-    returnRate: 3.8,
-    yoyGrowth: 21.5,
-    customerSatisfaction: 88,
-    status: 'warning'
-  },
-  {
-    id: 'W-002',
-    region: 'West-Coast',
-    orderVolume: 1125,
-    avgOrderValue: 258.35,
-    fulfillmentRate: 95.9,
-    deliveryTime: 3.0,
-    returnRate: 3.2,
-    yoyGrowth: 14.2,
-    customerSatisfaction: 91,
-    status: 'good'
-  }
-];
-
 export default function OrderManagement() {
   const [location, setLocation] = useLocation();
   const [orderList, setOrderList] = useState<Order[]>(orders);
@@ -853,99 +331,23 @@ export default function OrderManagement() {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
   const [timelineView, setTimelineView] = useState<'avg' | 'max' | 'min'>('avg');
-  const [timelineData, setTimelineData] = useState([
-    {
-      stage: 'Order Verification',
-      hours: 1.2,
-      minHours: 0.9,
-      maxHours: 1.8,
-      target: 1.0,
-      status: 'warning' as 'optimal' | 'warning' | 'critical',
-      processRate: 92,
-      nodeType: 'start' as 'start' | 'process' | 'bottleneck' | 'external',
-      dependencies: [] as string[],
-      sla: 1.0,
-      description: 'Validation of order details and fraud check'
-    },
-    {
-      stage: 'Payment Processing',
-      hours: 0.4,
-      minHours: 0.3,
-      maxHours: 0.7,
-      target: 0.5,
-      status: 'optimal' as 'optimal' | 'warning' | 'critical',
-      processRate: 98,
-      nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
-      dependencies: ['Order Verification'],
-      sla: 0.5,
-      description: 'Payment gateway processing and verification'
-    },
-    {
-      stage: 'Inventory Allocation',
-      hours: 0.8,
-      minHours: 0.5,
-      maxHours: 1.3,
-      target: 1.0,
-      status: 'optimal' as 'optimal' | 'warning' | 'critical',
-      processRate: 95,
-      nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
-      dependencies: ['Payment Processing'],
-      sla: 1.0,
-      description: 'Reserved inventory assignment from available stock'
-    },
-    {
-      stage: 'Picking & Packing',
-      hours: 1.5,
-      minHours: 0.8,
-      maxHours: 2.4,
-      target: 1.0,
-      status: 'critical' as 'optimal' | 'warning' | 'critical',
-      processRate: 75,
-      nodeType: 'bottleneck' as 'start' | 'process' | 'bottleneck' | 'external',
-      dependencies: ['Inventory Allocation'],
-      sla: 1.0,
-      description: 'Physical collection and packaging of items'
-    },
-    {
-      stage: 'Shipping Preparation',
-      hours: 0.6,
-      minHours: 0.4,
-      maxHours: 1.0,
-      target: 0.5,
-      status: 'warning' as 'optimal' | 'warning' | 'critical',
-      processRate: 88,
-      nodeType: 'process' as 'start' | 'process' | 'bottleneck' | 'external',
-      dependencies: ['Picking & Packing'],
-      sla: 0.5,
-      description: 'Label generation and carrier assignment'
-    },
-    {
-      stage: 'Carrier Pickup',
-      hours: 5.5,
-      minHours: 3.5,
-      maxHours: 8.2,
-      target: 4.0,
-      status: 'critical' as 'optimal' | 'warning' | 'critical',
-      processRate: 65,
-      nodeType: 'external' as 'start' | 'process' | 'bottleneck' | 'external',
-      dependencies: ['Shipping Preparation'],
-      sla: 4.0,
-      description: 'Awaiting carrier collection from facility'
-    },
-    {
-      stage: 'In Transit',
-      hours: 58.2,
-      minHours: 48.5,
-      maxHours: 72.0,
-      target: 60.0,
-      status: 'optimal' as 'optimal' | 'warning' | 'critical',
-      processRate: 97,
-      nodeType: 'external' as 'start' | 'process' | 'bottleneck' | 'external',
-      dependencies: ['Carrier Pickup'],
-      sla: 72.0,
-      description: 'Package en route to delivery destination'
-    }
-  ]);
+  
+  // Define the timeline data type explicitly to fix type issues
+  type TimelineItemType = {
+    stage: string;
+    hours: number;
+    minHours: number;
+    maxHours: number;
+    target: number;
+    status: 'optimal' | 'warning' | 'critical';
+    processRate: number;
+    nodeType: 'start' | 'process' | 'bottleneck' | 'external';
+    dependencies: string[];
+    sla: number;
+    description: string;
+  };
+  
+  const [timelineData, setTimelineData] = useState<TimelineItemType[]>(timelineDataImport as unknown as TimelineItemType[]);
   
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   
@@ -1731,63 +1133,6 @@ export default function OrderManagement() {
       setOrderList(prevOrders => prevOrders.filter(order => order.id !== orderId));
     }
   };
-
-  // Sample data for Returns and Refunds
-  const returnsRefundsData = [
-    { month: 'Jan', returns: 42, refunds: 38, returnRate: 3.2, refundAmount: 4250 },
-    { month: 'Feb', returns: 38, refunds: 34, returnRate: 2.9, refundAmount: 3980 },
-    { month: 'Mar', returns: 45, refunds: 40, returnRate: 3.4, refundAmount: 4760 },
-    { month: 'Apr', returns: 37, refunds: 35, returnRate: 2.8, refundAmount: 4120 },
-    { month: 'May', returns: 41, refunds: 39, returnRate: 3.1, refundAmount: 4350 },
-    { month: 'Jun', returns: 49, refunds: 45, returnRate: 3.7, refundAmount: 5240 },
-    { month: 'Jul', returns: 44, refunds: 41, returnRate: 3.3, refundAmount: 4780 },
-    { month: 'Aug', returns: 35, refunds: 32, returnRate: 2.6, refundAmount: 3850 },
-  ];
-  
-  // Sample data for Profitability Analysis
-  const profitabilityData = [
-    { month: 'Jan', revenue: 128500, costs: 96375, profit: 32125, margin: 25.0 },
-    { month: 'Feb', revenue: 135200, costs: 99048, profit: 36152, margin: 26.7 },
-    { month: 'Mar', revenue: 142800, costs: 107100, profit: 35700, margin: 25.0 },
-    { month: 'Apr', revenue: 138600, costs: 101178, profit: 37422, margin: 27.0 },
-    { month: 'May', revenue: 152400, costs: 114300, profit: 38100, margin: 25.0 },
-    { month: 'Jun', revenue: 165800, costs: 121082, profit: 44718, margin: 27.0 },
-    { month: 'Jul', revenue: 172500, costs: 127650, profit: 44850, margin: 26.0 },
-    { month: 'Aug', revenue: 168900, costs: 123297, profit: 45603, margin: 27.0 },
-  ];
-  
-  // Sample data for Profit Trends
-  const profitTrendsData = [
-    { category: 'Electronics', sales: 42500, costs: 31875, profit: 10625, margin: 25.0 },
-    { category: 'Clothing', sales: 36800, costs: 25760, profit: 11040, margin: 30.0 },
-    { category: 'Home Goods', sales: 29500, costs: 21535, profit: 7965, margin: 27.0 },
-    { category: 'Sports Equip', sales: 18700, costs: 14586, profit: 4114, margin: 22.0 },
-    { category: 'Beauty', sales: 22400, costs: 15680, profit: 6720, margin: 30.0 },
-    { category: 'Books', sales: 15300, costs: 9945, profit: 5355, margin: 35.0 },
-    { category: 'Toys', sales: 19800, costs: 14850, profit: 4950, margin: 25.0 },
-    { category: 'Grocery', sales: 31200, costs: 26520, profit: 4680, margin: 15.0 },
-  ];
-  
-  // Sample data for Discount Analysis
-  const discountAnalysisData = [
-    { discountLevel: 'None (0%)', orderCount: 345, avgOrderValue: 215, revenue: 74175, profitMargin: 29 },
-    { discountLevel: 'Small (5-10%)', orderCount: 560, avgOrderValue: 185, revenue: 103600, profitMargin: 25 },
-    { discountLevel: 'Medium (11-20%)', orderCount: 420, avgOrderValue: 155, revenue: 65100, profitMargin: 22 },
-    { discountLevel: 'Large (21-30%)', orderCount: 280, avgOrderValue: 135, revenue: 37800, profitMargin: 18 },
-    { discountLevel: 'Promo (31-50%)', orderCount: 195, avgOrderValue: 120, revenue: 23400, profitMargin: 14 },
-  ];
-  
-  // Sample data for Fulfillment Costs
-  const fulfillmentCostsData = [
-    { month: 'Jan', picking: 12500, packaging: 8200, shipping: 18750, laborOther: 9800, total: 49250 },
-    { month: 'Feb', picking: 13100, packaging: 8500, shipping: 19200, laborOther: 10100, total: 50900 },
-    { month: 'Mar', picking: 13800, packaging: 9100, shipping: 20100, laborOther: 10500, total: 53500 },
-    { month: 'Apr', picking: 13500, packaging: 8800, shipping: 19800, laborOther: 10300, total: 52400 },
-    { month: 'May', picking: 14200, packaging: 9300, shipping: 21000, laborOther: 10900, total: 55400 },
-    { month: 'Jun', picking: 15100, packaging: 9800, shipping: 22300, laborOther: 11500, total: 58700 },
-    { month: 'Jul', picking: 15600, packaging: 10200, shipping: 23100, laborOther: 11800, total: 60700 },
-    { month: 'Aug', picking: 15400, packaging: 10000, shipping: 22800, laborOther: 11700, total: 59900 },
-  ];
   
   const [selectedTimeInterval, setSelectedTimeInterval] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
 
@@ -2548,7 +1893,7 @@ export default function OrderManagement() {
                             <div className="flex items-center h-10 rounded-md bg-card/60 hover:bg-card/80 transition-colors px-2">
                               {/* Process node indicator */}
                               <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${item.nodeType === 'bottleneck' ? 'bg-red-100/50' : 'bg-blue-100/50'}`}>
-                                {nodeIcons[item.nodeType]}
+                                {nodeIcons[item.nodeType as 'start' | 'process' | 'bottleneck' | 'external']}
                               </div>
                               
                               {/* Stage name */}
@@ -2562,7 +1907,7 @@ export default function OrderManagement() {
                                 <div className="h-2.5 w-full bg-muted/30 rounded-sm overflow-hidden flex relative">
                                   {/* Actual time */}
                                   <div 
-                                    className={`h-full ${statusColors[displayStatus]} flex items-center rounded-sm`} 
+                                    className={`h-full ${statusColors[displayStatus as 'optimal' | 'warning' | 'critical']} flex items-center rounded-sm`} 
                                     style={{ width: maxWidth }}
                                   ></div>
                                   
@@ -2586,7 +1931,7 @@ export default function OrderManagement() {
                                   </div>
                                 </div>
                                 <div 
-                                  className={`w-8 h-5 rounded-sm flex items-center justify-center text-white text-xs font-medium ${statusColors[displayStatus]}`}
+                                  className={`w-8 h-5 rounded-sm flex items-center justify-center text-white text-xs font-medium ${statusColors[displayStatus as 'optimal' | 'warning' | 'critical']}`}
                                 >
                                   {displayRate}%
                                 </div>

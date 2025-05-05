@@ -172,13 +172,11 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
   
   return (
     <div>
-      <CardHeader className="pb-2 pt-0">
-        <div className="flex justify-between items-center">
-          <div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-6 py-0 mb-6">
+        <CardTitle className="flex items-center mb-1">
+          Shipments Details
+        </CardTitle>
+        <CardDescription className="mb-6">In-depth information for your current shipments</CardDescription>
         <div className="mb-4">
           <div className="flex justify-between mb-2">
             <div className="flex items-center">

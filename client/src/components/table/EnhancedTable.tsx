@@ -21,8 +21,11 @@ import {
   ChevronRight, 
   MoreHorizontal,
   Search,
-  ArrowUpDown 
+  ArrowUpDown,
+  ChevronsLeft,
+  ChevronsRight
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ActionItem {
   label: string;
@@ -56,6 +59,7 @@ interface EnhancedTableProps {
   searchPlaceholder?: string;
   searchKey?: string;
   pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
   statusMap?: Record<string, StatusConfig>;
   statusKey?: string;
   emptyMessage?: string;
@@ -70,6 +74,7 @@ export function EnhancedTable({
   searchPlaceholder = "Search...",
   searchKey,
   pageSize = 5,
+  onPageSizeChange,
   statusMap,
   statusKey,
   emptyMessage = "No results found",
@@ -80,6 +85,7 @@ export function EnhancedTable({
   const [searchTerm, setSearchTerm] = useState("");
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
 
   // Reset to page 1 when data changes
   useEffect(() => {
@@ -148,6 +154,19 @@ export function EnhancedTable({
     }
   };
 
+  const handlePageSizeChange = (size: number) => {
+    if (onPageSizeChange) {
+      onPageSizeChange(size);
+    } else {
+      // Adjust current page to maintain position if possible
+      const currentTopItemIndex = (currentPage - 1) * pageSize;
+      const newPageCount = Math.ceil(sortedData.length / size);
+      const newCurrentPage = Math.min(Math.floor(currentTopItemIndex / size) + 1, newPageCount);
+      
+      setCurrentPage(newCurrentPage || 1);
+    }
+  };
+
   // Get status badge
   const getStatusBadge = (status: string) => {
     if (!statusMap || !status) return status;
@@ -173,60 +192,62 @@ export function EnhancedTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center px-4">
-        {searchKey && (
-          <div className="relative max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={searchPlaceholder}
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1); // Reset to page 1 when searching
-              }}
-              className="pl-8 w-full"
-            />
-          </div>
-        )}
-        
-        <div className="flex items-center gap-4 ml-auto">
-          <div className="text-sm text-muted-foreground">
-            Showing {sortedData.length > 0 ? indexOfFirstItem + 1 : 0}-
-            {Math.min(indexOfLastItem, sortedData.length)} of {sortedData.length} items
-          </div>
-          
-          {totalPages > 1 && (
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Previous Page</span>
-              </Button>
-              <div className="text-sm font-medium">
-                Page {currentPage} of {totalPages}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
-                <span className="sr-only">Next Page</span>
-              </Button>
+      <div className="flex flex-wrap justify-between items-center px-4 gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {searchKey && (
+            <div className="relative max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={searchPlaceholder}
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1); // Reset to page 1 when searching
+                }}
+                className="pl-8 w-full"
+              />
             </div>
           )}
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium whitespace-nowrap">Rows per page</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(size) => handlePageSizeChange(Number(size))}
+            >
+              <SelectTrigger className="h-9 w-[70px]">
+                <SelectValue placeholder={String(pageSize)} />
+              </SelectTrigger>
+              <SelectContent>
+                {[5, 10, 25, 50].map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
       </div>
 
       <div className="border rounded-md overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
+              <TableHead className="w-[40px]">
+                <input
+                  type="checkbox"
+                  checked={selectedRows.size === data.length}
+                  onChange={() => {
+                    const newSelectedRows = new Set<number>();
+                    if (selectedRows.size !== data.length) {
+                      data.forEach((item) => newSelectedRows.add(item.id));
+                    }
+                    setSelectedRows(newSelectedRows);
+                  }}
+                />
+              </TableHead>
               {columns.map((column) => (
                 <TableHead 
                   key={column.id}
@@ -255,6 +276,13 @@ export function EnhancedTable({
                   onClick={onRowClick ? () => onRowClick(item) : undefined}
                   className={onRowClick ? rowClassName : ""}
                 >
+                  <TableCell className="w-[40px]">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.has(item.id)}
+                      onChange={() => handleRowSelect(item.id)}
+                    />
+                  </TableCell>
                   {columns.map((column) => (
                     <TableCell 
                       key={`${item.id}-${column.id}`}
@@ -317,6 +345,141 @@ export function EnhancedTable({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="flex items-center justify-between py-0 px-6">
+        <div className="flex-1 text-sm text-muted-foreground">
+          Showing {Math.min((currentPage - 1) * pageSize + 1, sortedData.length)} to {Math.min(currentPage * pageSize, sortedData.length)} of {sortedData.length} {sortedData.length === 1 ? 'item' : 'items'}
+        </div>
+
+        <div className="flex-1 flex justify-center">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="h-8 w-8"
+              aria-label="First page"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handlePrevPage()}
+              disabled={currentPage === 1}
+              className="h-8 w-8"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            {totalPages <= 5 ? (
+              [...Array(totalPages)].map((_, i) => (
+                <Button
+                  key={`page-${i + 1}`}
+                  variant={currentPage === i + 1 ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setCurrentPage(i + 1)}
+                  className="h-8 w-8"
+                  aria-label={`Page ${i + 1}`}
+                  aria-current={currentPage === i + 1 ? "page" : undefined}
+                >
+                  {i + 1}
+                </Button>
+              ))
+            ) : (
+              <>
+                <Button
+                  variant={currentPage === 1 ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setCurrentPage(1)}
+                  className="h-8 w-8"
+                  aria-label="Page 1"
+                >
+                  1
+                </Button>
+
+                {currentPage > 3 && <span className="mx-1">...</span>}
+
+                {currentPage > 2 && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="h-8 w-8"
+                    aria-label={`Page ${currentPage - 1}`}
+                  >
+                    {currentPage - 1}
+                  </Button>
+                )}
+
+                {currentPage !== 1 && currentPage !== totalPages && (
+                  <Button
+                    variant="default"
+                    size="icon"
+                    onClick={() => setCurrentPage(currentPage)}
+                    className="h-8 w-8"
+                    aria-label={`Page ${currentPage}`}
+                    aria-current="page"
+                  >
+                    {currentPage}
+                  </Button>
+                )}
+
+                {currentPage < totalPages - 1 && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="h-8 w-8"
+                    aria-label={`Page ${currentPage + 1}`}
+                  >
+                    {currentPage + 1}
+                  </Button>
+                )}
+
+                {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+
+                <Button
+                  variant={currentPage === totalPages ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setCurrentPage(totalPages)}
+                  className="h-8 w-8"
+                  aria-label={`Page ${totalPages}`}
+                >
+                  {totalPages}
+                </Button>
+              </>
+            )}
+
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleNextPage()}
+              disabled={currentPage === totalPages}
+              className="h-8 w-8"
+              aria-label="Next page"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="h-8 w-8"
+              aria-label="Last page"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex-1 flex justify-end">
+        {/* Space for potential additional controls */}
+        </div>
       </div>
     </div>
   );

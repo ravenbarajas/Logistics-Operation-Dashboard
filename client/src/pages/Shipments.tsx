@@ -101,6 +101,10 @@ export default function Shipments({ shipment, onRefresh }: ShipmentManagementPro
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const [activePageSize, setActivePageSize] = useState<number>(5);
+  const [historyPageSize, setHistoryPageSize] = useState<number>(5);
+  const [scheduledPageSize, setScheduledPageSize] = useState<number>(5);
+
   const handleRefresh = () => {
     setIsLoading(true);
     
@@ -1003,6 +1007,8 @@ export default function Shipments({ shipment, onRefresh }: ShipmentManagementPro
                           emptyMessage="No active shipments found"
                           onRowClick={(shipment) => setSelectedShipment(shipment)}
                           rowClassName="cursor-pointer hover:bg-muted/50"
+                          pageSize={activePageSize}
+                          onPageSizeChange={setActivePageSize}
                         />
                       </CardContent>
                       {selectedShipment && (
@@ -1035,6 +1041,8 @@ export default function Shipments({ shipment, onRefresh }: ShipmentManagementPro
                           emptyMessage="No shipment history found"
                           onRowClick={(shipment) => setSelectedShipment(shipment)}
                           rowClassName="cursor-pointer hover:bg-muted/50"
+                          pageSize={historyPageSize}
+                          onPageSizeChange={setHistoryPageSize}
                         />
                       </CardContent>
                       {selectedShipment && (
@@ -1067,6 +1075,8 @@ export default function Shipments({ shipment, onRefresh }: ShipmentManagementPro
                           emptyMessage="No scheduled shipments found"
                           onRowClick={(shipment) => setSelectedShipment(shipment)}
                           rowClassName="cursor-pointer hover:bg-muted/50"
+                          pageSize={scheduledPageSize}
+                          onPageSizeChange={setScheduledPageSize}
                         />
                       </CardContent>
                       {selectedShipment && (

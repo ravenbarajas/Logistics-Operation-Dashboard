@@ -1,0 +1,236 @@
+{
+  "fulfillmentComplianceData": [
+    {
+      "id": "FSL-001",
+      "shippingMethod": "Express Air",
+      "priority": "High",
+      "targetTime": "24 hours",
+      "actualTime": "22.5 hours",
+      "variance": "-1.5 hours",
+      "varianceValue": -1.5,
+      "compliance": 100,
+      "status": "optimal"
+    },
+    {
+      "id": "FSL-002",
+      "shippingMethod": "Ground Premium",
+      "priority": "Medium",
+      "targetTime": "48 hours",
+      "actualTime": "45.2 hours",
+      "variance": "-2.8 hours",
+      "varianceValue": -2.8,
+      "compliance": 97.5,
+      "status": "optimal"
+    },
+    {
+      "id": "FSL-003",
+      "shippingMethod": "Standard Ground",
+      "priority": "Regular",
+      "targetTime": "5 days",
+      "actualTime": "5.4 days",
+      "variance": "+0.4 days",
+      "varianceValue": 0.4,
+      "compliance": 91.8,
+      "status": "warning"
+    },
+    {
+      "id": "FSL-004",
+      "shippingMethod": "Economy",
+      "priority": "Low",
+      "targetTime": "7 days",
+      "actualTime": "8.2 days",
+      "variance": "+1.2 days",
+      "varianceValue": 1.2,
+      "compliance": 85.3,
+      "status": "critical"
+    },
+    {
+      "id": "FSL-005",
+      "shippingMethod": "International",
+      "priority": "Medium",
+      "targetTime": "10 days",
+      "actualTime": "11.5 days",
+      "variance": "+1.5 days",
+      "varianceValue": 1.5,
+      "compliance": 88.9,
+      "status": "warning"
+    },
+    {
+      "id": "FSL-006",
+      "shippingMethod": "Express Local",
+      "priority": "High",
+      "targetTime": "12 hours",
+      "actualTime": "11.8 hours",
+      "variance": "-0.2 hours",
+      "varianceValue": -0.2,
+      "compliance": 99.5,
+      "status": "optimal"
+    },
+    {
+      "id": "FSL-007",
+      "shippingMethod": "Same Day Delivery",
+      "priority": "High",
+      "targetTime": "6 hours",
+      "actualTime": "5.8 hours",
+      "variance": "-0.2 hours",
+      "varianceValue": -0.2,
+      "compliance": 99.8,
+      "status": "optimal"
+    },
+    {
+      "id": "FSL-008",
+      "shippingMethod": "Rail Freight",
+      "priority": "Medium",
+      "targetTime": "72 hours",
+      "actualTime": "74.5 hours",
+      "variance": "+2.5 hours",
+      "varianceValue": 2.5,
+      "compliance": 93.2,
+      "status": "warning"
+    },
+    {
+      "id": "FSL-009",
+      "shippingMethod": "Ocean Standard",
+      "priority": "Low",
+      "targetTime": "14 days",
+      "actualTime": "15.3 days",
+      "variance": "+1.3 days",
+      "varianceValue": 1.3,
+      "compliance": 86.5,
+      "status": "warning"
+    },
+    {
+      "id": "FSL-010",
+      "shippingMethod": "Priority Mail",
+      "priority": "Medium",
+      "targetTime": "3 days",
+      "actualTime": "3.1 days",
+      "variance": "+0.1 days",
+      "varianceValue": 0.1,
+      "compliance": 96.7,
+      "status": "good"
+    }
+  ],
+  "regionalPerformanceData": [
+    {
+      "id": "NE-001",
+      "region": "Northeast",
+      "orderVolume": 4521,
+      "avgOrderValue": 218.45,
+      "fulfillmentRate": 98.4,
+      "deliveryTime": 2.8,
+      "returnRate": 3.2,
+      "yoyGrowth": 8.5,
+      "customerSatisfaction": 92,
+      "status": "optimal"
+    },
+    {
+      "id": "SE-001",
+      "region": "Southeast",
+      "orderVolume": 1932,
+      "avgOrderValue": 185.20,
+      "fulfillmentRate": 92.1,
+      "deliveryTime": 3.5,
+      "returnRate": 4.1,
+      "yoyGrowth": 12.3,
+      "customerSatisfaction": 88,
+      "status": "warning"
+    },
+    {
+      "id": "MW-001",
+      "region": "Midwest",
+      "orderVolume": 1614,
+      "avgOrderValue": 205.30,
+      "fulfillmentRate": 97.8,
+      "deliveryTime": 3.2,
+      "returnRate": 2.8,
+      "yoyGrowth": 5.2,
+      "customerSatisfaction": 91,
+      "status": "good"
+    },
+    {
+      "id": "SW-001",
+      "region": "Southwest",
+      "orderVolume": 1291,
+      "avgOrderValue": 230.15,
+      "fulfillmentRate": 95.6,
+      "deliveryTime": 3.0,
+      "returnRate": 3.5,
+      "yoyGrowth": 23.4,
+      "customerSatisfaction": 89,
+      "status": "good"
+    },
+    {
+      "id": "W-001",
+      "region": "West",
+      "orderVolume": 1398,
+      "avgOrderValue": 245.80,
+      "fulfillmentRate": 96.3,
+      "deliveryTime": 2.9,
+      "returnRate": 2.9,
+      "yoyGrowth": 15.7,
+      "customerSatisfaction": 93,
+      "status": "optimal"
+    },
+    {
+      "id": "NE-002",
+      "region": "Northeast-Metro",
+      "orderVolume": 2845,
+      "avgOrderValue": 232.60,
+      "fulfillmentRate": 97.8,
+      "deliveryTime": 2.5,
+      "returnRate": 3.0,
+      "yoyGrowth": 9.2,
+      "customerSatisfaction": 94,
+      "status": "optimal"
+    },
+    {
+      "id": "SE-002",
+      "region": "Southeast-Coastal",
+      "orderVolume": 1245,
+      "avgOrderValue": 192.40,
+      "fulfillmentRate": 91.5,
+      "deliveryTime": 3.8,
+      "returnRate": 4.5,
+      "yoyGrowth": 10.8,
+      "customerSatisfaction": 86,
+      "status": "warning"
+    },
+    {
+      "id": "MW-002",
+      "region": "Midwest-Central",
+      "orderVolume": 982,
+      "avgOrderValue": 198.75,
+      "fulfillmentRate": 96.9,
+      "deliveryTime": 3.4,
+      "returnRate": 3.1,
+      "yoyGrowth": 4.8,
+      "customerSatisfaction": 90,
+      "status": "good"
+    },
+    {
+      "id": "SW-002",
+      "region": "Southwest-Desert",
+      "orderVolume": 865,
+      "avgOrderValue": 225.90,
+      "fulfillmentRate": 94.8,
+      "deliveryTime": 3.2,
+      "returnRate": 3.8,
+      "yoyGrowth": 21.5,
+      "customerSatisfaction": 88,
+      "status": "warning"
+    },
+    {
+      "id": "W-002",
+      "region": "West-Coast",
+      "orderVolume": 1125,
+      "avgOrderValue": 258.35,
+      "fulfillmentRate": 95.9,
+      "deliveryTime": 3.0,
+      "returnRate": 3.2,
+      "yoyGrowth": 14.2,
+      "customerSatisfaction": 91,
+      "status": "good"
+    }
+  ]
+} 

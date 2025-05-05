@@ -1,0 +1,61 @@
+# Enable Rewrite Engine
+RewriteEngine On
+
+# If an existing asset or directory is requested, serve it
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f [OR]
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -d
+RewriteRule ^ - [L]
+
+# If the requested resource doesn't exist, serve index.html
+RewriteRule ^ /index.html [L]
+
+# Properly serve asset files with correct MIME types
+<IfModule mod_mime.c>
+  # JavaScript
+  AddType application/javascript js
+  AddType application/json json
+  
+  # CSS
+  AddType text/css css
+  
+  # Images
+  AddType image/svg+xml svg svgz
+  AddType image/png png
+  AddType image/jpeg jpg jpeg
+  AddType image/gif gif
+  
+  # Fonts
+  AddType application/vnd.ms-fontobject eot
+  AddType font/ttf ttf
+  AddType font/otf otf
+  AddType font/woff woff
+  AddType font/woff2 woff2
+</IfModule>
+
+# Cache static assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  
+  # Cache CSS, JS, and media files for 1 year
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType application/json "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  
+  # HTML documents - no cache
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# Enable Cross-Origin Resource Sharing (CORS)
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+  Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+  Header set Access-Control-Allow-Headers "X-Requested-With, Content-Type, Authorization"
+</IfModule> 

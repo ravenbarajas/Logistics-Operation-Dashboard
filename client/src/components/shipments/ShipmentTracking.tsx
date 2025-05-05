@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,10 @@ import {
 } from "lucide-react";
 import { Shipment } from "@shared/schema";
 import { Progress } from "@/components/ui/progress";
+
+// Import Leaflet directly instead of using react-leaflet
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface ShipmentTrackingProps {
   shipment: Shipment;
@@ -50,6 +54,11 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
   const [lastUpdate, setLastUpdate] = useState<string>("");
   const [currentLocation, setCurrentLocation] = useState<{ lat: number, lng: number } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Refs for Leaflet map
+  const mapRef = useRef<HTMLDivElement>(null);
+  const leafletMap = useRef<L.Map | null>(null);
+  const markersRef = useRef<{[key: string]: L.Marker}>({});
   
   // Calculate the progress percentage based on shipment status
   useEffect(() => {
@@ -116,6 +125,90 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
       }
     }
   }, [shipment]);
+
+  // Initialize and update map
+  useEffect(() => {
+    // Only initialize map when activeTab is "map" and mapRef is available
+    if (activeTab !== "map" || !mapRef.current || !currentLocation) return;
+    
+    // Always recreate the map when the tab becomes active - this is the key fix
+    if (leafletMap.current) {
+      leafletMap.current.remove();
+      leafletMap.current = null;
+    }
+    
+    // Create a new map instance
+    leafletMap.current = L.map(mapRef.current).setView([currentLocation.lat, currentLocation.lng], 10);
+    
+    // Add the tile layer (OpenStreetMap)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(leafletMap.current);
+    
+    // Clear existing markers
+    markersRef.current = {};
+    
+    // Add marker for current location
+    if (currentLocation) {
+      const marker = L.marker([currentLocation.lat, currentLocation.lng])
+        .bindPopup(`<div>Current Location: ${formatCoordinates(currentLocation)}</div>`)
+        .addTo(leafletMap.current);
+      markersRef.current['current'] = marker;
+    }
+    
+    // Add marker for origin location
+    if (shipment?.originLocation && typeof shipment.originLocation === 'object' && 'lat' in shipment.originLocation && 'lng' in shipment.originLocation) {
+      const originLocation = shipment.originLocation as { lat: number, lng: number };
+      const greenIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+        shadowSize: [41, 41],
+      });
+      
+      const marker = L.marker([originLocation.lat, originLocation.lng], { icon: greenIcon })
+        .bindPopup(`<div>Origin: ${formatCoordinates(originLocation)}</div>`)
+        .addTo(leafletMap.current);
+      markersRef.current['origin'] = marker;
+    }
+    
+    // Add marker for destination location
+    if (shipment?.destinationLocation && typeof shipment.destinationLocation === 'object' && 'lat' in shipment.destinationLocation && 'lng' in shipment.destinationLocation) {
+      const destLocation = shipment.destinationLocation as { lat: number, lng: number };
+      const redIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+        shadowSize: [41, 41],
+      });
+      
+      const marker = L.marker([destLocation.lat, destLocation.lng], { icon: redIcon })
+        .bindPopup(`<div>Destination: ${formatCoordinates(destLocation)}</div>`)
+        .addTo(leafletMap.current);
+      markersRef.current['destination'] = marker;
+    }
+    
+    // Create bounds to fit all markers
+    if (Object.keys(markersRef.current).length > 1) {
+      const bounds = Object.values(markersRef.current).map(marker => marker.getLatLng());
+      leafletMap.current.fitBounds(L.latLngBounds(bounds), { padding: [30, 30] });
+    }
+  }, [activeTab, currentLocation, shipment?.originLocation, shipment?.destinationLocation]);
+  
+  // Add a cleanup effect for component unmount
+  useEffect(() => {
+    // This cleanup only runs when the component unmounts
+    return () => {
+      if (leafletMap.current) {
+        leafletMap.current.remove();
+        leafletMap.current = null;
+      }
+    };
+  }, []);
   
   const handleRefresh = () => {
     setIsLoading(true);
@@ -225,21 +318,14 @@ export function ShipmentTracking({ shipment, onRefresh }: ShipmentTrackingProps)
           </TabsList>
           
           <TabsContent value="map" className="pt-2">
-            <div className="border rounded-md p-2 bg-muted/30 h-80 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground mb-2">Interactive Map</div>
-                <div className="font-medium mb-2">Current Location</div>
-                <div>{formatCoordinates(currentLocation)}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {(currentLocation && shipment.destinationLocation) && (
-                    <span>
-                      Approximately {Math.floor(
-                        Math.random() * 100
-                      )} miles from destination
-                    </span>
-                  )}
+            <div className="border rounded-md p-2 bg-muted/30 h-80 relative">
+              {currentLocation ? (
+                <div ref={mapRef} style={{ height: "100%", width: "100%" }} className="rounded-md"></div>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">No location data available</p>
                 </div>
-              </div>
+              )}
             </div>
           </TabsContent>
           

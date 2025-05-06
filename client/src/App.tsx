@@ -336,6 +336,9 @@ function Router() {
               <Route path="/routes/management">
                 {() => <RouteOptimization />}
               </Route>
+              <Route path="/routes/optimization">
+                {() => <RouteOptimization />}
+              </Route>
               <Route path="/routes/traffic">
                 {() => <RouteOptimization />}
               </Route>

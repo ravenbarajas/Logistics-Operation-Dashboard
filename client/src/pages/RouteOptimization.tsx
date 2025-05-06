@@ -82,17 +82,34 @@ export default function RouteOptimization() {
       return "traffic";
     } else if (path.includes("/routes/insights")) {
       return "insights";
+    } else if (path.includes("/routes/optimization")) {
+      return "optimization";
     } else if (path.includes("/routes/management")) {
       return "management";
+    } else if (path === "/routes") {
+      return "management";
     } else {
-      // Default to optimization (main routes page)
-      return "optimization";
+      // Default to management
+      return "management";
     }
   }
 
   // Update tab value whenever location changes (handles sidebar navigation)
   useEffect(() => {
-    setMainTabValue(getTabFromUrl());
+    const newTabValue = getTabFromUrl();
+    setMainTabValue(newTabValue);
+    
+    // Ensure URL is consistent with the tab
+    const currentPath = window.location.pathname;
+    if (newTabValue === "optimization" && !currentPath.includes("/routes/optimization")) {
+      window.history.pushState({}, "", "/routes/optimization");
+    } else if (newTabValue === "traffic" && !currentPath.includes("/routes/traffic")) {
+      window.history.pushState({}, "", "/routes/traffic");
+    } else if (newTabValue === "insights" && !currentPath.includes("/routes/insights")) {
+      window.history.pushState({}, "", "/routes/insights");
+    } else if (newTabValue === "management" && !currentPath.includes("/routes/management")) {
+      window.history.pushState({}, "", "/routes/management");
+    }
   }, [location]);
 
   // Update URL when tab changes
@@ -101,10 +118,10 @@ export default function RouteOptimization() {
     setMainTabValue(value);
     
     // Update URL without full page reload using path-based navigation
-    if (value === "management") {
+    if (value === "optimization") {
+      window.history.pushState({}, "", "/routes/optimization");
+    } else if (value === "management") {
       window.history.pushState({}, "", "/routes/management");
-    } else if (value === "optimization") {
-      window.history.pushState({}, "", "/routes");
     } else if (value === "traffic") {
       window.history.pushState({}, "", "/routes/traffic");
     } else if (value === "insights") {
@@ -291,7 +308,7 @@ export default function RouteOptimization() {
                       routes.templates.length;
 
   return (
-    <div className="container px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Route Management System</h1>
@@ -566,779 +583,1138 @@ export default function RouteOptimization() {
 
         {/* Management Tab */}
         <TabsContent value="management" className="space-y-4">
-          <Card className="mb-6 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-1">
-            <CardTitle>
-              Route Management
-            </CardTitle>
-            <CardDescription>Oversee and control all delivery routes</CardDescription>
-          </div>
-          <Button variant="outline" onClick={() => setIsRouteModalOpen(true)} className="border-black dark:border-white hover:bg-black/10 dark:hover:bg-white/10">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            New Route
-          </Button>
-        </div>
-        <div>
-          <div className="p-4 pt-6 bg-white dark:bg-[rgb(9,9,11)]">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap gap-2">
-                <Select value={activeTab} onValueChange={setActiveTab}>
-                  <SelectTrigger className="w-[180px] bg-background">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">
-                      <div className="flex items-center">
-                        <div className="mr-2 h-2 w-2 rounded-full bg-green-500" />
-                        Active Routes
-                        <Badge variant="outline" className="ml-2 bg-background">
-                          {routes.active.length}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="scheduled">
-                      <div className="flex items-center">
-                        <div className="mr-2 h-2 w-2 rounded-full bg-gray-400" />
-                        Scheduled Routes
-                        <Badge variant="outline" className="ml-2 bg-background">
-                          {routes.scheduled.length}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="completed">
-                      <div className="flex items-center">
-                        <div className="mr-2 h-2 w-2 rounded-full bg-gray-500" />
-                        Completed Routes
-                        <Badge variant="outline" className="ml-2 bg-background">
-                          {routes.completed.length}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="templates">
-                      <div className="flex items-center">
-                        <div className="mr-2 h-2 w-2 rounded-full bg-gray-600" />
-                        Route Templates
-                        <Badge variant="outline" className="ml-2 bg-background">
-                          {routes.templates.length}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={routeType} onValueChange={setRouteType}>
-                  <SelectTrigger className="w-[180px] bg-background">
-                    <SelectValue placeholder="Filter by type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Route Types</SelectItem>
-                    <SelectItem value="delivery">Delivery Routes</SelectItem>
-                    <SelectItem value="pickup">Pickup Routes</SelectItem>
-                    <SelectItem value="transfer">Transfer Routes</SelectItem>
-                    <SelectItem value="return">Return Routes</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                <div className="relative w-[240px]">
-                  <Input 
-                    placeholder="Search routes..." 
-                    className="pl-8 bg-background"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Card className="mb-6 p-0">
+            <CardHeader className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-1">
+                  <CardTitle>
+                    Route Management
+                  </CardTitle>
+                  <CardDescription>Oversee and control all delivery routes</CardDescription>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page</span>
-                  <Select
-                    value={pageSize.toString()}
-                    onValueChange={(value) => setPageSize(parseInt(value))}
-                  >
-                    <SelectTrigger className="h-9 w-[70px]">
-                      <SelectValue placeholder={pageSize.toString()} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[5, 10, 15, 20, 50].map((size) => (
-                        <SelectItem key={size} value={size.toString()}>
-                          {size}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button variant="outline" size="icon" className="bg-background hover:bg-black/10 dark:hover:bg-white/10">
-                  <RefreshCw className="h-4 w-4" />
+                <Button variant="outline" onClick={() => setIsRouteModalOpen(true)} className="border-black dark:border-white hover:bg-black/10 dark:hover:bg-white/10">
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  New Route
                 </Button>
               </div>
+            </CardHeader>
+            <CardContent>
+              {/* Route Optimization Table */}
+              <div>
+
+                <div className="p-4 pt-6 bg-white dark:bg-[rgb(9,9,11)]">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Select value={activeTab} onValueChange={setActiveTab}>
+                        <SelectTrigger className="w-[180px] bg-background">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">
+                            <div className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-green-500" />
+                              Active Routes
+                              <Badge variant="outline" className="ml-2 bg-background">
+                                {routes.active.length}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="scheduled">
+                            <div className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-gray-400" />
+                              Scheduled Routes
+                              <Badge variant="outline" className="ml-2 bg-background">
+                                {routes.scheduled.length}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="completed">
+                            <div className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-gray-500" />
+                              Completed Routes
+                              <Badge variant="outline" className="ml-2 bg-background">
+                                {routes.completed.length}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="templates">
+                            <div className="flex items-center">
+                              <div className="mr-2 h-2 w-2 rounded-full bg-gray-600" />
+                              Route Templates
+                              <Badge variant="outline" className="ml-2 bg-background">
+                                {routes.templates.length}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={routeType} onValueChange={setRouteType}>
+                        <SelectTrigger className="w-[180px] bg-background">
+                          <SelectValue placeholder="Filter by type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Route Types</SelectItem>
+                          <SelectItem value="delivery">Delivery Routes</SelectItem>
+                          <SelectItem value="pickup">Pickup Routes</SelectItem>
+                          <SelectItem value="transfer">Transfer Routes</SelectItem>
+                          <SelectItem value="return">Return Routes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <div className="relative w-[240px]">
+                        <Input 
+                          placeholder="Search routes..." 
+                          className="pl-8 bg-background"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">Rows per page</span>
+                        <Select
+                          value={pageSize.toString()}
+                          onValueChange={(value) => setPageSize(parseInt(value))}
+                        >
+                          <SelectTrigger className="h-9 w-[70px]">
+                            <SelectValue placeholder={pageSize.toString()} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[5, 10, 15, 20, 50].map((size) => (
+                              <SelectItem key={size} value={size.toString()}>
+                                {size}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <Button variant="outline" size="icon" className="bg-background hover:bg-black/10 dark:hover:bg-white/10">
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Route Optimization Table */}
+                <div className="bg-white dark:bg-[rgb(9,9,11)] transition-colors">
+                  {activeTab === "active" && (
+                    <>
+                      <div className="max-h-[calc(100vh-32rem)] overflow-y-auto">
+                        <RouteTable 
+                          routes={currentRoutes}
+                          status="active"
+                          pageSize={pageSize}
+                          onPageSizeChange={setPageSize}
+                          onViewDetails={handleViewDetails}
+                          onComplete={handleCompleteRoute}
+                          onDuplicate={handleDuplicateRoute}
+                          onDelete={handleDeleteRoute}
+                        />
+                      </div>
+                      <div className="pt-2 pb-4 px-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            {currentRoutes.length === 0 ? (
+                              <span>No routes found</span>
+                            ) : (
+                              <>
+                                Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, filteredRoutes.length)}</span> to <span className="font-medium">{Math.min(currentPage * pageSize, filteredRoutes.length)}</span> of <span className="font-medium">{filteredRoutes.length}</span> {filteredRoutes.length === 1 ? 'route' : 'routes'}
+                                {searchQuery && <span> for "<span className="font-medium">{searchQuery}</span>"</span>}
+                              </>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 flex justify-center">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(1)}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="First page"
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="Previous page"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              
+                              {totalPages <= 5 ? (
+                                // Show all pages if 5 or fewer
+                                [...Array(totalPages)].map((_, i) => (
+                                  <Button
+                                    key={`page-${i+1}`}
+                                    variant={currentPage === i+1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(i+1)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${i+1}`}
+                                    aria-current={currentPage === i+1 ? "page" : undefined}
+                                  >
+                                    {i+1}
+                                  </Button>
+                                ))
+                              ) : (
+                                // Show limited pages with ellipsis
+                                <>
+                                  <Button
+                                    variant={currentPage === 1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(1)}
+                                    className="h-8 w-8"
+                                    aria-label="Page 1"
+                                  >
+                                    1
+                                  </Button>
+                                  
+                                  {currentPage > 3 && <span className="mx-1">...</span>}
+                                  
+                                  {currentPage > 2 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handlePageChange(currentPage - 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage - 1}`}
+                                    >
+                                      {currentPage - 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage !== 1 && currentPage !== totalPages && (
+                                    <Button
+                                      variant="default"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage}`}
+                                      aria-current="page"
+                                    >
+                                      {currentPage}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage < totalPages - 1 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handlePageChange(currentPage + 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage + 1}`}
+                                    >
+                                      {currentPage + 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                                  
+                                  <Button
+                                    variant={currentPage === totalPages ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(totalPages)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${totalPages}`}
+                                  >
+                                    {totalPages}
+                                  </Button>
+                                </>
+                              )}
+                              
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Next page"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Last page"
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1 flex justify-end">
+
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {activeTab === "scheduled" && (
+                    <>
+                      <div className="max-h-[calc(100vh-32rem)] overflow-y-auto">
+                        <RouteTable 
+                          routes={currentRoutes}
+                          status="scheduled"
+                          pageSize={pageSize}
+                          onPageSizeChange={setPageSize}
+                          onViewDetails={handleViewDetails}
+                          onStart={handleStartRoute}
+                          onEdit={() => {}}
+                          onOptimize={() => {}}
+                          onDuplicate={handleDuplicateRoute}
+                          onDelete={handleDeleteRoute}
+                        />
+                      </div>
+                      <div className="pt-2 pb-4 px-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            {currentRoutes.length === 0 ? (
+                              <span>No routes found</span>
+                            ) : (
+                              <>
+                                Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, filteredRoutes.length)}</span> to <span className="font-medium">{Math.min(currentPage * pageSize, filteredRoutes.length)}</span> of <span className="font-medium">{filteredRoutes.length}</span> {filteredRoutes.length === 1 ? 'route' : 'routes'}
+                                {searchQuery && <span> for "<span className="font-medium">{searchQuery}</span>"</span>}
+                              </>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 flex justify-center">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(1)}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="First page"
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="Previous page"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              
+                              {totalPages <= 5 ? (
+                                // Show all pages if 5 or fewer
+                                [...Array(totalPages)].map((_, i) => (
+                                  <Button
+                                    key={`page-${i+1}`}
+                                    variant={currentPage === i+1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(i+1)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${i+1}`}
+                                    aria-current={currentPage === i+1 ? "page" : undefined}
+                                  >
+                                    {i+1}
+                                  </Button>
+                                ))
+                              ) : (
+                                // Show limited pages with ellipsis
+                                <>
+                                  <Button
+                                    variant={currentPage === 1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(1)}
+                                    className="h-8 w-8"
+                                    aria-label="Page 1"
+                                  >
+                                    1
+                                  </Button>
+                                  
+                                  {currentPage > 3 && <span className="mx-1">...</span>}
+                                  
+                                  {currentPage > 2 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handlePageChange(currentPage - 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage - 1}`}
+                                    >
+                                      {currentPage - 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage !== 1 && currentPage !== totalPages && (
+                                    <Button
+                                      variant="default"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage}`}
+                                      aria-current="page"
+                                    >
+                                      {currentPage}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage < totalPages - 1 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handlePageChange(currentPage + 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage + 1}`}
+                                    >
+                                      {currentPage + 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                                  
+                                  <Button
+                                    variant={currentPage === totalPages ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(totalPages)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${totalPages}`}
+                                  >
+                                    {totalPages}
+                                  </Button>
+                                </>
+                              )}
+                              
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Next page"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Last page"
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1 flex justify-end">
+
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {activeTab === "completed" && (
+                    <>
+                      <div className="max-h-[calc(100vh-32rem)] overflow-y-auto">
+                        <RouteTable 
+                          routes={currentRoutes}
+                          status="completed"
+                          pageSize={pageSize}
+                          onPageSizeChange={setPageSize}
+                          onViewDetails={handleViewDetails}
+                          onDuplicate={handleDuplicateRoute}
+                          onDelete={handleDeleteRoute}
+                        />
+                      </div>
+                      <div className="pt-2 pb-4 px-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            {currentRoutes.length === 0 ? (
+                              <span>No routes found</span>
+                            ) : (
+                              <>
+                                Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, filteredRoutes.length)}</span> to <span className="font-medium">{Math.min(currentPage * pageSize, filteredRoutes.length)}</span> of <span className="font-medium">{filteredRoutes.length}</span> {filteredRoutes.length === 1 ? 'route' : 'routes'}
+                                {searchQuery && <span> for "<span className="font-medium">{searchQuery}</span>"</span>}
+                              </>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 flex justify-center">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(1)}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="First page"
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="Previous page"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              
+                              {totalPages <= 5 ? (
+                                // Show all pages if 5 or fewer
+                                [...Array(totalPages)].map((_, i) => (
+                                  <Button
+                                    key={`page-${i+1}`}
+                                    variant={currentPage === i+1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(i+1)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${i+1}`}
+                                    aria-current={currentPage === i+1 ? "page" : undefined}
+                                  >
+                                    {i+1}
+                                  </Button>
+                                ))
+                              ) : (
+                                // Show limited pages with ellipsis
+                                <>
+                                  <Button
+                                    variant={currentPage === 1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(1)}
+                                    className="h-8 w-8"
+                                    aria-label="Page 1"
+                                  >
+                                    1
+                                  </Button>
+                                  
+                                  {currentPage > 3 && <span className="mx-1">...</span>}
+                                  
+                                  {currentPage > 2 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handlePageChange(currentPage - 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage - 1}`}
+                                    >
+                                      {currentPage - 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage !== 1 && currentPage !== totalPages && (
+                                    <Button
+                                      variant="default"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage}`}
+                                      aria-current="page"
+                                    >
+                                      {currentPage}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage < totalPages - 1 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handlePageChange(currentPage + 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage + 1}`}
+                                    >
+                                      {currentPage + 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                                  
+                                  <Button
+                                    variant={currentPage === totalPages ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(totalPages)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${totalPages}`}
+                                  >
+                                    {totalPages}
+                                  </Button>
+                                </>
+                              )}
+                              
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Next page"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Last page"
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1 flex justify-end">
+
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {activeTab === "templates" && (
+                    <>
+                      <div className="max-h-[calc(100vh-32rem)] overflow-y-auto">
+                        <RouteTable 
+                          routes={currentRoutes}
+                          status="template"
+                          pageSize={pageSize}
+                          onPageSizeChange={setPageSize}
+                          onViewDetails={handleViewDetails}
+                          onEdit={() => {}}
+                          onOptimize={() => {}}
+                          onDuplicate={handleDuplicateRoute}
+                          onDelete={handleDeleteRoute}
+                        />
+                      </div>
+                      <div className="pt-2 pb-4 px-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 text-sm text-muted-foreground">
+                            {currentRoutes.length === 0 ? (
+                              <span>No routes found</span>
+                            ) : (
+                              <>
+                                Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, filteredRoutes.length)}</span> to <span className="font-medium">{Math.min(currentPage * pageSize, filteredRoutes.length)}</span> of <span className="font-medium">{filteredRoutes.length}</span> {filteredRoutes.length === 1 ? 'route' : 'routes'}
+                                {searchQuery && <span> for "<span className="font-medium">{searchQuery}</span>"</span>}
+                              </>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 flex justify-center">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(1)}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="First page"
+                              >
+                                <ChevronsLeft className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8"
+                                aria-label="Previous page"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              
+                              {totalPages <= 5 ? (
+                                // Show all pages if 5 or fewer
+                                [...Array(totalPages)].map((_, i) => (
+                                  <Button
+                                    key={`page-${i+1}`}
+                                    variant={currentPage === i+1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(i+1)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${i+1}`}
+                                    aria-current={currentPage === i+1 ? "page" : undefined}
+                                  >
+                                    {i+1}
+                                  </Button>
+                                ))
+                              ) : (
+                                // Show limited pages with ellipsis
+                                <>
+                                  <Button
+                                    variant={currentPage === 1 ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(1)}
+                                    className="h-8 w-8"
+                                    aria-label="Page 1"
+                                  >
+                                    1
+                                  </Button>
+                                  
+                                  {currentPage > 3 && <span className="mx-1">...</span>}
+                                  
+                                  {currentPage > 2 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handlePageChange(currentPage - 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage - 1}`}
+                                    >
+                                      {currentPage - 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage !== 1 && currentPage !== totalPages && (
+                                    <Button
+                                      variant="default"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage}`}
+                                      aria-current="page"
+                                    >
+                                      {currentPage}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage < totalPages - 1 && (
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      onClick={() => handlePageChange(currentPage + 1)}
+                                      className="h-8 w-8"
+                                      aria-label={`Page ${currentPage + 1}`}
+                                    >
+                                      {currentPage + 1}
+                                    </Button>
+                                  )}
+                                  
+                                  {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
+                                  
+                                  <Button
+                                    variant={currentPage === totalPages ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => handlePageChange(totalPages)}
+                                    className="h-8 w-8"
+                                    aria-label={`Page ${totalPages}`}
+                                  >
+                                    {totalPages}
+                                  </Button>
+                                </>
+                              )}
+                              
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Next page"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handlePageChange(totalPages)}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8"
+                                aria-label="Last page"
+                              >
+                                <ChevronsRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1 flex justify-end">
+
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-6 p- border-none">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 my-6">
+              <Card className="col-span-1">
+                <CardHeader>
+                  <CardTitle>Resource Allocation</CardTitle>
+                  <CardDescription>Driver and vehicle assignment status</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Drivers Assigned</span>
+                      <span className="text-sm font-medium">26/32</span>
+                    </div>
+                    <Progress value={81} className="h-2" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>81% allocated</span>
+                      <span>6 available</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Vehicles Deployed</span>
+                      <span className="text-sm font-medium">42/48</span>
+                    </div>
+                    <Progress value={87.5} className="h-2" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>87.5% allocated</span>
+                      <span>6 available</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Load Capacity Utilized</span>
+                      <span className="text-sm font-medium">74%</span>
+                    </div>
+                    <Progress value={74} className="h-2" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Average across fleet</span>
+                      <span>26% remaining</span>
+                    </div>
+                  </div>
+                  
+                  <Separator className="my-2" />
+                  
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">Driver Status</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                        <span className="text-sm">Active: 26</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-amber-500"></div>
+                        <span className="text-sm">On Break: 3</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                        <span className="text-sm">Available: 6</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-gray-500"></div>
+                        <span className="text-sm">Off Duty: 2</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">Vehicle Status</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                        <span className="text-sm">In Service: 42</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                        <span className="text-sm">Available: 6</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                        <span className="text-sm">Maintenance: 3</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-gray-500"></div>
+                        <span className="text-sm">Inactive: 1</span>
+                      </div>
+                    </div>
+                  </div>
+
+                   {/* New Vehicle Utilization Metrics */}
+                   <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Vehicle Utilization Metrics</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-3 bg-muted/30 rounded-md">
+                        <div className="text-xs text-muted-foreground">Average Fuel Efficiency</div>
+                        <div className="text-xl font-bold mt-1">15 MPG</div>
+                        <div className="text-xs text-muted-foreground mt-1">Across all vehicles</div>
+                      </div>
+                      <div className="p-3 bg-muted/30 rounded-md">
+                        <div className="text-xs text-muted-foreground">Maintenance Frequency</div>
+                        <div className="text-xl font-bold mt-1">Every 5,000 miles</div>
+                        <div className="text-xs text-muted-foreground mt-1">Standard for fleet</div>
+                      </div>
+                    </div>
+                  </div>
+
+                </CardContent>
+              </Card>
+              
+              <Card className="col-span-1">
+                <CardHeader>
+                  <CardTitle>Schedule Compliance</CardTitle>
+                  <CardDescription>Delivery performance metrics</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="pt-2 pb-4">
+                      <div className="rounded-full h-32 w-32 mx-auto relative flex items-center justify-center">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <svg className="h-32 w-32" viewBox="0 0 100 100">
+                            <circle 
+                              cx="50" 
+                              cy="50" 
+                              r="45" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              className="text-muted stroke-1" 
+                            />
+                            <circle 
+                              cx="50" 
+                              cy="50" 
+                              r="45" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              className="text-green-500 stroke-2" 
+                              strokeDasharray="283" 
+                              strokeDashoffset="23" 
+                              transform="rotate(-90 50 50)" 
+                            />
+                          </svg>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-3xl font-bold">92%</div>
+                          <div className="text-xs text-muted-foreground mt-1">ON-TIME DELIVERY</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-medium">Delivery Status Breakdown</h4>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                            <span className="text-sm">On Time</span>
+                          </div>
+                          <span className="text-sm font-medium">92%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-amber-500"></div>
+                            <span className="text-sm">Delayed (&lt; 30min)</span>
+                          </div>
+                          <span className="text-sm font-medium">6%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                            <span className="text-sm">Late (&gt; 30min)</span>
+                          </div>
+                          <span className="text-sm font-medium">2%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <Separator className="my-2" />
+                  
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">Performance Trends</h4>
+                    <div className="space-y-2">
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">Weekly Trend</span>
+                          <span className="text-sm text-green-500">+2.3%</span>
+                        </div>
+                        <div className="h-1 bg-muted rounded-full grid grid-cols-7 gap-1">
+                          <div className="bg-green-500 rounded-full" style={{ height: "4px" }}></div>
+                          <div className="bg-green-500 rounded-full" style={{ height: "4px" }}></div>
+                          <div className="bg-amber-500 rounded-full" style={{ height: "4px" }}></div>
+                          <div className="bg-green-500 rounded-full" style={{ height: "4px" }}></div>
+                          <div className="bg-green-500 rounded-full" style={{ height: "4px" }}></div>
+                          <div className="bg-amber-500 rounded-full" style={{ height: "4px" }}></div>
+                          <div className="bg-green-500 rounded-full" style={{ height: "4px" }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">Monthly Average</span>
+                          <span className="text-sm text-green-500">91.2%</span>
+                        </div>
+                        <Progress value={91.2} className="h-1" />
+                      </div>
+
+                      {/* New Year-to-Date Performance */}
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">Year-to-Date Performance</span>
+                          <span className="text-sm text-green-500">89.5%</span>
+                        </div>
+                        <Progress value={89.5} className="h-1" />
+                      </div>
+
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 rounded-md bg-muted/30 mt-2">
+                    <h4 className="text-sm font-medium mb-2">Service Level Agreement</h4>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <div className="flex justify-between">
+                        <span>Target SLA:</span>
+                        <span>95% on-time delivery</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Current Performance:</span>
+                        <span className="text-amber-500">92% (-3%)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Action Required:</span>
+                        <span>Route optimization</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* New Schedule Compliance Section */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Schedule Compliance</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-3 bg-muted/30 rounded-md">
+                        <div className="text-xs text-muted-foreground">On-Time Schedule Adherence</div>
+                        <div className="text-xl font-bold mt-1">88%</div>
+                        <div className="text-xs text-muted-foreground mt-1">Based on last month</div>
+                      </div>
+                      <div className="p-3 bg-muted/30 rounded-md">
+                        <div className="text-xs text-muted-foreground">Average Delay</div>
+                        <div className="text-xl font-bold mt-1">12 mins</div>
+                        <div className="text-xs text-muted-foreground mt-1">Across all routes</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="col-span-1">
+                <CardHeader>
+                  <CardTitle>Route Template Analytics</CardTitle>
+                  <CardDescription>Template usage and effectiveness</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 rounded-md bg-muted/30">
+                        <div className="text-sm text-muted-foreground">Total Templates</div>
+                        <div className="text-2xl font-bold">{routes.templates.length}</div>
+                      </div>
+                      <div className="p-3 rounded-md bg-muted/30">
+                        <div className="text-sm text-muted-foreground">Usage Rate</div>
+                        <div className="text-2xl font-bold">76%</div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium">Top Templates by Usage</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">Downtown Loop</span>
+                            <span className="text-sm font-medium">42 uses</span>
+                          </div>
+                          <Progress value={84} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">North District</span>
+                            <span className="text-sm font-medium">36 uses</span>
+                          </div>
+                          <Progress value={72} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">South District</span>
+                            <span className="text-sm font-medium">28 uses</span>
+                          </div>
+                          <Progress value={56} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">East Suburban</span>
+                            <span className="text-sm font-medium">22 uses</span>
+                          </div>
+                          <Progress value={44} className="h-2" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Separator className="my-2" />
+                    
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium">Template Efficiency</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">Time Saved</span>
+                            <span className="text-sm font-medium text-green-500">+18%</span>
+                          </div>
+                          <Progress value={18} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">Fuel Reduction</span>
+                            <span className="text-sm font-medium text-green-500">+12%</span>
+                          </div>
+                          <Progress value={12} className="h-2" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">Error Reduction</span>
+                            <span className="text-sm font-medium text-green-500">+24%</span>
+                          </div>
+                          <Progress value={24} className="h-2" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 rounded-md bg-muted/30">
+                      <h4 className="text-sm font-medium mb-2">Recommendations</h4>
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        <li className="flex items-start">
+                          <div className="h-3 w-3 rounded-full bg-blue-500 mt-0.5 mr-2 flex-shrink-0"></div>
+                          <span>Create 3 new templates for West Region routes</span>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="h-3 w-3 rounded-full bg-blue-500 mt-0.5 mr-2 flex-shrink-0"></div>
+                          <span>Optimize Downtown Loop for rush hour traffic</span>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="h-3 w-3 rounded-full bg-blue-500 mt-0.5 mr-2 flex-shrink-0"></div>
+                          <span>Review and update 4 underutilized templates</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-            
-          <div className="bg-white dark:bg-[rgb(9,9,11)] transition-colors">
-            {activeTab === "active" && (
-              <>
-                <div className="max-h-[calc(100vh-32rem)] overflow-y-auto">
-                  <RouteTable 
-                    routes={currentRoutes}
-                    status="active"
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
-                    onViewDetails={handleViewDetails}
-                    onComplete={handleCompleteRoute}
-                    onDuplicate={handleDuplicateRoute}
-                    onDelete={handleDeleteRoute}
-                  />
-                </div>
-                <div className="pt-2 pb-4 px-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 text-sm text-muted-foreground">
-                      {currentRoutes.length === 0 ? (
-                        <span>No routes found</span>
-                      ) : (
-                        <>
-                          Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, filteredRoutes.length)}</span> to <span className="font-medium">{Math.min(currentPage * pageSize, filteredRoutes.length)}</span> of <span className="font-medium">{filteredRoutes.length}</span> {filteredRoutes.length === 1 ? 'route' : 'routes'}
-                          {searchQuery && <span> for "<span className="font-medium">{searchQuery}</span>"</span>}
-                        </>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 flex justify-center">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(1)}
-                          disabled={currentPage === 1}
-                          className="h-8 w-8"
-                          aria-label="First page"
-                        >
-                          <ChevronsLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="h-8 w-8"
-                          aria-label="Previous page"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        
-                        {totalPages <= 5 ? (
-                          // Show all pages if 5 or fewer
-                          [...Array(totalPages)].map((_, i) => (
-                            <Button
-                              key={`page-${i+1}`}
-                              variant={currentPage === i+1 ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(i+1)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${i+1}`}
-                              aria-current={currentPage === i+1 ? "page" : undefined}
-                            >
-                              {i+1}
-                            </Button>
-                          ))
-                        ) : (
-                          // Show limited pages with ellipsis
-                          <>
-                            <Button
-                              variant={currentPage === 1 ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(1)}
-                              className="h-8 w-8"
-                              aria-label="Page 1"
-                            >
-                              1
-                            </Button>
-                            
-                            {currentPage > 3 && <span className="mx-1">...</span>}
-                            
-                            {currentPage > 2 && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage - 1}`}
-                              >
-                                {currentPage - 1}
-                              </Button>
-                            )}
-                            
-                            {currentPage !== 1 && currentPage !== totalPages && (
-                              <Button
-                                variant="default"
-                                size="icon"
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage}`}
-                                aria-current="page"
-                              >
-                                {currentPage}
-                              </Button>
-                            )}
-                            
-                            {currentPage < totalPages - 1 && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage + 1}`}
-                              >
-                                {currentPage + 1}
-                              </Button>
-                            )}
-                            
-                            {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
-                            
-                            <Button
-                              variant={currentPage === totalPages ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(totalPages)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${totalPages}`}
-                            >
-                              {totalPages}
-                            </Button>
-                          </>
-                        )}
-                        
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className="h-8 w-8"
-                          aria-label="Next page"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(totalPages)}
-                          disabled={currentPage === totalPages}
-                          className="h-8 w-8"
-                          aria-label="Last page"
-                        >
-                          <ChevronsRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 flex justify-end">
-
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-            
-            {activeTab === "scheduled" && (
-              <>
-                <div className="max-h-[calc(100vh-32rem)] overflow-y-auto">
-                  <RouteTable 
-                    routes={currentRoutes}
-                    status="scheduled"
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
-                    onViewDetails={handleViewDetails}
-                    onStart={handleStartRoute}
-                    onEdit={() => {}}
-                    onOptimize={() => {}}
-                    onDuplicate={handleDuplicateRoute}
-                    onDelete={handleDeleteRoute}
-                  />
-                </div>
-                <div className="pt-2 pb-4 px-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 text-sm text-muted-foreground">
-                      {currentRoutes.length === 0 ? (
-                        <span>No routes found</span>
-                      ) : (
-                        <>
-                          Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, filteredRoutes.length)}</span> to <span className="font-medium">{Math.min(currentPage * pageSize, filteredRoutes.length)}</span> of <span className="font-medium">{filteredRoutes.length}</span> {filteredRoutes.length === 1 ? 'route' : 'routes'}
-                          {searchQuery && <span> for "<span className="font-medium">{searchQuery}</span>"</span>}
-                        </>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 flex justify-center">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(1)}
-                          disabled={currentPage === 1}
-                          className="h-8 w-8"
-                          aria-label="First page"
-                        >
-                          <ChevronsLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="h-8 w-8"
-                          aria-label="Previous page"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        
-                        {totalPages <= 5 ? (
-                          // Show all pages if 5 or fewer
-                          [...Array(totalPages)].map((_, i) => (
-                            <Button
-                              key={`page-${i+1}`}
-                              variant={currentPage === i+1 ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(i+1)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${i+1}`}
-                              aria-current={currentPage === i+1 ? "page" : undefined}
-                            >
-                              {i+1}
-                            </Button>
-                          ))
-                        ) : (
-                          // Show limited pages with ellipsis
-                          <>
-                            <Button
-                              variant={currentPage === 1 ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(1)}
-                              className="h-8 w-8"
-                              aria-label="Page 1"
-                            >
-                              1
-                            </Button>
-                            
-                            {currentPage > 3 && <span className="mx-1">...</span>}
-                            
-                            {currentPage > 2 && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage - 1}`}
-                              >
-                                {currentPage - 1}
-                              </Button>
-                            )}
-                            
-                            {currentPage !== 1 && currentPage !== totalPages && (
-                              <Button
-                                variant="default"
-                                size="icon"
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage}`}
-                                aria-current="page"
-                              >
-                                {currentPage}
-                              </Button>
-                            )}
-                            
-                            {currentPage < totalPages - 1 && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage + 1}`}
-                              >
-                                {currentPage + 1}
-                              </Button>
-                            )}
-                            
-                            {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
-                            
-                            <Button
-                              variant={currentPage === totalPages ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(totalPages)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${totalPages}`}
-                            >
-                              {totalPages}
-                            </Button>
-                          </>
-                        )}
-                        
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className="h-8 w-8"
-                          aria-label="Next page"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(totalPages)}
-                          disabled={currentPage === totalPages}
-                          className="h-8 w-8"
-                          aria-label="Last page"
-                        >
-                          <ChevronsRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 flex justify-end">
-
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-            
-            {activeTab === "completed" && (
-              <>
-                <div className="max-h-[calc(100vh-32rem)] overflow-y-auto">
-                  <RouteTable 
-                    routes={currentRoutes}
-                    status="completed"
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
-                    onViewDetails={handleViewDetails}
-                    onDuplicate={handleDuplicateRoute}
-                    onDelete={handleDeleteRoute}
-                  />
-                </div>
-                <div className="pt-2 pb-4 px-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 text-sm text-muted-foreground">
-                      {currentRoutes.length === 0 ? (
-                        <span>No routes found</span>
-                      ) : (
-                        <>
-                          Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, filteredRoutes.length)}</span> to <span className="font-medium">{Math.min(currentPage * pageSize, filteredRoutes.length)}</span> of <span className="font-medium">{filteredRoutes.length}</span> {filteredRoutes.length === 1 ? 'route' : 'routes'}
-                          {searchQuery && <span> for "<span className="font-medium">{searchQuery}</span>"</span>}
-                        </>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 flex justify-center">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(1)}
-                          disabled={currentPage === 1}
-                          className="h-8 w-8"
-                          aria-label="First page"
-                        >
-                          <ChevronsLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="h-8 w-8"
-                          aria-label="Previous page"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        
-                        {totalPages <= 5 ? (
-                          // Show all pages if 5 or fewer
-                          [...Array(totalPages)].map((_, i) => (
-                            <Button
-                              key={`page-${i+1}`}
-                              variant={currentPage === i+1 ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(i+1)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${i+1}`}
-                              aria-current={currentPage === i+1 ? "page" : undefined}
-                            >
-                              {i+1}
-                            </Button>
-                          ))
-                        ) : (
-                          // Show limited pages with ellipsis
-                          <>
-                            <Button
-                              variant={currentPage === 1 ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(1)}
-                              className="h-8 w-8"
-                              aria-label="Page 1"
-                            >
-                              1
-                            </Button>
-                            
-                            {currentPage > 3 && <span className="mx-1">...</span>}
-                            
-                            {currentPage > 2 && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage - 1}`}
-                              >
-                                {currentPage - 1}
-                              </Button>
-                            )}
-                            
-                            {currentPage !== 1 && currentPage !== totalPages && (
-                              <Button
-                                variant="default"
-                                size="icon"
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage}`}
-                                aria-current="page"
-                              >
-                                {currentPage}
-                              </Button>
-                            )}
-                            
-                            {currentPage < totalPages - 1 && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage + 1}`}
-                              >
-                                {currentPage + 1}
-                              </Button>
-                            )}
-                            
-                            {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
-                            
-                            <Button
-                              variant={currentPage === totalPages ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(totalPages)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${totalPages}`}
-                            >
-                              {totalPages}
-                            </Button>
-                          </>
-                        )}
-                        
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className="h-8 w-8"
-                          aria-label="Next page"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(totalPages)}
-                          disabled={currentPage === totalPages}
-                          className="h-8 w-8"
-                          aria-label="Last page"
-                        >
-                          <ChevronsRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 flex justify-end">
-
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-            
-            {activeTab === "templates" && (
-              <>
-                <div className="max-h-[calc(100vh-32rem)] overflow-y-auto">
-                  <RouteTable 
-                    routes={currentRoutes}
-                    status="template"
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
-                    onViewDetails={handleViewDetails}
-                    onEdit={() => {}}
-                    onOptimize={() => {}}
-                    onDuplicate={handleDuplicateRoute}
-                    onDelete={handleDeleteRoute}
-                  />
-                </div>
-                <div className="pt-2 pb-4 px-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 text-sm text-muted-foreground">
-                      {currentRoutes.length === 0 ? (
-                        <span>No routes found</span>
-                      ) : (
-                        <>
-                          Showing <span className="font-medium">{Math.min((currentPage - 1) * pageSize + 1, filteredRoutes.length)}</span> to <span className="font-medium">{Math.min(currentPage * pageSize, filteredRoutes.length)}</span> of <span className="font-medium">{filteredRoutes.length}</span> {filteredRoutes.length === 1 ? 'route' : 'routes'}
-                          {searchQuery && <span> for "<span className="font-medium">{searchQuery}</span>"</span>}
-                        </>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 flex justify-center">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(1)}
-                          disabled={currentPage === 1}
-                          className="h-8 w-8"
-                          aria-label="First page"
-                        >
-                          <ChevronsLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="h-8 w-8"
-                          aria-label="Previous page"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        
-                        {totalPages <= 5 ? (
-                          // Show all pages if 5 or fewer
-                          [...Array(totalPages)].map((_, i) => (
-                            <Button
-                              key={`page-${i+1}`}
-                              variant={currentPage === i+1 ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(i+1)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${i+1}`}
-                              aria-current={currentPage === i+1 ? "page" : undefined}
-                            >
-                              {i+1}
-                            </Button>
-                          ))
-                        ) : (
-                          // Show limited pages with ellipsis
-                          <>
-                            <Button
-                              variant={currentPage === 1 ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(1)}
-                              className="h-8 w-8"
-                              aria-label="Page 1"
-                            >
-                              1
-                            </Button>
-                            
-                            {currentPage > 3 && <span className="mx-1">...</span>}
-                            
-                            {currentPage > 2 && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage - 1}`}
-                              >
-                                {currentPage - 1}
-                              </Button>
-                            )}
-                            
-                            {currentPage !== 1 && currentPage !== totalPages && (
-                              <Button
-                                variant="default"
-                                size="icon"
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage}`}
-                                aria-current="page"
-                              >
-                                {currentPage}
-                              </Button>
-                            )}
-                            
-                            {currentPage < totalPages - 1 && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                className="h-8 w-8"
-                                aria-label={`Page ${currentPage + 1}`}
-                              >
-                                {currentPage + 1}
-                              </Button>
-                            )}
-                            
-                            {currentPage < totalPages - 2 && <span className="mx-1">...</span>}
-                            
-                            <Button
-                              variant={currentPage === totalPages ? "default" : "outline"}
-                              size="icon"
-                              onClick={() => handlePageChange(totalPages)}
-                              className="h-8 w-8"
-                              aria-label={`Page ${totalPages}`}
-                            >
-                              {totalPages}
-                            </Button>
-                          </>
-                        )}
-                        
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className="h-8 w-8"
-                          aria-label="Next page"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handlePageChange(totalPages)}
-                          disabled={currentPage === totalPages}
-                          className="h-8 w-8"
-                          aria-label="Last page"
-                        >
-                          <ChevronsRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 flex justify-end">
-
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
           </Card>
         </TabsContent>
 
         {/* Optimization Tab (main routes page) */}
         <TabsContent value="optimization" className="space-y-4">
           {/* Route Optimization Tools & Analytics */}
-          <Card className="mb-6 p-6">
-            <div className="flex flex-col gap-1 mb-6">
-              <CardTitle>
-                Route Optimization
-              </CardTitle>
-              <CardDescription>Improve routes for speed and efficiency</CardDescription>
-            </div>
+          <Card className="border-none mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-0">
               <Card className="md:col-span-2">
                 <CardHeader>
@@ -1761,534 +2137,1075 @@ export default function RouteOptimization() {
               </Card>
             </div>
           </Card>
+
+          <Card className="border-none">   
+            {/* Optimization Results Dashboard - New Component */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <Card className="lg:col-span-7">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingDown className="h-5 w-5 text-green-500" />
+                      Optimization Results
+                    </CardTitle>
+                    <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      Live
+                    </Badge>
+                  </div>
+                  <CardDescription>Real-time savings and improvements</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground">Distance Saved</div>
+                        <div className="text-2xl font-bold">152 mi</div>
+                        <div className="text-xs text-green-500">12.9% improvement</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground">Time Saved</div>
+                        <div className="text-2xl font-bold">18.2 hrs</div>
+                        <div className="text-xs text-green-500">17.7% improvement</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground">Fuel Saved</div>
+                        <div className="text-2xl font-bold">36.5 gal</div>
+                        <div className="text-xs text-green-500">19.4% improvement</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground">CO₂ Reduced</div>
+                        <div className="text-2xl font-bold">356 kg</div>
+                        <div className="text-xs text-green-500">19.3% improvement</div>
+                      </div>
+                    </div>
+                  
+                    <div className="border-t pt-4">
+                      <div className="text-sm font-medium mb-2">Route Comparison</div>
+                      <div className="h-[180px] relative">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="flex flex-col items-center">
+                            <BarChart3 className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                            <span className="text-sm text-muted-foreground">Before/After comparison chart</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-4">
+                      <div className="text-sm font-medium mb-2">Routes Optimized</div>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-green-500 h-2 w-2 rounded-full p-0" />
+                            <span className="text-sm">RT-1043: Downtown Circuit</span>
+                          </div>
+                          <span className="text-sm text-green-500">+24% efficiency</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-green-500 h-2 w-2 rounded-full p-0" />
+                            <span className="text-sm">RT-3842: North District</span>
+                          </div>
+                          <span className="text-sm text-green-500">+19% efficiency</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-green-500 h-2 w-2 rounded-full p-0" />
+                            <span className="text-sm">RT-5621: East Suburban</span>
+                          </div>
+                          <span className="text-sm text-green-500">+16% efficiency</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="lg:col-span-5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calculator className="h-5 w-5 text-blue-500" />
+                    Cost Analysis
+                  </CardTitle>
+                  <CardDescription>Financial impact of optimizations</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 rounded-md bg-muted/30">
+                        <div className="text-xs text-muted-foreground">Monthly Savings</div>
+                        <div className="text-2xl font-bold">$14,325</div>
+                        <div className="text-xs text-green-500">+8.2% from last month</div>
+                      </div>
+                      <div className="p-3 rounded-md bg-muted/30">
+                        <div className="text-xs text-muted-foreground">Yearly Projection</div>
+                        <div className="text-2xl font-bold">$171,900</div>
+                        <div className="text-xs text-green-500">+12.4% YoY</div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">Fuel Cost Savings</span>
+                          <span className="text-sm font-medium">$5,840</span>
+                        </div>
+                        <Progress value={42} className="h-2" />
+                        <div className="text-xs text-muted-foreground mt-1">42% of total savings</div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">Labor Cost Savings</span>
+                          <span className="text-sm font-medium">$6,325</span>
+                        </div>
+                        <Progress value={45} className="h-2" />
+                        <div className="text-xs text-muted-foreground mt-1">45% of total savings</div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm">Maintenance Savings</span>
+                          <span className="text-sm font-medium">$1,830</span>
+                        </div>
+                        <Progress value={13} className="h-2" />
+                        <div className="text-xs text-muted-foreground mt-1">13% of total savings</div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-4">
+                      <div className="text-sm font-medium mb-2">ROI Analysis</div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-xs text-muted-foreground">Implementation Cost</div>
+                          <div className="text-xl font-medium">$42,500</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground">Break-even Point</div>
+                          <div className="text-xl font-medium">3.2 months</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-4">
+                      <div className="text-sm font-medium mb-2">Efficiency Metrics</div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <TrendingDown className="h-4 w-4 text-green-500" />
+                          <span className="text-sm">Cost per mile reduced by</span>
+                        </div>
+                        <span className="text-sm font-medium text-green-500">$0.18 (16.4%)</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-2">
+                          <TrendingDown className="h-4 w-4 text-green-500" />
+                          <span className="text-sm">Cost per delivery reduced by</span>
+                        </div>
+                        <span className="text-sm font-medium text-green-500">$1.24 (12.8%)</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </Card>
         </TabsContent>
 
         {/* Traffic Tab */}
         <TabsContent value="traffic" className="space-y-4">
-          <Card className="mb-6 p-6">
-        <div className="flex flex-col gap-1 mb-6">
-          <CardTitle>
-            Traffic Analysis
-          </CardTitle>
-          <CardDescription>Understand traffic patterns and delays</CardDescription>
-        </div>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-0">
-          <Card>
+          <Card className="mb-6 border-none">
+            <CardContent className="p-0">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-0">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                      Optimization Comparison
+                    </CardTitle>
+                    <CardDescription>Before vs. After Optimization</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <BarChart
+                        data={optimizationSummaryData} 
+                        index="name" 
+                        categories={["before", "after"]} 
+                        colors={["#94a3b8", "#3b82f6"]} 
+                        valueFormatter={(value: number) => `${value}${value > 1000 ? ' km' : value > 100 ? ' hr' : value > 30 ? ' gal' : ' kg'}`}
+                        yAxisWidth={48}
+                      />
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">Total Distance</div>
+                          <div className="text-2xl font-bold">1,100 km</div>
+                          <div className="text-xs text-green-500">-12% from baseline</div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">Total Time</div>
+                          <div className="text-2xl font-bold">18.8 hrs</div>
+                          <div className="text-xs text-green-500">-16.4% from baseline</div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">Fuel Usage</div>
+                          <div className="text-2xl font-bold">145 gal</div>
+                          <div className="text-xs text-green-500">-19.4% from baseline</div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">CO₂ Emissions</div>
+                          <div className="text-2xl font-bold">1,485 kg</div>
+                          <div className="text-xs text-green-500">-19.3% from baseline</div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-4">
+                        <div className="text-sm font-medium mb-2">Efficiency Improvements</div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Route Consolidation</span>
+                            <span className="text-sm font-medium text-green-500">+15%</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Load Balancing</span>
+                            <span className="text-sm font-medium text-green-500">+12%</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Traffic Avoidance</span>
+                            <span className="text-sm font-medium text-green-500">+8%</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-4">
+                        <div className="text-sm font-medium mb-2">Route Performance</div>
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Urban Routes</span>
+                              <span className="text-sm font-medium text-amber-500">Medium</span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-amber-500" style={{ width: "65%" }}></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>65% Utilized</span>
+                              <span>42 Deliveries</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Suburban Routes</span>
+                              <span className="text-sm font-medium text-green-500">Optimal</span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-green-500" style={{ width: "85%" }}></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>85% Utilized</span>
+                              <span>68 Deliveries</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Highway Routes</span>
+                              <span className="text-sm font-medium text-red-500">Congested</span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-red-500" style={{ width: "92%" }}></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>92% Utilized</span>
+                              <span>74 Deliveries</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <LineChart className="h-5 w-5 text-primary" />
+                      Traffic Pattern Analysis
+                    </CardTitle>
+                    <CardDescription>Average travel times across time periods</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <LineChartComponent
+                        data={[
+                          { time: "6 AM", urban: 22, suburban: 18, highway: 13 },
+                          { time: "9 AM", urban: 36, suburban: 24, highway: 15 },
+                          { time: "12 PM", urban: 30, suburban: 22, highway: 14 },
+                          { time: "3 PM", urban: 32, suburban: 23, highway: 14 },
+                          { time: "6 PM", urban: 37, suburban: 26, highway: 15 },
+                          { time: "9 PM", urban: 24, suburban: 19, highway: 13 }
+                        ]}
+                        index="time"
+                        categories={["urban", "suburban", "highway"]}
+                        colors={["#ef4444", "#f97316", "#3b82f6"]}
+                        valueFormatter={(value: number) => `${value} min`}
+                        yAxisWidth={40}
+                      />
+                      
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">Urban Routes</div>
+                          <div className="text-2xl font-bold">32 min</div>
+                          <div className="text-xs text-muted-foreground">Peak: 37 min</div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">Suburban Routes</div>
+                          <div className="text-2xl font-bold">22 min</div>
+                          <div className="text-xs text-muted-foreground">Peak: 26 min</div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">Highway Routes</div>
+                          <div className="text-2xl font-bold">14 min</div>
+                          <div className="text-xs text-muted-foreground">Peak: 15 min</div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-4">
+                        <div className="text-sm font-medium mb-2">Traffic Insights</div>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Badge className="w-2 h-2 rounded-full bg-red-500 p-0" />
+                            <span className="text-sm">Urban routes show highest variability</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className="w-2 h-2 rounded-full bg-orange-500 p-0" />
+                            <span className="text-sm">Suburban routes peak during rush hours</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className="w-2 h-2 rounded-full bg-blue-500 p-0" />
+                            <span className="text-sm">Highway routes remain most consistent</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-muted/30 p-3 rounded-md">
+                        <div className="text-sm font-medium mb-1">Recommendations</div>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Schedule urban deliveries outside peak hours (10 AM - 3 PM)</li>
+                          <li>• Optimize suburban routes for morning/evening commutes</li>
+                          <li>• Prioritize highway routes during rush hours</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="border-t pt-4">
+                        <div className="text-sm font-medium mb-2">Traffic Congestion Index</div>
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Morning Rush (7-9 AM)</span>
+                              <span className="text-sm font-medium text-red-500">High</span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-red-500" style={{ width: "85%" }}></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>85% Congestion</span>
+                              <span>+12% from baseline</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Midday (11 AM - 3 PM)</span>
+                              <span className="text-sm font-medium text-amber-500">Medium</span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-amber-500" style={{ width: "65%" }}></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>65% Congestion</span>
+                              <span>-5% from baseline</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm">Evening Rush (4-7 PM)</span>
+                              <span className="text-sm font-medium text-red-500">High</span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-red-500" style={{ width: "90%" }}></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>90% Congestion</span>
+                              <span>+18% from baseline</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-4">
+                        <div className="text-sm font-medium mb-2">Weather Impact</div>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <div className="text-sm">Rainy Conditions</div>
+                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500" style={{ width: "75%" }}></div>
+                              </div>
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>+25% delay</span>
+                                <span>Affects 15% of routes</span>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="text-sm">Clear Conditions</div>
+                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-green-500" style={{ width: "95%" }}></div>
+                              </div>
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>+5% delay</span>
+                                <span>Affects 85% of routes</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-4">
+                        <div className="text-sm font-medium mb-2">Traffic Prediction</div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Short-term (24h)</span>
+                            <span className="text-sm font-medium text-green-500">92% accuracy</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Medium-term (7d)</span>
+                            <span className="text-sm font-medium text-amber-500">78% accuracy</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Long-term (30d)</span>
+                            <span className="text-sm font-medium text-red-500">65% accuracy</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="p-0">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                Optimization Comparison
+              <CardTitle>
+              Traffic Incident Analysis
               </CardTitle>
-              <CardDescription>Before vs. After Optimization</CardDescription>
+              <CardDescription>Active incidents affecting current routes</CardDescription>
             </CardHeader>
+            {/* Traffic Incident Analysis Component */}
             <CardContent>
               <div className="space-y-6">
-                <BarChart
-                  data={optimizationSummaryData} 
-                  index="name" 
-                  categories={["before", "after"]} 
-                  colors={["#94a3b8", "#3b82f6"]} 
-                  valueFormatter={(value: number) => `${value}${value > 1000 ? ' km' : value > 100 ? ' hr' : value > 30 ? ' gal' : ' kg'}`}
-                  yAxisWidth={48}
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Total Distance</div>
-                    <div className="text-2xl font-bold">1,100 km</div>
-                    <div className="text-xs text-green-500">-12% from baseline</div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Total Time</div>
-                    <div className="text-2xl font-bold">18.8 hrs</div>
-                    <div className="text-xs text-green-500">-16.4% from baseline</div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Fuel Usage</div>
-                    <div className="text-2xl font-bold">145 gal</div>
-                    <div className="text-xs text-green-500">-19.4% from baseline</div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">CO₂ Emissions</div>
-                    <div className="text-2xl font-bold">1,485 kg</div>
-                    <div className="text-xs text-green-500">-19.3% from baseline</div>
-                  </div>
-                </div>
-                
-                <div className="border-t pt-4">
-                  <div className="text-sm font-medium mb-2">Efficiency Improvements</div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Route Consolidation</span>
-                      <span className="text-sm font-medium text-green-500">+15%</span>
+                {/* Incident Summary */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-muted/30 p-3 rounded-md flex flex-col">
+                    <span className="text-xs text-muted-foreground">Total Incidents</span>
+                    <div className="flex items-baseline justify-between mt-1">
+                      <span className="text-2xl font-bold">12</span>
+                      <span className="text-xs text-red-500">+3 from yesterday</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Load Balancing</span>
-                      <span className="text-sm font-medium text-green-500">+12%</span>
+                  </div>
+                  <div className="bg-muted/30 p-3 rounded-md flex flex-col">
+                    <span className="text-xs text-muted-foreground">Routes Affected</span>
+                    <div className="flex items-baseline justify-between mt-1">
+                      <span className="text-2xl font-bold">7</span>
+                      <span className="text-xs text-amber-500">16% of active routes</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Traffic Avoidance</span>
-                      <span className="text-sm font-medium text-green-500">+8%</span>
+                  </div>
+                  <div className="bg-muted/30 p-3 rounded-md flex flex-col">
+                    <span className="text-xs text-muted-foreground">Avg. Delay</span>
+                    <div className="flex items-baseline justify-between mt-1">
+                      <span className="text-2xl font-bold">18 min</span>
+                      <span className="text-xs text-green-500">-4 min from average</span>
+                    </div>
+                  </div>
+                  <div className="bg-muted/30 p-3 rounded-md flex flex-col">
+                    <span className="text-xs text-muted-foreground">Rerouting</span>
+                    <div className="flex items-baseline justify-between mt-1">
+                      <span className="text-2xl font-bold">5</span>
+                      <span className="text-xs text-blue-500">routes currently</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="border-t pt-4">
-                  <div className="text-sm font-medium mb-2">Route Performance</div>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Urban Routes</span>
-                        <span className="text-sm font-medium text-amber-500">Medium</span>
+                {/* Incident Map */}
+                <div className="relative h-64 md:h-80 bg-muted rounded-md overflow-hidden">
+                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                    {/* Placeholder for traffic map component */}
+                    <div className="flex flex-col items-center gap-2">
+                      <MapIcon className="h-10 w-10 text-muted-foreground/50" />
+                      <span className="text-sm">Interactive traffic map</span>
+                    </div>
+                  </div>
+                  
+                  <div className="absolute bottom-4 right-4 flex gap-2">
+                    <Button variant="secondary" size="sm" className="h-8 text-xs bg-white dark:bg-black">
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Refresh
+                    </Button>
+                    <Button variant="secondary" size="sm" className="h-8 text-xs bg-white dark:bg-black">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      Filter
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Active Incidents Table */}
+                <div className="border rounded-md overflow-hidden">
+                  <div className="bg-muted/30 px-4 py-2 text-sm font-medium">Active Incidents</div>
+                  <div className="divide-y">
+                    <div className="grid grid-cols-12 px-4 py-3 items-center">
+                      <div className="col-span-1">
+                        <Badge className="bg-red-500 h-6 w-6 p-1 flex items-center justify-center rounded-full">
+                          <TrafficCone className="h-4 w-4 text-white" />
+                        </Badge>
                       </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-500" style={{ width: "65%" }}></div>
+                      <div className="col-span-4">
+                        <div className="font-medium text-sm">Major Accident</div>
+                        <div className="text-xs text-muted-foreground">I-95 Northbound, Exit 23</div>
                       </div>
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>65% Utilized</span>
-                        <span>42 Deliveries</span>
+                      <div className="col-span-2 text-center">
+                        <div className="text-xs text-muted-foreground">Severity</div>
+                        <div className="text-sm font-medium text-red-500">High</div>
+                      </div>
+                      <div className="col-span-2 text-center">
+                        <div className="text-xs text-muted-foreground">Est. Duration</div>
+                        <div className="text-sm font-medium">2+ hours</div>
+                      </div>
+                      <div className="col-span-2 text-center">
+                        <div className="text-xs text-muted-foreground">Routes Affected</div>
+                        <div className="text-sm font-medium">RT-1043, RT-3842</div>
+                      </div>
+                      <div className="col-span-1 flex justify-end">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MapPin className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                     
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Suburban Routes</span>
-                        <span className="text-sm font-medium text-green-500">Optimal</span>
+                    <div className="grid grid-cols-12 px-4 py-3 items-center">
+                      <div className="col-span-1">
+                        <Badge className="bg-amber-500 h-6 w-6 p-1 flex items-center justify-center rounded-full">
+                          <Wind className="h-4 w-4 text-white" />
+                        </Badge>
                       </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-green-500" style={{ width: "85%" }}></div>
+                      <div className="col-span-4">
+                        <div className="font-medium text-sm">Road Construction</div>
+                        <div className="text-xs text-muted-foreground">Main St & 5th Ave</div>
                       </div>
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>85% Utilized</span>
-                        <span>68 Deliveries</span>
+                      <div className="col-span-2 text-center">
+                        <div className="text-xs text-muted-foreground">Severity</div>
+                        <div className="text-sm font-medium text-amber-500">Medium</div>
+                      </div>
+                      <div className="col-span-2 text-center">
+                        <div className="text-xs text-muted-foreground">Est. Duration</div>
+                        <div className="text-sm font-medium">3 days</div>
+                      </div>
+                      <div className="col-span-2 text-center">
+                        <div className="text-xs text-muted-foreground">Routes Affected</div>
+                        <div className="text-sm font-medium">RT-5621, RT-8954</div>
+                      </div>
+                      <div className="col-span-1 flex justify-end">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MapPin className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                     
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Highway Routes</span>
-                        <span className="text-sm font-medium text-red-500">Congested</span>
+                    <div className="grid grid-cols-12 px-4 py-3 items-center">
+                      <div className="col-span-1">
+                        <Badge className="bg-blue-500 h-6 w-6 p-1 flex items-center justify-center rounded-full">
+                          <AlertCircle className="h-4 w-4 text-white" />
+                        </Badge>
                       </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-red-500" style={{ width: "92%" }}></div>
+                      <div className="col-span-4">
+                        <div className="font-medium text-sm">Lane Closure</div>
+                        <div className="text-xs text-muted-foreground">Highway 101, Mile 36</div>
                       </div>
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>92% Utilized</span>
-                        <span>74 Deliveries</span>
+                      <div className="col-span-2 text-center">
+                        <div className="text-xs text-muted-foreground">Severity</div>
+                        <div className="text-sm font-medium text-blue-500">Low</div>
                       </div>
+                      <div className="col-span-2 text-center">
+                        <div className="text-xs text-muted-foreground">Est. Duration</div>
+                        <div className="text-sm font-medium">6 hours</div>
+                      </div>
+                      <div className="col-span-2 text-center">
+                        <div className="text-xs text-muted-foreground">Routes Affected</div>
+                        <div className="text-sm font-medium">RT-4567</div>
+                      </div>
+                      <div className="col-span-1 flex justify-end">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MapPin className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-muted/10 px-4 py-2 flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Showing 3 of 12 incidents</span>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Automated Actions */}
+                <div className="border rounded-md p-4">
+                  <h4 className="text-sm font-medium mb-3">Automated Actions</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 text-blue-500" />
+                        <span>Route RT-1043 rerouted</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">2 minutes ago</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 text-blue-500" />
+                        <span>Route RT-3842 rerouted</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">4 minutes ago</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-amber-500" />
+                        <span>ETA updated for 3 deliveries</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">7 minutes ago</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-green-500" />
+                        <span>Driver notifications sent</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">12 minutes ago</span>
                     </div>
                   </div>
                 </div>
               </div>
             </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LineChart className="h-5 w-5 text-primary" />
-                Traffic Pattern Analysis
-              </CardTitle>
-              <CardDescription>Average travel times across time periods</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <LineChartComponent
-                  data={[
-                    { time: "6 AM", urban: 22, suburban: 18, highway: 13 },
-                    { time: "9 AM", urban: 36, suburban: 24, highway: 15 },
-                    { time: "12 PM", urban: 30, suburban: 22, highway: 14 },
-                    { time: "3 PM", urban: 32, suburban: 23, highway: 14 },
-                    { time: "6 PM", urban: 37, suburban: 26, highway: 15 },
-                    { time: "9 PM", urban: 24, suburban: 19, highway: 13 }
-                  ]}
-                  index="time"
-                  categories={["urban", "suburban", "highway"]}
-                  colors={["#ef4444", "#f97316", "#3b82f6"]}
-                  valueFormatter={(value: number) => `${value} min`}
-                  yAxisWidth={40}
-                />
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Urban Routes</div>
-                    <div className="text-2xl font-bold">32 min</div>
-                    <div className="text-xs text-muted-foreground">Peak: 37 min</div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Suburban Routes</div>
-                    <div className="text-2xl font-bold">22 min</div>
-                    <div className="text-xs text-muted-foreground">Peak: 26 min</div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium">Highway Routes</div>
-                    <div className="text-2xl font-bold">14 min</div>
-                    <div className="text-xs text-muted-foreground">Peak: 15 min</div>
-                  </div>
-                </div>
-                
-                <div className="border-t pt-4">
-                  <div className="text-sm font-medium mb-2">Traffic Insights</div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge className="w-2 h-2 rounded-full bg-red-500 p-0" />
-                      <span className="text-sm">Urban routes show highest variability</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="w-2 h-2 rounded-full bg-orange-500 p-0" />
-                      <span className="text-sm">Suburban routes peak during rush hours</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="w-2 h-2 rounded-full bg-blue-500 p-0" />
-                      <span className="text-sm">Highway routes remain most consistent</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-muted/30 p-3 rounded-md">
-                  <div className="text-sm font-medium mb-1">Recommendations</div>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Schedule urban deliveries outside peak hours (10 AM - 3 PM)</li>
-                    <li>• Optimize suburban routes for morning/evening commutes</li>
-                    <li>• Prioritize highway routes during rush hours</li>
-                  </ul>
-                </div>
-                
-                <div className="border-t pt-4">
-                  <div className="text-sm font-medium mb-2">Traffic Congestion Index</div>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Morning Rush (7-9 AM)</span>
-                        <span className="text-sm font-medium text-red-500">High</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-red-500" style={{ width: "85%" }}></div>
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>85% Congestion</span>
-                        <span>+12% from baseline</span>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Midday (11 AM - 3 PM)</span>
-                        <span className="text-sm font-medium text-amber-500">Medium</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-500" style={{ width: "65%" }}></div>
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>65% Congestion</span>
-                        <span>-5% from baseline</span>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm">Evening Rush (4-7 PM)</span>
-                        <span className="text-sm font-medium text-red-500">High</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-red-500" style={{ width: "90%" }}></div>
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                        <span>90% Congestion</span>
-                        <span>+18% from baseline</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border-t pt-4">
-                  <div className="text-sm font-medium mb-2">Weather Impact</div>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="text-sm">Rainy Conditions</div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500" style={{ width: "75%" }}></div>
-                        </div>
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>+25% delay</span>
-                          <span>Affects 15% of routes</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="text-sm">Clear Conditions</div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-green-500" style={{ width: "95%" }}></div>
-                        </div>
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>+5% delay</span>
-                          <span>Affects 85% of routes</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="border-t pt-4">
-                  <div className="text-sm font-medium mb-2">Traffic Prediction</div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Short-term (24h)</span>
-                      <span className="text-sm font-medium text-green-500">92% accuracy</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Medium-term (7d)</span>
-                      <span className="text-sm font-medium text-amber-500">78% accuracy</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Long-term (30d)</span>
-                      <span className="text-sm font-medium text-red-500">65% accuracy</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
           </Card>
         </TabsContent>
 
         {/* Insights Tab */}
         <TabsContent value="insights" className="space-y-4">
-          <Card className="mb-6 p-6">
-        <div className="flex flex-col gap-1 mb-6">
-          <CardTitle>
-            Route Insights
-          </CardTitle>
-          <CardDescription>Gain data-driven route performance views</CardDescription>
-        </div>
-        <div className="mb-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                  Route Efficiency Improvements
-                </CardTitle>
-                <CardDescription>Savings per route after optimization</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <BarChart
-                  data={efficiencyImprovementData} 
-                  index="name" 
-                  categories={["distance", "time", "fuel", "emissions"]} 
-                  colors={["#3b82f6", "#f97316", "#16a34a", "#6b7280"]} 
-                  valueFormatter={(value: number) => `${value}${value > 20 ? ' km' : value > 10 ? ' min' : value > 1.5 ? ' gal' : ' kg'}`}
-                  yAxisWidth={48}
-                />
-                <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                  <div className="flex items-center">
-                    <Badge className="w-2 h-2 rounded-full bg-blue-500 mr-1 p-0" />
-                    <span>Distance Saved</span>
+          <Card className="border-none">
+            {/* Driver Performance Analytics */}
+            <CardContent className="p-0 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                      Route Efficiency Improvements
+                    </CardTitle>
+                    <CardDescription>Savings per route after optimization</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <BarChart
+                      data={efficiencyImprovementData} 
+                      index="name" 
+                      categories={["distance", "time", "fuel", "emissions"]} 
+                      colors={["#3b82f6", "#f97316", "#16a34a", "#6b7280"]} 
+                      valueFormatter={(value: number) => `${value}${value > 20 ? ' km' : value > 10 ? ' min' : value > 1.5 ? ' gal' : ' kg'}`}
+                      yAxisWidth={48}
+                    />
+                    <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                      <div className="flex items-center">
+                        <Badge className="w-2 h-2 rounded-full bg-blue-500 mr-1 p-0" />
+                        <span>Distance Saved</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Badge className="w-2 h-2 rounded-full bg-orange-500 mr-1 p-0" />
+                        <span>Time Saved</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Badge className="w-2 h-2 rounded-full bg-green-600 mr-1 p-0" />
+                        <span>Fuel Saved</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Badge className="w-2 h-2 rounded-full bg-gray-500 mr-1 p-0" />
+                        <span>Emissions Reduced</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Compass className="h-5 w-5 text-primary" />
+                      Geo-Spatial Distribution
+                    </CardTitle>
+                    <CardDescription>Route density and geographic distribution</CardDescription>
+                  </CardHeader>
+                  <CardContent className="min-h-[300px]">
+                    <GeoDistribution height="370px" />
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Truck className="h-5 w-5 text-primary" />
+                      Vehicle Utilization
+                    </CardTitle>
+                    <CardDescription>Fleet allocation efficiency</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">26ft Box Trucks</span>
+                          <span className="text-sm font-medium">78%</span>
+                        </div>
+                        <Progress value={78} className="h-2" />
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">Delivery Vans</span>
+                          <span className="text-sm font-medium">92%</span>
+                        </div>
+                        <Progress value={92} className="h-2" />
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">53ft Semi-Trucks</span>
+                          <span className="text-sm font-medium">65%</span>
+                        </div>
+                        <Progress value={65} className="h-2" />
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">Electric Vans</span>
+                          <span className="text-sm font-medium">84%</span>
+                        </div>
+                        <Progress value={84} className="h-2" />
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">Refrigerated Trucks</span>
+                          <span className="text-sm font-medium">71%</span>
+                        </div>
+                        <Progress value={71} className="h-2" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      Time Window Analysis
+                    </CardTitle>
+                    <CardDescription>Delivery time slot optimization</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="pt-3">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">Morning (6AM-10AM)</span>
+                          <span className="text-sm font-medium text-amber-500">Medium</span>
+                        </div>
+                        <Progress value={65} className="h-2 bg-muted" />
+                        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                          <span>65% Utilized</span>
+                          <span>42 Deliveries</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">Midday (10AM-2PM)</span>
+                          <span className="text-sm font-medium text-green-500">Optimal</span>
+                        </div>
+                        <Progress value={85} className="h-2 bg-muted" />
+                        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                          <span>85% Utilized</span>
+                          <span>68 Deliveries</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">Afternoon (2PM-6PM)</span>
+                          <span className="text-sm font-medium text-red-500">Congested</span>
+                        </div>
+                        <Progress value={92} className="h-2 bg-muted" />
+                        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                          <span>92% Utilized</span>
+                          <span>74 Deliveries</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">Evening (6PM-10PM)</span>
+                          <span className="text-sm font-medium text-blue-500">Low Traffic</span>
+                        </div>
+                        <Progress value={55} className="h-2 bg-muted" />
+                        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                          <span>55% Utilized</span>
+                          <span>38 Deliveries</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FuelIcon className="h-5 w-5 text-primary" />
+                      Energy & Emissions
+                    </CardTitle>
+                    <CardDescription>Environmental impact analysis</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="pt-2 pb-6">
+                      <div className="rounded-full h-36 w-36 mx-auto relative flex items-center justify-center">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <svg className="h-36 w-36" viewBox="0 0 100 100">
+                            <circle 
+                              cx="50" 
+                              cy="50" 
+                              r="45" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              className="text-muted stroke-1" 
+                            />
+                            <circle 
+                              cx="50" 
+                              cy="50" 
+                              r="45" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              className="text-green-500 stroke-2" 
+                              strokeDasharray="283" 
+                              strokeDashoffset="70" 
+                              transform="rotate(-90 50 50)" 
+                            />
+                          </svg>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-3xl font-bold">-25%</div>
+                          <div className="text-xs text-muted-foreground mt-1">CO₂ REDUCTION</div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 mt-4">
+                        <div className="text-center p-2 bg-muted/50 rounded-md">
+                          <div className="text-lg font-bold">78%</div>
+                          <div className="text-xs text-muted-foreground">Route Efficiency</div>
+                        </div>
+                        <div className="text-center p-2 bg-muted/50 rounded-md">
+                          <div className="text-lg font-bold">22%</div>
+                          <div className="text-xs text-muted-foreground">Electric Vehicles</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="p-0">
+            <CardHeader>
+              <CardTitle>
+                Driver Performance
+              </CardTitle>
+              <CardDescription>Advanced driver efficiency metrics and benchmarking</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Advanced Driver Performance Dashboard */}
+                <Card className="border-none">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-3 bg-muted/30 rounded-md">
+                      <div className="text-xs text-muted-foreground">Top Driver</div>
+                      <div className="text-xl font-bold mt-1">Alex K.</div>
+                      <div className="flex items-center mt-1">
+                        <span className="text-sm text-green-500 font-medium">98.3%</span>
+                        <TrendingDown className="h-3 w-3 ml-1 text-green-500" />
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">42 completed routes</div>
+                    </div>
+                    <div className="p-3 bg-muted/30 rounded-md">
+                      <div className="text-xs text-muted-foreground">Fleet Efficiency</div>
+                      <div className="text-xl font-bold mt-1">86.4%</div>
+                      <div className="flex items-center mt-1">
+                        <span className="text-sm text-green-500 font-medium">+3.2%</span>
+                        <TrendingDown className="h-3 w-3 ml-1 text-green-500" />
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">From last month</div>
+                    </div>
+                    <div className="p-3 bg-muted/30 rounded-md">
+                      <div className="text-xs text-muted-foreground">Training Needs</div>
+                      <div className="text-xl font-bold mt-1">4 Drivers</div>
+                      <div className="flex items-center mt-1">
+                        <span className="text-sm text-amber-500 font-medium">Efficiency training</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">Below 85% performance</div>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Badge className="w-2 h-2 rounded-full bg-orange-500 mr-1 p-0" />
-                    <span>Time Saved</span>
+                </Card>
+                {/* Performance Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="col-span-1 h-full">
+                    <div className="rounded-md border p-4 h-full">
+                      <h4 className="text-sm font-medium mb-3">Performance Overview</h4>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="p-2 rounded-md bg-muted/30">
+                            <div className="text-xs text-muted-foreground">Top Driver</div>
+                            <div className="text-xl font-bold mt-1">Alex Kim</div>
+                            <div className="text-xs text-green-500">98.3% rating</div>
+                          </div>
+                          <div className="p-2 rounded-md bg-muted/30">
+                            <div className="text-xs text-muted-foreground">Efficiency</div>
+                            <div className="text-xl font-bold mt-1">92.6%</div>
+                            <div className="text-xs text-green-500">+4.8% this month</div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm">On-time Deliveries</span>
+                            <span className="text-sm font-medium">94%</span>
+                          </div>
+                          <Progress value={94} className="h-2" />
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Last 30 days</span>
+                            <span>Target: 95%</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm">Fuel Efficiency</span>
+                            <span className="text-sm font-medium">89%</span>
+                          </div>
+                          <Progress value={89} className="h-2" />
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Last 30 days</span>
+                            <span>Target: 90%</span>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm">Customer Satisfaction</span>
+                            <span className="text-sm font-medium">97%</span>
+                          </div>
+                          <Progress value={97} className="h-2" />
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Last 30 days</span>
+                            <span>Target: 95%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Badge className="w-2 h-2 rounded-full bg-green-600 mr-1 p-0" />
-                    <span>Fuel Saved</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Badge className="w-2 h-2 rounded-full bg-gray-500 mr-1 p-0" />
-                    <span>Emissions Reduced</span>
+                  
+                  <div className="col-span-2">
+                    <div className="rounded-md border p-4 h-full">
+                      <h4 className="text-sm font-medium mb-3">Driver Performance Comparison</h4>
+                      <div className="h-[250px] border-b mb-2">
+                        {/* Placeholder for chart component */}
+                        <div className="h-full flex items-center justify-center text-muted-foreground">
+                          <div className="text-center">
+                            <BarChart3 className="h-10 w-10 mx-auto mb-2 text-muted-foreground/50" />
+                            <span className="text-sm">Performance comparison chart</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4 mt-4">
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">Top Performers</div>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                              <span className="text-xs font-medium">Alex K. (98.3%)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                              <span className="text-xs font-medium">Sarah M. (97.8%)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                              <span className="text-xs font-medium">David W. (96.2%)</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">Improvement Needed</div>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+                              <span className="text-xs font-medium">Robert J. (82.4%)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+                              <span className="text-xs font-medium">Lisa T. (83.7%)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+                              <span className="text-xs font-medium">Mark P. (84.1%)</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">Performance Areas</div>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                              <span className="text-xs font-medium">Fuel Efficiency</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                              <span className="text-xs font-medium">On-time Delivery</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-purple-500"></div>
+                              <span className="text-xs font-medium">Customer Rating</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Compass className="h-5 w-5 text-primary" />
-                  Geo-Spatial Distribution
-                </CardTitle>
-                <CardDescription>Route density and geographic distribution</CardDescription>
-              </CardHeader>
-              <CardContent className="min-h-[300px]">
-                <GeoDistribution height="370px" />
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Truck className="h-5 w-5 text-primary" />
-                  Vehicle Utilization
-                </CardTitle>
-                <CardDescription>Fleet allocation efficiency</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">26ft Box Trucks</span>
-                      <span className="text-sm font-medium">78%</span>
-                    </div>
-                    <Progress value={78} className="h-2" />
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Delivery Vans</span>
-                      <span className="text-sm font-medium">92%</span>
-                    </div>
-                    <Progress value={92} className="h-2" />
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">53ft Semi-Trucks</span>
-                      <span className="text-sm font-medium">65%</span>
-                    </div>
-                    <Progress value={65} className="h-2" />
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Electric Vans</span>
-                      <span className="text-sm font-medium">84%</span>
-                    </div>
-                    <Progress value={84} className="h-2" />
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Refrigerated Trucks</span>
-                      <span className="text-sm font-medium">71%</span>
-                    </div>
-                    <Progress value={71} className="h-2" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Time Window Analysis
-                </CardTitle>
-                <CardDescription>Delivery time slot optimization</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="pt-3">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Morning (6AM-10AM)</span>
-                      <span className="text-sm font-medium text-amber-500">Medium</span>
-                    </div>
-                    <Progress value={65} className="h-2 bg-muted" />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>65% Utilized</span>
-                      <span>42 Deliveries</span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Midday (10AM-2PM)</span>
-                      <span className="text-sm font-medium text-green-500">Optimal</span>
-                    </div>
-                    <Progress value={85} className="h-2 bg-muted" />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>85% Utilized</span>
-                      <span>68 Deliveries</span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Afternoon (2PM-6PM)</span>
-                      <span className="text-sm font-medium text-red-500">Congested</span>
-                    </div>
-                    <Progress value={92} className="h-2 bg-muted" />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>92% Utilized</span>
-                      <span>74 Deliveries</span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Evening (6PM-10PM)</span>
-                      <span className="text-sm font-medium text-blue-500">Low Traffic</span>
-                    </div>
-                    <Progress value={55} className="h-2 bg-muted" />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>55% Utilized</span>
-                      <span>38 Deliveries</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FuelIcon className="h-5 w-5 text-primary" />
-                  Energy & Emissions
-                </CardTitle>
-                <CardDescription>Environmental impact analysis</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="pt-2 pb-6">
-                  <div className="rounded-full h-36 w-36 mx-auto relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <svg className="h-36 w-36" viewBox="0 0 100 100">
-                        <circle 
-                          cx="50" 
-                          cy="50" 
-                          r="45" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          className="text-muted stroke-1" 
-                        />
-                        <circle 
-                          cx="50" 
-                          cy="50" 
-                          r="45" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          className="text-green-500 stroke-2" 
-                          strokeDasharray="283" 
-                          strokeDashoffset="70" 
-                          transform="rotate(-90 50 50)" 
-                        />
-                      </svg>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold">-25%</div>
-                      <div className="text-xs text-muted-foreground mt-1">CO₂ REDUCTION</div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 mt-4">
-                    <div className="text-center p-2 bg-muted/50 rounded-md">
-                      <div className="text-lg font-bold">78%</div>
-                      <div className="text-xs text-muted-foreground">Route Efficiency</div>
-                    </div>
-                    <div className="text-center p-2 bg-muted/50 rounded-md">
-                      <div className="text-lg font-bold">22%</div>
-                      <div className="text-xs text-muted-foreground">Electric Vehicles</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

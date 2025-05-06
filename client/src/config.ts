@@ -6,7 +6,7 @@ export type ModuleType = "dashboard" | "vehicles" | "shipments" | "customers" | 
                          "warehouse" | "orders" | "routes" | "reports" | "analytics" | "settings";
 
 // This controls which module loads by default when the application starts
-export const DEFAULT_MODULE: ModuleType = "customers";
+export const DEFAULT_MODULE: ModuleType = "analytics";
 
 // Map of module names to their corresponding routes
 export const MODULE_ROUTES: Record<ModuleType, string> = {

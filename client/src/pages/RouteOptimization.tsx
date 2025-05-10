@@ -24,6 +24,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { GeoDistribution } from "@/components/maps/GeoDistribution";
 import { RouteComparisonMap } from "@/components/maps/RouteComparisonMap";
+import { TrafficMap } from "@/components/maps/TrafficMap";
 import { useLocation } from "wouter";
 import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -2704,13 +2705,7 @@ export default function RouteOptimization() {
                 
                 {/* Incident Map */}
                 <div className="relative h-64 md:h-80 bg-muted rounded-md overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                    {/* Placeholder for traffic map component */}
-                    <div className="flex flex-col items-center gap-2">
-                      <MapIcon className="h-10 w-10 text-muted-foreground/50" />
-                      <span className="text-sm">Interactive traffic map</span>
-                    </div>
-                  </div>
+                  <TrafficMap height="100%" />
                   
                   <div className="absolute bottom-4 right-4 flex gap-2">
                     <Button variant="secondary" size="sm" className="h-8 text-xs bg-white dark:bg-black">

@@ -23,15 +23,76 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { GeoDistribution } from "@/components/maps/GeoDistribution";
+import { RouteComparisonMap } from "@/components/maps/RouteComparisonMap";
 import { useLocation } from "wouter";
+import { MapContainer, TileLayer } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 // Mock data for charts
 const optimizationSummaryData = [
   { name: "Distance", before: 1250, after: 1100 },
   { name: "Fuel", before: 180, after: 145 },
-  { name: "Time", before: 22.5, after: 18.8 },
-  { name: "CO2", before: 1840, after: 1485 },
+  { name: "Time", before: 1650, after: 1380 },
+  { name: "CO₂", before: 1840, after: 1485 }
 ];
+
+// Mock route optimization comparison data
+const routeComparisonData = {
+  originalRoute: {
+    name: "Downtown Express Delivery (Original)",
+    stops: 18,
+    waypoints: [
+      // San Francisco City Center area coordinates
+      { lat: 37.7749, lng: -122.4194 }, // Start/End
+      { lat: 37.7848, lng: -122.4267 },
+      { lat: 37.7963, lng: -122.4041 },
+      { lat: 37.7756, lng: -122.4136 },
+      { lat: 37.7945, lng: -122.3915 },
+      { lat: 37.7834, lng: -122.4078 },
+      { lat: 37.7648, lng: -122.4345 },
+      { lat: 37.7864, lng: -122.4201 },
+      { lat: 37.7925, lng: -122.4382 },
+      { lat: 37.7827, lng: -122.4423 },
+      { lat: 37.7634, lng: -122.4253 },
+      { lat: 37.7837, lng: -122.4320 },
+      { lat: 37.7697, lng: -122.4088 },
+      { lat: 37.7881, lng: -122.4013 },
+      { lat: 37.7793, lng: -122.3898 },
+      { lat: 37.7824, lng: -122.3977 },
+      { lat: 37.7712, lng: -122.4298 },
+      { lat: 37.7749, lng: -122.4194 }, // Back to start
+    ],
+    distance: 28.6,
+    duration: 195
+  },
+  optimizedRoute: {
+    name: "Downtown Express Delivery (Optimized)",
+    stops: 18,
+    waypoints: [
+      // San Francisco City Center area - optimized path
+      { lat: 37.7749, lng: -122.4194 }, // Start/End
+      { lat: 37.7712, lng: -122.4298 },
+      { lat: 37.7634, lng: -122.4253 },
+      { lat: 37.7648, lng: -122.4345 },
+      { lat: 37.7827, lng: -122.4423 },
+      { lat: 37.7925, lng: -122.4382 },
+      { lat: 37.7864, lng: -122.4201 },
+      { lat: 37.7837, lng: -122.4320 },
+      { lat: 37.7834, lng: -122.4078 },
+      { lat: 37.7848, lng: -122.4267 },
+      { lat: 37.7824, lng: -122.3977 },
+      { lat: 37.7793, lng: -122.3898 },
+      { lat: 37.7881, lng: -122.4013 },
+      { lat: 37.7945, lng: -122.3915 },
+      { lat: 37.7963, lng: -122.4041 },
+      { lat: 37.7697, lng: -122.4088 },
+      { lat: 37.7756, lng: -122.4136 },
+      { lat: 37.7749, lng: -122.4194 }, // Back to start
+    ],
+    distance: 22.8,
+    duration: 165
+  }
+};
 
 const efficiencyImprovementData = [
   { name: "Route 1", distance: 14.7, time: 32, fuel: 1.2, emissions: 12.3 },
@@ -49,6 +110,13 @@ const monthlyTrendData = [
   { month: "Jun", distance: 3950, fuel: 502, emissions: 5240 },
   { month: "Jul", distance: 3850, fuel: 493, emissions: 5120 },
   { month: "Aug", distance: 3950, fuel: 512, emissions: 5340 },
+];
+
+const routePerformanceData = [
+  { name: "Route 1", distance: 18.3, time: 35, fuel: 2.2, emissions: 19.8 },
+  { name: "Route 2", distance: 15.7, time: 30, fuel: 1.9, emissions: 17.1 },
+  { name: "Route 3", distance: 22.5, time: 45, fuel: 2.7, emissions: 27.5 },
+  { name: "Route 4", distance: 11.2, time: 23, fuel: 1.4, emissions: 14.2 },
 ];
 
 export default function RouteOptimization() {
@@ -2182,12 +2250,7 @@ export default function RouteOptimization() {
                     <div className="border-t pt-4">
                       <div className="text-sm font-medium mb-2">Route Comparison</div>
                       <div className="h-[180px] relative">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="flex flex-col items-center">
-                            <BarChart3 className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                            <span className="text-sm text-muted-foreground">Before/After comparison chart</span>
-                          </div>
-                        </div>
+                        <RouteComparisonMap height="160px" optimizationData={routeComparisonData} />
                       </div>
                     </div>
                     

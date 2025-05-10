@@ -1,6 +1,56 @@
 import { useTheme } from "@/hooks/use-theme";
 import { MapIcon } from "lucide-react";
 
+// Add map grid background SVG patterns
+const mapBackgroundPatterns = `
+  <pattern id="map-grid-light" width="20" height="20" patternUnits="userSpaceOnUse">
+    <rect width="20" height="20" fill="#f8fafc" />
+    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="0.5" />
+  </pattern>
+  <pattern id="map-grid-dark" width="20" height="20" patternUnits="userSpaceOnUse">
+    <rect width="20" height="20" fill="#1e293b" />
+    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#334155" stroke-width="0.5" />
+  </pattern>
+  <pattern id="map-city-light" width="100" height="100" patternUnits="userSpaceOnUse">
+    <rect width="100" height="100" fill="url(#map-grid-light)" />
+    <rect x="30" y="20" width="6" height="10" fill="#cbd5e1" />
+    <rect x="40" y="20" width="8" height="14" fill="#cbd5e1" />
+    <rect x="52" y="18" width="10" height="16" fill="#cbd5e1" />
+    <rect x="70" y="25" width="12" height="10" fill="#cbd5e1" />
+    <rect x="25" y="40" width="15" height="8" fill="#cbd5e1" />
+    <rect x="45" y="40" width="7" height="20" fill="#cbd5e1" />
+    <rect x="60" y="42" width="14" height="12" fill="#cbd5e1" />
+    <rect x="80" y="40" width="8" height="18" fill="#cbd5e1" />
+    <rect x="30" y="60" width="10" height="10" fill="#cbd5e1" />
+    <rect x="55" y="65" width="10" height="15" fill="#cbd5e1" />
+    <rect x="75" y="65" width="14" height="10" fill="#cbd5e1" />
+    <path d="M 0 40 L 100 40" stroke="#94a3b8" stroke-width="1" />
+    <path d="M 0 70 L 100 70" stroke="#94a3b8" stroke-width="1" />
+    <path d="M 50 0 L 50 100" stroke="#94a3b8" stroke-width="1" />
+    <path d="M 20 0 L 20 100" stroke="#94a3b8" stroke-width="0.5" />
+    <path d="M 80 0 L 80 100" stroke="#94a3b8" stroke-width="0.5" />
+  </pattern>
+  <pattern id="map-city-dark" width="100" height="100" patternUnits="userSpaceOnUse">
+    <rect width="100" height="100" fill="url(#map-grid-dark)" />
+    <rect x="30" y="20" width="6" height="10" fill="#475569" />
+    <rect x="40" y="20" width="8" height="14" fill="#475569" />
+    <rect x="52" y="18" width="10" height="16" fill="#475569" />
+    <rect x="70" y="25" width="12" height="10" fill="#475569" />
+    <rect x="25" y="40" width="15" height="8" fill="#475569" />
+    <rect x="45" y="40" width="7" height="20" fill="#475569" />
+    <rect x="60" y="42" width="14" height="12" fill="#475569" />
+    <rect x="80" y="40" width="8" height="18" fill="#475569" />
+    <rect x="30" y="60" width="10" height="10" fill="#475569" />
+    <rect x="55" y="65" width="10" height="15" fill="#475569" />
+    <rect x="75" y="65" width="14" height="10" fill="#475569" />
+    <path d="M 0 40 L 100 40" stroke="#64748b" stroke-width="1" />
+    <path d="M 0 70 L 100 70" stroke="#64748b" stroke-width="1" />
+    <path d="M 50 0 L 50 100" stroke="#64748b" stroke-width="1" />
+    <path d="M 20 0 L 20 100" stroke="#64748b" stroke-width="0.5" />
+    <path d="M 80 0 L 80 100" stroke="#64748b" stroke-width="0.5" />
+  </pattern>
+`;
+
 interface RouteComparisonMapProps {
   height?: string;
   optimizationData?: {
@@ -100,6 +150,13 @@ export function RouteComparisonMap({ height = "180px", optimizationData }: Route
                 <div className="h-full w-full relative">
                   {/* Static path representation */}
                   <svg width="100%" height="100%" viewBox="0 0 100 100" className="absolute inset-0">
+                    <defs>
+                      {mapBackgroundPatterns}
+                    </defs>
+                    
+                    {/* Map background */}
+                    <rect width="100" height="100" fill={`url(#map-city-${theme === 'dark' ? 'dark' : 'light'})`} />
+                    
                     {/* Depot/Start/End */}
                     <circle cx="10" cy="50" r="3" fill={routeColors.before} />
                     
@@ -152,6 +209,13 @@ export function RouteComparisonMap({ height = "180px", optimizationData }: Route
                 <div className="h-full w-full relative">
                   {/* Static path representation - more optimal path */}
                   <svg width="100%" height="100%" viewBox="0 0 100 100" className="absolute inset-0">
+                    <defs>
+                      {mapBackgroundPatterns}
+                    </defs>
+                    
+                    {/* Map background */}
+                    <rect width="100" height="100" fill={`url(#map-city-${theme === 'dark' ? 'dark' : 'light'})`} />
+                    
                     {/* Depot/Start/End */}
                     <circle cx="10" cy="50" r="3" fill={routeColors.after} />
                     

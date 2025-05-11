@@ -1,4 +1,7 @@
-import { MapIcon, Map as MapIconOutline } from "lucide-react";
+import { useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { MapIcon, TrafficCone, AlertCircle } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 
 // Map background patterns with road networks
@@ -81,41 +84,8 @@ const mapBackgroundPatterns = `
 `;
 
 // Define severity and congestion types
-type IncidentSeverity = "high" | "medium" | "low";
-type CongestionLevel = "high" | "medium" | "low";
-
-// Traffic incident markers for cities
-const trafficIncidents = [
-  { id: 1, x: 15, y: 25, severity: "high" as IncidentSeverity },
-  { id: 2, x: 40, y: 50, severity: "medium" as IncidentSeverity },
-  { id: 3, x: 75, y: 35, severity: "low" as IncidentSeverity },
-  { id: 4, x: 60, y: 65, severity: "medium" as IncidentSeverity },
-  { id: 5, x: 30, y: 80, severity: "high" as IncidentSeverity },
-];
-
-// Different road segments with traffic levels
-const trafficRoads = [
-  // Main horizontal roads
-  { id: "h1", path: "M0,25 L100,25", congestion: "high" as CongestionLevel },
-  { id: "h2", path: "M0,50 L100,50", congestion: "medium" as CongestionLevel },
-  { id: "h3", path: "M0,75 L100,75", congestion: "low" as CongestionLevel },
-  
-  // Main vertical roads
-  { id: "v1", path: "M25,0 L25,100", congestion: "medium" as CongestionLevel },
-  { id: "v2", path: "M50,0 L50,100", congestion: "high" as CongestionLevel },
-  { id: "v3", path: "M75,0 L75,100", congestion: "low" as CongestionLevel },
-  
-  // Secondary roads with varying congestion
-  { id: "sh1", path: "M0,12.5 L100,12.5", congestion: "low" as CongestionLevel },
-  { id: "sh2", path: "M0,37.5 L100,37.5", congestion: "medium" as CongestionLevel },
-  { id: "sh3", path: "M0,62.5 L100,62.5", congestion: "high" as CongestionLevel },
-  { id: "sh4", path: "M0,87.5 L100,87.5", congestion: "low" as CongestionLevel },
-  
-  { id: "sv1", path: "M12.5,0 L12.5,100", congestion: "medium" as CongestionLevel },
-  { id: "sv2", path: "M37.5,0 L37.5,100", congestion: "low" as CongestionLevel },
-  { id: "sv3", path: "M62.5,0 L62.5,100", congestion: "high" as CongestionLevel },
-  { id: "sv4", path: "M87.5,0 L87.5,100", congestion: "medium" as CongestionLevel },
-];
+export type IncidentSeverity = "high" | "medium" | "low";
+export type CongestionLevel = "high" | "medium" | "low";
 
 // Traffic congestion colors
 const trafficColors: Record<CongestionLevel, string> = {
@@ -124,100 +94,255 @@ const trafficColors: Record<CongestionLevel, string> = {
   high: "#ef4444",      // Red for high congestion
 };
 
-interface TrafficMapProps {
-  height?: string;
+// Define Road interface
+export interface TrafficRoad {
+  id: string;
+  path: string;
+  congestion: CongestionLevel;
+  coordinates?: [number, number][]; // For actual map coordinates
 }
 
-export function TrafficMap({ height = "300px" }: TrafficMapProps) {
+// Define Incident interface
+export interface TrafficIncident {
+  id: number;
+  x: number;
+  y: number;
+  severity: IncidentSeverity;
+  location?: string;
+  description?: string;
+  type?: string;
+  duration?: string;
+  affectedRoutes?: string[];
+  // For actual map coordinates
+  lat?: number;
+  lng?: number;
+}
+
+// Default traffic incident markers for a city (San Francisco example)
+const defaultTrafficIncidents: TrafficIncident[] = [
+  { 
+    id: 1, 
+    x: 15, y: 25, 
+    lat: 37.7869, lng: -122.4000, 
+    severity: "high", 
+    type: "Major Accident",
+    location: "I-95 Northbound, Exit 23",
+    description: "Multiple vehicle collision blocking 2 lanes",
+    duration: "2+ hours", 
+    affectedRoutes: ["RT-1043", "RT-3842"] 
+  },
+  { 
+    id: 2, 
+    x: 40, y: 50, 
+    lat: 37.7749, lng: -122.4194, 
+    severity: "medium", 
+    type: "Road Construction",
+    location: "Main St & 5th Ave",
+    description: "Lane closures due to utility work",
+    duration: "3 days", 
+    affectedRoutes: ["RT-5621", "RT-8954"] 
+  },
+  { 
+    id: 3, 
+    x: 75, y: 35, 
+    lat: 37.7529, lng: -122.4270, 
+    severity: "low", 
+    type: "Lane Closure",
+    location: "Highway 101, Mile 36",
+    description: "Right shoulder closed for maintenance",
+    duration: "6 hours", 
+    affectedRoutes: ["RT-4567"] 
+  },
+  { 
+    id: 4, 
+    x: 60, y: 65, 
+    lat: 37.7900, lng: -122.4330, 
+    severity: "medium", 
+    type: "Traffic Jam",
+    location: "Downtown Bridge",
+    description: "Heavy congestion due to rush hour",
+    duration: "1 hour", 
+    affectedRoutes: ["RT-7689"] 
+  },
+  { 
+    id: 5, 
+    x: 30, y: 80, 
+    lat: 37.7660, lng: -122.4100, 
+    severity: "high", 
+    type: "Road Closure",
+    location: "Westbound Freeway",
+    description: "Full closure due to hazardous material spill",
+    duration: "4 hours", 
+    affectedRoutes: ["RT-2354", "RT-9812"] 
+  },
+];
+
+interface TrafficMapProps {
+  height?: string;
+  incidents?: TrafficIncident[];
+  roads?: TrafficRoad[];
+  title?: string;
+  showTime?: boolean;
+}
+
+export function TrafficMap({
+  height = "300px",
+  incidents = defaultTrafficIncidents,
+  roads = [],
+  title = "Live Traffic",
+  showTime = true
+}: TrafficMapProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const leafletMap = useRef<L.Map | null>(null);
+  const markersRef = useRef<{[key: string]: L.Marker}>({});
   const { theme } = useTheme();
+
+  // Initialize the map
+  useEffect(() => {
+    // Initialize the map if it doesn't exist
+    if (!leafletMap.current && mapRef.current) {
+      // Create map centered on a default location (San Francisco)
+      leafletMap.current = L.map(mapRef.current).setView([37.7749, -122.4194], 13);
+
+      // Add the tile layer (OpenStreetMap)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(leafletMap.current);
+
+      // Update z-index for all Leaflet containers to prevent them from appearing above modals
+      const leafletContainers = document.querySelectorAll('.leaflet-container');
+      leafletContainers.forEach(container => {
+        if (container instanceof HTMLElement) {
+          container.style.zIndex = '10';
+        }
+      });
+
+      // Also target marker popups and controls
+      const leafletPopupPane = document.querySelector('.leaflet-popup-pane');
+      if (leafletPopupPane instanceof HTMLElement) {
+        leafletPopupPane.style.zIndex = '400';
+      }
+
+      const leafletControlPane = document.querySelector('.leaflet-control-container');
+      if (leafletControlPane instanceof HTMLElement) {
+        leafletControlPane.style.zIndex = '400';
+      }
+    }
+
+    // Return a cleanup function
+    return () => {
+      if (leafletMap.current) {
+        leafletMap.current.remove();
+        leafletMap.current = null;
+      }
+    };
+  }, []);
+
+  // Update traffic incidents on the map
+  useEffect(() => {
+    if (!leafletMap.current) return;
+    const map = leafletMap.current;
+    
+    // Clear existing markers
+    Object.values(markersRef.current).forEach(marker => {
+      map.removeLayer(marker);
+    });
+    markersRef.current = {};
+    
+    // Add traffic incident markers
+    incidents.forEach(incident => {
+      // Use provided coordinates or default to SVG coordinates
+      const lat = incident.lat ?? (37.7749 + (incident.y / 100 - 0.5) * 0.2);
+      const lng = incident.lng ?? (-122.4194 + (incident.x / 100 - 0.5) * 0.2);
+      
+      const markerColor = trafficColors[incident.severity];
+      
+      const markerOptions = {
+        icon: L.divIcon({
+          className: 'custom-div-icon',
+          html: `
+            <div style="
+              background-color: ${markerColor};
+              width: 14px;
+              height: 14px;
+              border-radius: 50%;
+              border: 2px solid white;
+              box-shadow: 0 0 4px rgba(0,0,0,0.3);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">
+            </div>
+          `,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+        }),
+        title: incident.type || `Traffic incident (${incident.severity})`
+      };
+      
+      const position = new L.LatLng(lat, lng);
+      const marker = L.marker(position, markerOptions).addTo(map);
+      
+      // Add popup with incident info
+      marker.bindPopup(`
+        <div style="min-width: 150px;">
+          <strong>${incident.type || 'Traffic Incident'}</strong>
+          <div>${incident.location || 'Unknown location'}</div>
+          <div style="color: ${markerColor}">Severity: ${incident.severity.charAt(0).toUpperCase() + incident.severity.slice(1)}</div>
+          <div>Duration: ${incident.duration || 'Unknown'}</div>
+          ${incident.description ? `<div>${incident.description}</div>` : ''}
+          ${incident.affectedRoutes?.length ? `<div>Routes affected: ${incident.affectedRoutes.join(', ')}</div>` : ''}
+        </div>
+      `);
+      
+      markersRef.current[`incident-${incident.id}`] = marker;
+    });
+    
+    // Fit map bounds to show all markers
+    if (Object.keys(markersRef.current).length > 0) {
+      const bounds = Object.values(markersRef.current).map(marker => marker.getLatLng());
+      map.fitBounds(L.latLngBounds(bounds), { padding: [30, 30] });
+    }
+  }, [incidents]);
+  
+  // Update map when theme changes
+  useEffect(() => {
+    if (leafletMap.current) {
+      leafletMap.current.invalidateSize();
+    }
+  }, [theme]);
   
   // Legend items
   const legendItems = [
-    { label: "Low Traffic", color: trafficColors.low },
-    { label: "Moderate Traffic", color: trafficColors.medium },
-    { label: "Heavy Traffic", color: trafficColors.high },
+    { label: "Low Impact", color: trafficColors.low },
+    { label: "Moderate Impact", color: trafficColors.medium },
+    { label: "High Impact", color: trafficColors.high },
   ];
-  
+
   return (
     <div className="flex flex-col space-y-2">
-      <div 
-        className="rounded-md border bg-muted flex flex-col items-center justify-center relative"
-        style={{ height }}
-      >
-        {/* Static traffic map visualization */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-full h-full p-2">
-            <div className="h-full w-full relative">
-              <svg width="100%" height="100%" viewBox="0 0 100 100" className="absolute inset-0">
-                <defs>
-                  {mapBackgroundPatterns}
-                </defs>
-                
-                {/* Map background */}
-                <rect width="100" height="100" fill={`url(#map-city-${theme === 'dark' ? 'dark' : 'light'})`} />
-                
-                {/* Traffic roads - drawn with different colors based on congestion */}
-                {trafficRoads.map(road => (
-                  <path
-                    key={road.id}
-                    d={road.path}
-                    fill="none"
-                    stroke={trafficColors[road.congestion]}
-                    strokeWidth={road.id.startsWith('s') ? 2 : 4}
-                    strokeLinecap="round"
-                    strokeOpacity={0.8}
-                  />
-                ))}
-                
-                {/* Traffic incident markers */}
-                {trafficIncidents.map(incident => (
-                  <g key={incident.id}>
-                    <circle 
-                      cx={incident.x} 
-                      cy={incident.y} 
-                      r={incident.severity === "high" ? 2.5 : incident.severity === "medium" ? 2 : 1.5} 
-                      fill={trafficColors[incident.severity]}
-                      stroke="white"
-                      strokeWidth="0.5"
-                    />
-                    <circle 
-                      cx={incident.x} 
-                      cy={incident.y} 
-                      r={incident.severity === "high" ? 4 : incident.severity === "medium" ? 3 : 2} 
-                      fill="transparent"
-                      stroke={trafficColors[incident.severity]}
-                      strokeWidth="0.5"
-                      opacity="0.5"
-                    >
-                      <animate 
-                        attributeName="r" 
-                        values={`${incident.severity === "high" ? "4;6;4" : incident.severity === "medium" ? "3;5;3" : "2;4;2"}`} 
-                        dur="2s" 
-                        repeatCount="indefinite" 
-                      />
-                      <animate 
-                        attributeName="opacity" 
-                        values="0.5;0.2;0.5" 
-                        dur="2s" 
-                        repeatCount="indefinite" 
-                      />
-                    </circle>
-                  </g>
-                ))}
-              </svg>
-              
-              <div className="absolute top-2 left-2 bg-background/80 text-xs p-1 rounded">
-                Live Traffic
-              </div>
-              
-              {/* Add time indicator */}
-              <div className="absolute top-2 right-2 bg-background/80 text-xs p-1 rounded">
-                {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-              
-              <MapIcon className="absolute right-2 bottom-2 h-4 w-4 text-muted-foreground opacity-50" />
-            </div>
+      <div className="relative rounded-md border bg-muted" style={{ height }}>
+        {/* Map title overlay */}
+        <div className="absolute top-2 left-2 z-[500] bg-background/80 text-xs p-1 rounded">
+          {title}
+        </div>
+        
+        {/* Time indicator */}
+        {showTime && (
+          <div className="absolute top-2 right-2 z-[500] bg-background/80 text-xs p-1 rounded">
+            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
+        )}
+        
+        {/* Leaflet map */}
+        <div 
+          ref={mapRef} 
+          style={{ height: "100%", width: "100%" }} 
+          className="rounded-md"
+        ></div>
+        
+        <div className="absolute right-2 bottom-2 z-[500]">
+          <MapIcon className="h-4 w-4 text-muted-foreground opacity-50" />
         </div>
       </div>
       

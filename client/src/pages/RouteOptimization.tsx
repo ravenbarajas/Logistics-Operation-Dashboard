@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,10 +24,9 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { GeoDistribution } from "@/components/maps/GeoDistribution";
 import { RouteComparisonMap } from "@/components/maps/RouteComparisonMap";
-import { TrafficMap } from "@/components/maps/TrafficMap";
+import { TrafficMap, TrafficIncident, TrafficRoad, CongestionLevel, IncidentSeverity } from "@/components/maps/TrafficMap";
 import { useLocation } from "wouter";
-import { MapContainer, TileLayer } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useTheme } from "@/hooks/use-theme";
 
 // Mock data for charts
 const optimizationSummaryData = [
@@ -119,6 +118,153 @@ const routePerformanceData = [
   { name: "Route 3", distance: 22.5, time: 45, fuel: 2.7, emissions: 27.5 },
   { name: "Route 4", distance: 11.2, time: 23, fuel: 1.4, emissions: 14.2 },
 ];
+
+// Add traffic incident data (moved from TrafficMap component)
+const liveTrafficIncidents: TrafficIncident[] = [
+  { 
+    id: 1, 
+    x: 15, 
+    y: 25, 
+    lat: 37.7869, 
+    lng: -122.4000, 
+    severity: "high", 
+    type: "Major Accident",
+    location: "I-95 Northbound, Exit 23",
+    description: "Multiple vehicle collision blocking 2 lanes",
+    duration: "2+ hours", 
+    affectedRoutes: ["RT-1043", "RT-3842"] 
+  },
+  { 
+    id: 2, 
+    x: 40, 
+    y: 50, 
+    lat: 37.7749, 
+    lng: -122.4194, 
+    severity: "medium", 
+    type: "Road Construction",
+    location: "Main St & 5th Ave",
+    description: "Lane closures due to utility work",
+    duration: "3 days", 
+    affectedRoutes: ["RT-5621", "RT-8954"] 
+  },
+  { 
+    id: 3, 
+    x: 75, 
+    y: 35, 
+    lat: 37.7529, 
+    lng: -122.4270, 
+    severity: "low", 
+    type: "Lane Closure",
+    location: "Highway 101, Mile 36",
+    description: "Right shoulder closed for maintenance",
+    duration: "6 hours", 
+    affectedRoutes: ["RT-4567"] 
+  },
+  { 
+    id: 4, 
+    x: 60, 
+    y: 65, 
+    lat: 37.7900, 
+    lng: -122.4330, 
+    severity: "medium", 
+    type: "Traffic Jam",
+    location: "Downtown Bridge",
+    description: "Heavy congestion due to rush hour",
+    duration: "1 hour", 
+    affectedRoutes: ["RT-7689"] 
+  },
+  { 
+    id: 5, 
+    x: 30, 
+    y: 80, 
+    lat: 37.7660, 
+    lng: -122.4100, 
+    severity: "high", 
+    type: "Road Closure",
+    location: "Westbound Freeway",
+    description: "Full closure due to hazardous material spill",
+    duration: "4 hours", 
+    affectedRoutes: ["RT-2354", "RT-9812"] 
+  },
+];
+
+// Create road segments with varying congestion levels
+const liveTrafficRoads: TrafficRoad[] = [
+  // Main horizontal roads with varying congestion
+  { id: "h1", path: "M0,25 L100,25", congestion: "high" },
+  { id: "h2", path: "M0,50 L100,50", congestion: "medium" },
+  { id: "h3", path: "M0,75 L100,75", congestion: "low" },
+  
+  // Main vertical roads
+  { id: "v1", path: "M25,0 L25,100", congestion: "medium" },
+  { id: "v2", path: "M50,0 L50,100", congestion: "high" },
+  { id: "v3", path: "M75,0 L75,100", congestion: "low" },
+  
+  // Secondary roads
+  { id: "sh1", path: "M0,12.5 L100,12.5", congestion: "low" },
+  { id: "sh2", path: "M0,37.5 L100,37.5", congestion: "medium" },
+  { id: "sh3", path: "M0,62.5 L100,62.5", congestion: "high" },
+  { id: "sh4", path: "M0,87.5 L100,87.5", congestion: "low" },
+  
+  { id: "sv1", path: "M12.5,0 L12.5,100", congestion: "medium" },
+  { id: "sv2", path: "M37.5,0 L37.5,100", congestion: "low" },
+  { id: "sv3", path: "M62.5,0 L62.5,100", congestion: "high" },
+  { id: "sv4", path: "M87.5,0 L87.5,100", congestion: "medium" },
+];
+
+// Add automated traffic actions data
+const trafficAutomatedActions = [
+  { action: "Route RT-1043 rerouted", icon: "refresh", color: "blue", time: "2 minutes ago" },
+  { action: "Route RT-3842 rerouted", icon: "refresh", color: "blue", time: "4 minutes ago" },
+  { action: "ETA updated for 3 deliveries", icon: "clock", color: "amber", time: "7 minutes ago" },
+  { action: "Driver notifications sent", icon: "user", color: "green", time: "12 minutes ago" },
+];
+
+// Add Live Traffic Map component directly in this file
+interface LiveTrafficMapProps {
+  incidents: TrafficIncident[];
+  title: string;
+  height?: string;
+}
+
+// Simple wrapper component that displays a map but uses GeoDistribution's implementation
+function LiveTrafficMapComponent({ incidents, title, height = "300px" }: LiveTrafficMapProps) {
+  // Use the GeoDistribution component which already implements Leaflet correctly
+  return (
+    <div className="flex flex-col space-y-2">
+      <div className="relative" style={{ height }}>
+        {/* GeoDistribution map */}
+        <GeoDistribution height={height} />
+        
+        {/* Map title overlay */}
+        <div className="absolute top-2 left-2 z-[500] bg-background/80 text-xs p-1 rounded">
+          {title}
+        </div>
+        
+        {/* Current time indicator */}
+        <div className="absolute top-2 right-2 z-[500] bg-background/80 text-xs p-1 rounded">
+          {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </div>
+      </div>
+      
+      {/* Legend for traffic conditions */}
+      <div className="flex justify-between items-center text-xs px-1">
+        <div className="flex items-center gap-1">
+          <span className="inline-block w-3 h-3 rounded-full bg-blue-500"></span>
+          <span>Low Impact</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="inline-block w-3 h-3 rounded-full bg-amber-500"></span>
+          <span>Medium Impact</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="inline-block w-3 h-3 rounded-full bg-red-500"></span>
+          <span>High Impact</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function RouteOptimization() {
   const [location] = useLocation();
@@ -376,6 +522,64 @@ export default function RouteOptimization() {
                       activeTab === "completed" ? routes.completed.length :
                       routes.templates.length;
 
+  // New states for traffic data
+  const [trafficIncidents, setTrafficIncidents] = useState<TrafficIncident[]>(liveTrafficIncidents);
+  const [filteredIncidents, setFilteredIncidents] = useState<TrafficIncident[]>(liveTrafficIncidents);
+  const [currentIncidentPage, setCurrentIncidentPage] = useState(1);
+  const [trafficRoads, setTrafficRoads] = useState<TrafficRoad[]>(liveTrafficRoads);
+  const incidentsPerPage = 3;
+  
+  // Filter incidents function
+  const filterIncidentsBySeverity = (severity: IncidentSeverity | 'all') => {
+    if (severity === 'all') {
+      setFilteredIncidents(trafficIncidents);
+    } else {
+      setFilteredIncidents(trafficIncidents.filter(incident => incident.severity === severity));
+    }
+    setCurrentIncidentPage(1);
+  };
+  
+  // Calculate current incidents to display
+  const indexOfLastIncident = currentIncidentPage * incidentsPerPage;
+  const indexOfFirstIncident = indexOfLastIncident - incidentsPerPage;
+  const currentIncidents = filteredIncidents.slice(indexOfFirstIncident, indexOfLastIncident);
+  
+  // Function to refresh traffic data (simulated)
+  const refreshTrafficData = () => {
+    // In a real app, this would fetch fresh data from an API
+    // For now, we'll just simulate new traffic data
+    
+    // Generate a random traffic incident (simulate a new detection)
+    const newIncident: TrafficIncident = {
+      id: Math.floor(Math.random() * 1000) + 100,
+      x: Math.floor(Math.random() * 100),
+      y: Math.floor(Math.random() * 100),
+      lat: 37.7749 + (Math.random() - 0.5) * 0.05,
+      lng: -122.4194 + (Math.random() - 0.5) * 0.05,
+      severity: ["low", "medium", "high"][Math.floor(Math.random() * 3)] as IncidentSeverity,
+      type: ["Traffic Congestion", "Minor Accident", "Vehicle Breakdown", "Road Work", "Weather Impact"][Math.floor(Math.random() * 5)],
+      location: ["Market Street", "Mission District", "Financial District", "Downtown", "Embarcadero"][Math.floor(Math.random() * 5)],
+      duration: `${Math.floor(Math.random() * 3) + 1} hours`,
+      affectedRoutes: [`RT-${Math.floor(Math.random() * 9000) + 1000}`]
+    };
+    
+    // Simulate some incidents resolving and new ones appearing
+    const updatedIncidents = [...trafficIncidents];
+    
+    // 20% chance to remove a random incident (simulate resolution)
+    if (Math.random() < 0.2 && updatedIncidents.length > 3) {
+      const indexToRemove = Math.floor(Math.random() * updatedIncidents.length);
+      updatedIncidents.splice(indexToRemove, 1);
+    }
+    
+    // Always add one new incident to show activity
+    updatedIncidents.push(newIncident);
+    
+    // Update the state with new traffic data
+    setTrafficIncidents(updatedIncidents);
+    setFilteredIncidents(updatedIncidents);
+  };
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -2705,10 +2909,19 @@ export default function RouteOptimization() {
                 
                 {/* Incident Map */}
                 <div className="relative h-64 md:h-80 bg-muted rounded-md overflow-hidden">
-                  <TrafficMap height="100%" />
+                  <GeoDistribution height="100%" />
+                  
+                  <div className="absolute top-2 left-2 z-[500] bg-background/80 text-xs p-1 rounded">
+                    Live Traffic Monitoring
+                  </div>
                   
                   <div className="absolute bottom-4 right-4 flex gap-2">
-                    <Button variant="secondary" size="sm" className="h-8 text-xs bg-white dark:bg-black">
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="h-8 text-xs bg-white dark:bg-black"
+                      onClick={refreshTrafficData}
+                    >
                       <RefreshCw className="h-3 w-3 mr-1" />
                       Refresh
                     </Button>
@@ -2723,101 +2936,73 @@ export default function RouteOptimization() {
                 <div className="border rounded-md overflow-hidden">
                   <div className="bg-muted/30 px-4 py-2 text-sm font-medium">Active Incidents</div>
                   <div className="divide-y">
-                    <div className="grid grid-cols-12 px-4 py-3 items-center">
-                      <div className="col-span-1">
-                        <Badge className="bg-red-500 h-6 w-6 p-1 flex items-center justify-center rounded-full">
-                          <TrafficCone className="h-4 w-4 text-white" />
-                        </Badge>
+                    {currentIncidents.map(incident => (
+                      <div key={incident.id} className="grid grid-cols-12 px-4 py-3 items-center">
+                        <div className="col-span-1">
+                          <Badge className={incident.severity === 'high' 
+                            ? "bg-red-500 h-6 w-6 p-1 flex items-center justify-center rounded-full"
+                            : incident.severity === 'medium' 
+                              ? "bg-amber-500 h-6 w-6 p-1 flex items-center justify-center rounded-full"
+                              : "bg-blue-500 h-6 w-6 p-1 flex items-center justify-center rounded-full"
+                          }>
+                            <TrafficCone className="h-4 w-4 text-white" />
+                          </Badge>
+                        </div>
+                        <div className="col-span-4">
+                          <div className="font-medium text-sm">{incident.type}</div>
+                          <div className="text-xs text-muted-foreground">{incident.location}</div>
+                        </div>
+                        <div className="col-span-2 text-center">
+                          <div className="text-xs text-muted-foreground">Severity</div>
+                          <div className={incident.severity === 'high' 
+                            ? "text-sm font-medium text-red-500"
+                            : incident.severity === 'medium' 
+                              ? "text-sm font-medium text-amber-500"
+                              : "text-sm font-medium text-blue-500"
+                          }>
+                            {incident.severity.charAt(0).toUpperCase() + incident.severity.slice(1)}
+                          </div>
+                        </div>
+                        <div className="col-span-2 text-center">
+                          <div className="text-xs text-muted-foreground">Est. Duration</div>
+                          <div className="text-sm font-medium">{incident.duration}</div>
+                        </div>
+                        <div className="col-span-2 text-center">
+                          <div className="text-xs text-muted-foreground">Routes Affected</div>
+                          <div className="text-sm font-medium">{incident.affectedRoutes?.join(", ")}</div>
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MapPin className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="col-span-4">
-                        <div className="font-medium text-sm">Major Accident</div>
-                        <div className="text-xs text-muted-foreground">I-95 Northbound, Exit 23</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="text-xs text-muted-foreground">Severity</div>
-                        <div className="text-sm font-medium text-red-500">High</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="text-xs text-muted-foreground">Est. Duration</div>
-                        <div className="text-sm font-medium">2+ hours</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="text-xs text-muted-foreground">Routes Affected</div>
-                        <div className="text-sm font-medium">RT-1043, RT-3842</div>
-                      </div>
-                      <div className="col-span-1 flex justify-end">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MapPin className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-12 px-4 py-3 items-center">
-                      <div className="col-span-1">
-                        <Badge className="bg-amber-500 h-6 w-6 p-1 flex items-center justify-center rounded-full">
-                          <Wind className="h-4 w-4 text-white" />
-                        </Badge>
-                      </div>
-                      <div className="col-span-4">
-                        <div className="font-medium text-sm">Road Construction</div>
-                        <div className="text-xs text-muted-foreground">Main St & 5th Ave</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="text-xs text-muted-foreground">Severity</div>
-                        <div className="text-sm font-medium text-amber-500">Medium</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="text-xs text-muted-foreground">Est. Duration</div>
-                        <div className="text-sm font-medium">3 days</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="text-xs text-muted-foreground">Routes Affected</div>
-                        <div className="text-sm font-medium">RT-5621, RT-8954</div>
-                      </div>
-                      <div className="col-span-1 flex justify-end">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MapPin className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-12 px-4 py-3 items-center">
-                      <div className="col-span-1">
-                        <Badge className="bg-blue-500 h-6 w-6 p-1 flex items-center justify-center rounded-full">
-                          <AlertCircle className="h-4 w-4 text-white" />
-                        </Badge>
-                      </div>
-                      <div className="col-span-4">
-                        <div className="font-medium text-sm">Lane Closure</div>
-                        <div className="text-xs text-muted-foreground">Highway 101, Mile 36</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="text-xs text-muted-foreground">Severity</div>
-                        <div className="text-sm font-medium text-blue-500">Low</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="text-xs text-muted-foreground">Est. Duration</div>
-                        <div className="text-sm font-medium">6 hours</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="text-xs text-muted-foreground">Routes Affected</div>
-                        <div className="text-sm font-medium">RT-4567</div>
-                      </div>
-                      <div className="col-span-1 flex justify-end">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MapPin className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                   
                   <div className="bg-muted/10 px-4 py-2 flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Showing 3 of 12 incidents</span>
+                    <span className="text-sm text-muted-foreground">
+                      Showing {indexOfFirstIncident + 1} to {Math.min(indexOfLastIncident, filteredIncidents.length)} of {filteredIncidents.length} incidents
+                    </span>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 w-7 p-0"
+                        onClick={() => setCurrentIncidentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentIncidentPage === 1}
+                      >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 w-7 p-0"
+                        onClick={() => setCurrentIncidentPage(prev => 
+                          Math.min(prev + 1, Math.ceil(filteredIncidents.length / incidentsPerPage))
+                        )}
+                        disabled={currentIncidentPage >= Math.ceil(filteredIncidents.length / incidentsPerPage)}
+                      >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
@@ -2828,34 +3013,17 @@ export default function RouteOptimization() {
                 <div className="border rounded-md p-4">
                   <h4 className="text-sm font-medium mb-3">Automated Actions</h4>
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <RefreshCw className="h-4 w-4 text-blue-500" />
-                        <span>Route RT-1043 rerouted</span>
+                    {trafficAutomatedActions.map((action, index) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          {action.icon === 'refresh' && <RefreshCw className={action.color === 'blue' ? "h-4 w-4 text-blue-500" : action.color === 'amber' ? "h-4 w-4 text-amber-500" : "h-4 w-4 text-green-500"} />}
+                          {action.icon === 'clock' && <Clock className={action.color === 'blue' ? "h-4 w-4 text-blue-500" : action.color === 'amber' ? "h-4 w-4 text-amber-500" : "h-4 w-4 text-green-500"} />}
+                          {action.icon === 'user' && <User className={action.color === 'blue' ? "h-4 w-4 text-blue-500" : action.color === 'amber' ? "h-4 w-4 text-amber-500" : "h-4 w-4 text-green-500"} />}
+                          <span>{action.action}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{action.time}</span>
                       </div>
-                      <span className="text-xs text-muted-foreground">2 minutes ago</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <RefreshCw className="h-4 w-4 text-blue-500" />
-                        <span>Route RT-3842 rerouted</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">4 minutes ago</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-amber-500" />
-                        <span>ETA updated for 3 deliveries</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">7 minutes ago</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-green-500" />
-                        <span>Driver notifications sent</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">12 minutes ago</span>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>

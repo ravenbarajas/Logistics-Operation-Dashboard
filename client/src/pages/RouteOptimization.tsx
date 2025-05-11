@@ -27,6 +27,7 @@ import { RouteComparisonMap } from "@/components/maps/RouteComparisonMap";
 import { TrafficMap, TrafficIncident, TrafficRoad, CongestionLevel, IncidentSeverity } from "@/components/maps/TrafficMap";
 import { useLocation } from "wouter";
 import { useTheme } from "@/hooks/use-theme";
+import { TrafficLiveMap } from "@/components/maps/TrafficLiveMap";
 
 // Mock data for charts
 const optimizationSummaryData = [
@@ -543,6 +544,95 @@ export default function RouteOptimization() {
   const indexOfLastIncident = currentIncidentPage * incidentsPerPage;
   const indexOfFirstIncident = indexOfLastIncident - incidentsPerPage;
   const currentIncidents = filteredIncidents.slice(indexOfFirstIncident, indexOfLastIncident);
+  
+  // Function to generate real geographic coordinates from SVG path data
+  const generateCoordinatesFromPath = (path: string, id: string): Array<{lat: number, lng: number}> => {
+    // Base coordinates (San Francisco area)
+    const baseLatitude = 37.7749;
+    const baseLongitude = -122.4194;
+    
+    // Parse the path to extract coordinates
+    // Example path format: "M0,25 L100,25" or "M25,0 L25,100"
+    const coordinates: Array<{lat: number, lng: number}> = [];
+    
+    try {
+      // Simple parser for M (move to) and L (line to) commands in SVG path
+      const parts = path.split(' ');
+      
+      for (const part of parts) {
+        if (part.startsWith('M') || part.startsWith('L')) {
+          const coords = part.substring(1).split(',').map(Number);
+          if (coords.length === 2) {
+            // Convert the 0-100 range to a small area on the map
+            // Scale factor determines the size of the area
+            const scaleFactor = 0.002;
+            const latOffset = ((coords[1] / 100) - 0.5) * scaleFactor * 10;
+            const lngOffset = ((coords[0] / 100) - 0.5) * scaleFactor * 10;
+            
+            coordinates.push({
+              lat: baseLatitude + latOffset,
+              lng: baseLongitude + lngOffset
+            });
+          }
+        }
+      }
+      
+      // If it's a specific type of road, add some randomness to make it look more realistic
+      if (id.startsWith('h')) {
+        // Horizontal roads can have slight north-south variations
+        coordinates.forEach(coord => {
+          coord.lat += (Math.random() - 0.5) * 0.0005;
+        });
+      } else if (id.startsWith('v')) {
+        // Vertical roads can have slight east-west variations
+        coordinates.forEach(coord => {
+          coord.lng += (Math.random() - 0.5) * 0.0005;
+        });
+      }
+      
+      // For longer roads, add some intermediate points to make them curve naturally
+      if (coordinates.length === 2) {
+        const start = coordinates[0];
+        const end = coordinates[1];
+        const newCoords: Array<{lat: number, lng: number}> = [start];
+        
+        // Add 1-3 intermediate points
+        const pointCount = Math.floor(Math.random() * 3) + 1;
+        for (let i = 1; i <= pointCount; i++) {
+          const ratio = i / (pointCount + 1);
+          const lat = start.lat + (end.lat - start.lat) * ratio;
+          const lng = start.lng + (end.lng - start.lng) * ratio;
+          
+          // Add some randomness to the intermediate points
+          const jitter = 0.0003;
+          newCoords.push({
+            lat: lat + (Math.random() - 0.5) * jitter,
+            lng: lng + (Math.random() - 0.5) * jitter
+          });
+        }
+        
+        newCoords.push(end);
+        return newCoords;
+      }
+    } catch (e) {
+      console.error("Failed to parse path:", path);
+      // Return a fallback if parsing fails
+      return [
+        { lat: baseLatitude, lng: baseLongitude },
+        { lat: baseLatitude + 0.01, lng: baseLongitude + 0.01 }
+      ];
+    }
+    
+    // If we don't have at least 2 points, return a default line
+    if (coordinates.length < 2) {
+      return [
+        { lat: baseLatitude, lng: baseLongitude },
+        { lat: baseLatitude + 0.01, lng: baseLongitude + 0.01 }
+      ];
+    }
+    
+    return coordinates;
+  };
   
   // Function to refresh traffic data (simulated)
   const refreshTrafficData = () => {
@@ -2909,7 +2999,24 @@ export default function RouteOptimization() {
                 
                 {/* Incident Map */}
                 <div className="relative h-64 md:h-80 bg-muted rounded-md overflow-hidden">
-                  <GeoDistribution height="100%" />
+                  <TrafficLiveMap 
+                    height="100%" 
+                    incidents={trafficIncidents}
+                    roads={trafficRoads.map(road => {
+                      // Function to generate map coordinates from SVG path
+                      // Inside this component to access the function properly
+                      const coords = generateCoordinatesFromPath(road.path, road.id);
+                      
+                      return {
+                        ...road,
+                        name: road.id.startsWith('h') ? `Horizontal Road ${road.id.slice(1)}` :
+                              road.id.startsWith('v') ? `Vertical Road ${road.id.slice(1)}` :
+                              road.id.startsWith('sh') ? `Secondary Horizontal ${road.id.slice(2)}` :
+                              `Secondary Vertical ${road.id.slice(2)}`,
+                        coordinates: coords
+                      };
+                    })}
+                  />
                   
                   <div className="absolute top-2 left-2 z-[500] bg-background/80 text-xs p-1 rounded">
                     Live Traffic Monitoring

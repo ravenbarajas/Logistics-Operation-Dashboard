@@ -1,0 +1,94 @@
+{
+  "trafficIncidents": [
+    { 
+      "id": 1, 
+      "x": 15, 
+      "y": 25, 
+      "lat": 37.7869, 
+      "lng": -122.4000, 
+      "severity": "high", 
+      "type": "Major Accident",
+      "location": "I-95 Northbound, Exit 23",
+      "description": "Multiple vehicle collision blocking 2 lanes",
+      "duration": "2+ hours", 
+      "affectedRoutes": ["RT-1043", "RT-3842"]
+    },
+    { 
+      "id": 2, 
+      "x": 40, 
+      "y": 50, 
+      "lat": 37.7749, 
+      "lng": -122.4194, 
+      "severity": "medium", 
+      "type": "Road Construction",
+      "location": "Main St & 5th Ave",
+      "description": "Lane closures due to utility work",
+      "duration": "3 days", 
+      "affectedRoutes": ["RT-5621", "RT-8954"]
+    },
+    { 
+      "id": 3, 
+      "x": 75, 
+      "y": 35, 
+      "lat": 37.7529, 
+      "lng": -122.4270, 
+      "severity": "low", 
+      "type": "Lane Closure",
+      "location": "Highway 101, Mile 36",
+      "description": "Right shoulder closed for maintenance",
+      "duration": "6 hours", 
+      "affectedRoutes": ["RT-4567"]
+    },
+    { 
+      "id": 4, 
+      "x": 60, 
+      "y": 65, 
+      "lat": 37.7900, 
+      "lng": -122.4330, 
+      "severity": "medium", 
+      "type": "Traffic Jam",
+      "location": "Downtown Bridge",
+      "description": "Heavy congestion due to rush hour",
+      "duration": "1 hour", 
+      "affectedRoutes": ["RT-7689"]
+    },
+    { 
+      "id": 5, 
+      "x": 30, 
+      "y": 80, 
+      "lat": 37.7660, 
+      "lng": -122.4100, 
+      "severity": "high", 
+      "type": "Road Closure",
+      "location": "Westbound Freeway",
+      "description": "Full closure due to hazardous material spill",
+      "duration": "4 hours", 
+      "affectedRoutes": ["RT-2354", "RT-9812"]
+    }
+  ],
+  "trafficRoads": [
+    { "id": "h1", "path": "M0,25 L100,25", "congestion": "high" },
+    { "id": "h2", "path": "M0,50 L100,50", "congestion": "medium" },
+    { "id": "h3", "path": "M0,75 L100,75", "congestion": "low" },
+    
+    { "id": "v1", "path": "M25,0 L25,100", "congestion": "medium" },
+    { "id": "v2", "path": "M50,0 L50,100", "congestion": "high" },
+    { "id": "v3", "path": "M75,0 L75,100", "congestion": "low" },
+    
+    { "id": "sh1", "path": "M0,12.5 L100,12.5", "congestion": "low" },
+    { "id": "sh2", "path": "M0,37.5 L100,37.5", "congestion": "medium" },
+    { "id": "sh3", "path": "M0,62.5 L100,62.5", "congestion": "high" },
+    { "id": "sh4", "path": "M0,87.5 L100,87.5", "congestion": "low" },
+    
+    { "id": "sv1", "path": "M12.5,0 L12.5,100", "congestion": "medium" },
+    { "id": "sv2", "path": "M37.5,0 L37.5,100", "congestion": "low" },
+    { "id": "sv3", "path": "M62.5,0 L62.5,100", "congestion": "high" },
+    { "id": "sv4", "path": "M87.5,0 L87.5,100", "congestion": "medium" }
+  ],
+  "trafficAutomatedActions": [
+    { "action": "Route RT-1043 rerouted", "icon": "refresh", "color": "blue", "time": "2 minutes ago" },
+    { "action": "Route RT-3842 rerouted", "icon": "refresh", "color": "blue", "time": "4 minutes ago" },
+    { "action": "ETA updated for 3 deliveries", "icon": "clock", "color": "amber", "time": "7 minutes ago" },
+    { "action": "Driver notifications sent", "icon": "user", "color": "green", "time": "12 minutes ago" }
+  ]
+} 

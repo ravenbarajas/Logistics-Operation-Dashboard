@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { RouteTable, RouteData } from "@/components/routes/RouteTable";
 import { RouteDetails } from "@/components/routes/RouteDetails";
 import { RoutePlanModal } from "@/components/routes/RoutePlanModal";
-import { activeRoutes, scheduledRoutes, completedRoutes, routeTemplates } from "@/components/routes/routeData";
 import { 
   AlertCircle, BarChart3, Clock, Fuel as FuelIcon, LineChart, PlusCircle, Route, 
   TrendingDown, Wind, Truck, Calendar, CheckCircle, Copy, RefreshCw, Settings,
@@ -30,199 +29,29 @@ import { useLocation } from "wouter";
 import { useTheme } from "@/hooks/use-theme";
 import { TrafficLiveMap } from "@/components/maps/TrafficLiveMap";
 
-// Mock data for charts
-const optimizationSummaryData = [
-  { name: "Distance", before: 1250, after: 1100 },
-  { name: "Fuel", before: 180, after: 145 },
-  { name: "Time", before: 1650, after: 1380 },
-  { name: "CO₂", before: 1840, after: 1485 }
-];
+// Import mock data from the consolidated index file
+import {
+  activeRoutes,
+  scheduledRoutes,
+  completedRoutes,
+  routeTemplates,
+  optimizationSummaryData,
+  routeComparisonData,
+  efficiencyImprovementData,
+  routePerformanceData,
+  monthlyTrendData,
+  trafficIncidents as liveTrafficIncidents,
+  trafficRoads as liveTrafficRoads,
+  trafficAutomatedActions,
+  driverPerformanceData,
+  DriverPerformanceData as IDriverPerformanceData,
+  MergedRouteData  // Import the merged interface
+} from "@/mockData/routes";
 
-// Mock route optimization comparison data
-const routeComparisonData = {
-  originalRoute: {
-    name: "Downtown Express Delivery (Original)",
-    stops: 18,
-    waypoints: [
-      // San Francisco City Center area coordinates
-      { lat: 37.7749, lng: -122.4194 }, // Start/End
-      { lat: 37.7848, lng: -122.4267 },
-      { lat: 37.7963, lng: -122.4041 },
-      { lat: 37.7756, lng: -122.4136 },
-      { lat: 37.7945, lng: -122.3915 },
-      { lat: 37.7834, lng: -122.4078 },
-      { lat: 37.7648, lng: -122.4345 },
-      { lat: 37.7864, lng: -122.4201 },
-      { lat: 37.7925, lng: -122.4382 },
-      { lat: 37.7827, lng: -122.4423 },
-      { lat: 37.7634, lng: -122.4253 },
-      { lat: 37.7837, lng: -122.4320 },
-      { lat: 37.7697, lng: -122.4088 },
-      { lat: 37.7881, lng: -122.4013 },
-      { lat: 37.7793, lng: -122.3898 },
-      { lat: 37.7824, lng: -122.3977 },
-      { lat: 37.7712, lng: -122.4298 },
-      { lat: 37.7749, lng: -122.4194 }, // Back to start
-    ],
-    distance: 28.6,
-    duration: 195
-  },
-  optimizedRoute: {
-    name: "Downtown Express Delivery (Optimized)",
-    stops: 18,
-    waypoints: [
-      // San Francisco City Center area - optimized path
-      { lat: 37.7749, lng: -122.4194 }, // Start/End
-      { lat: 37.7712, lng: -122.4298 },
-      { lat: 37.7634, lng: -122.4253 },
-      { lat: 37.7648, lng: -122.4345 },
-      { lat: 37.7827, lng: -122.4423 },
-      { lat: 37.7925, lng: -122.4382 },
-      { lat: 37.7864, lng: -122.4201 },
-      { lat: 37.7837, lng: -122.4320 },
-      { lat: 37.7834, lng: -122.4078 },
-      { lat: 37.7848, lng: -122.4267 },
-      { lat: 37.7824, lng: -122.3977 },
-      { lat: 37.7793, lng: -122.3898 },
-      { lat: 37.7881, lng: -122.4013 },
-      { lat: 37.7945, lng: -122.3915 },
-      { lat: 37.7963, lng: -122.4041 },
-      { lat: 37.7697, lng: -122.4088 },
-      { lat: 37.7756, lng: -122.4136 },
-      { lat: 37.7749, lng: -122.4194 }, // Back to start
-    ],
-    distance: 22.8,
-    duration: 165
-  }
-};
+// Define a type for the performance data object with specific keys
+type PerformanceAreaKey = 'overall' | 'fuelEfficiency' | 'onTimeDelivery' | 'customerRating';
 
-const efficiencyImprovementData = [
-  { name: "Route 1", distance: 14.7, time: 32, fuel: 1.2, emissions: 12.3 },
-  { name: "Route 2", distance: 9.3, time: 17, fuel: 0.8, emissions: 8.1 },
-  { name: "Route 3", distance: 22.5, time: 45, fuel: 2.7, emissions: 27.5 },
-  { name: "Route 4", distance: 11.2, time: 23, fuel: 1.4, emissions: 14.2 },
-];
-
-const monthlyTrendData = [
-  { month: "Jan", distance: 4200, fuel: 540, emissions: 5620 },
-  { month: "Feb", distance: 4350, fuel: 562, emissions: 5810 },
-  { month: "Mar", distance: 4100, fuel: 527, emissions: 5460 },
-  { month: "Apr", distance: 4550, fuel: 581, emissions: 6050 },
-  { month: "May", distance: 4720, fuel: 605, emissions: 6280 },
-  { month: "Jun", distance: 3950, fuel: 502, emissions: 5240 },
-  { month: "Jul", distance: 3850, fuel: 493, emissions: 5120 },
-  { month: "Aug", distance: 3950, fuel: 512, emissions: 5340 },
-];
-
-const routePerformanceData = [
-  { name: "Route 1", distance: 18.3, time: 35, fuel: 2.2, emissions: 19.8 },
-  { name: "Route 2", distance: 15.7, time: 30, fuel: 1.9, emissions: 17.1 },
-  { name: "Route 3", distance: 22.5, time: 45, fuel: 2.7, emissions: 27.5 },
-  { name: "Route 4", distance: 11.2, time: 23, fuel: 1.4, emissions: 14.2 },
-];
-
-// Add traffic incident data (moved from TrafficMap component)
-const liveTrafficIncidents: TrafficIncident[] = [
-  { 
-    id: 1, 
-    x: 15, 
-    y: 25, 
-    lat: 37.7869, 
-    lng: -122.4000, 
-    severity: "high", 
-    type: "Major Accident",
-    location: "I-95 Northbound, Exit 23",
-    description: "Multiple vehicle collision blocking 2 lanes",
-    duration: "2+ hours", 
-    affectedRoutes: ["RT-1043", "RT-3842"] 
-  },
-  { 
-    id: 2, 
-    x: 40, 
-    y: 50, 
-    lat: 37.7749, 
-    lng: -122.4194, 
-    severity: "medium", 
-    type: "Road Construction",
-    location: "Main St & 5th Ave",
-    description: "Lane closures due to utility work",
-    duration: "3 days", 
-    affectedRoutes: ["RT-5621", "RT-8954"] 
-  },
-  { 
-    id: 3, 
-    x: 75, 
-    y: 35, 
-    lat: 37.7529, 
-    lng: -122.4270, 
-    severity: "low", 
-    type: "Lane Closure",
-    location: "Highway 101, Mile 36",
-    description: "Right shoulder closed for maintenance",
-    duration: "6 hours", 
-    affectedRoutes: ["RT-4567"] 
-  },
-  { 
-    id: 4, 
-    x: 60, 
-    y: 65, 
-    lat: 37.7900, 
-    lng: -122.4330, 
-    severity: "medium", 
-    type: "Traffic Jam",
-    location: "Downtown Bridge",
-    description: "Heavy congestion due to rush hour",
-    duration: "1 hour", 
-    affectedRoutes: ["RT-7689"] 
-  },
-  { 
-    id: 5, 
-    x: 30, 
-    y: 80, 
-    lat: 37.7660, 
-    lng: -122.4100, 
-    severity: "high", 
-    type: "Road Closure",
-    location: "Westbound Freeway",
-    description: "Full closure due to hazardous material spill",
-    duration: "4 hours", 
-    affectedRoutes: ["RT-2354", "RT-9812"] 
-  },
-];
-
-// Create road segments with varying congestion levels
-const liveTrafficRoads: TrafficRoad[] = [
-  // Main horizontal roads with varying congestion
-  { id: "h1", path: "M0,25 L100,25", congestion: "high" },
-  { id: "h2", path: "M0,50 L100,50", congestion: "medium" },
-  { id: "h3", path: "M0,75 L100,75", congestion: "low" },
-  
-  // Main vertical roads
-  { id: "v1", path: "M25,0 L25,100", congestion: "medium" },
-  { id: "v2", path: "M50,0 L50,100", congestion: "high" },
-  { id: "v3", path: "M75,0 L75,100", congestion: "low" },
-  
-  // Secondary roads
-  { id: "sh1", path: "M0,12.5 L100,12.5", congestion: "low" },
-  { id: "sh2", path: "M0,37.5 L100,37.5", congestion: "medium" },
-  { id: "sh3", path: "M0,62.5 L100,62.5", congestion: "high" },
-  { id: "sh4", path: "M0,87.5 L100,87.5", congestion: "low" },
-  
-  { id: "sv1", path: "M12.5,0 L12.5,100", congestion: "medium" },
-  { id: "sv2", path: "M37.5,0 L37.5,100", congestion: "low" },
-  { id: "sv3", path: "M62.5,0 L62.5,100", congestion: "high" },
-  { id: "sv4", path: "M87.5,0 L87.5,100", congestion: "medium" },
-];
-
-// Add automated traffic actions data
-const trafficAutomatedActions = [
-  { action: "Route RT-1043 rerouted", icon: "refresh", color: "blue", time: "2 minutes ago" },
-  { action: "Route RT-3842 rerouted", icon: "refresh", color: "blue", time: "4 minutes ago" },
-  { action: "ETA updated for 3 deliveries", icon: "clock", color: "amber", time: "7 minutes ago" },
-  { action: "Driver notifications sent", icon: "user", color: "green", time: "12 minutes ago" },
-];
-
-// Add Live Traffic Map component directly in this file
+// Interface for Live Traffic Map props
 interface LiveTrafficMapProps {
   incidents: TrafficIncident[];
   title: string;
@@ -268,57 +97,23 @@ function LiveTrafficMapComponent({ incidents, title, height = "300px" }: LiveTra
   );
 }
 
-// Define a type for driver performance data
-interface DriverPerformanceData {
-  name: string;
-  performance: number;
-}
-
-// Define a type for the performance data object with specific keys
-type PerformanceAreaKey = 'overall' | 'fuelEfficiency' | 'onTimeDelivery' | 'customerRating';
-
-const driverPerformanceData: Record<PerformanceAreaKey, DriverPerformanceData[]> = {
-  overall: [
-    { name: 'Alex K.', performance: 98.3 },
-    { name: 'Sarah M.', performance: 97.8 },
-    { name: 'David W.', performance: 96.2 },
-    { name: 'Robert J.', performance: 82.4 },
-    { name: 'Lisa T.', performance: 83.7 },
-    { name: 'Mark P.', performance: 84.1 },
-  ],
-  fuelEfficiency: [
-    { name: 'Alex K.', performance: 18.0 }, // in MPG
-    { name: 'Sarah M.', performance: 17.5 },
-    { name: 'David W.', performance: 17.0 },
-    { name: 'Robert J.', performance: 14.0 },
-    { name: 'Lisa T.', performance: 14.5 },
-    { name: 'Mark P.', performance: 15.0 },
-  ],
-  onTimeDelivery: [
-    { name: 'Alex K.', performance: 99 }, // in %
-    { name: 'Sarah M.', performance: 98 },
-    { name: 'David W.', performance: 97 },
-    { name: 'Robert J.', performance: 88 },
-    { name: 'Lisa T.', performance: 89 },
-    { name: 'Mark P.', performance: 90 },
-  ],
-  customerRating: [
-    { name: 'Alex K.', performance: 4.9 }, // on a 5.0 scale
-    { name: 'Sarah M.', performance: 4.8 },
-    { name: 'David W.', performance: 4.7 },
-    { name: 'Robert J.', performance: 4.2 },
-    { name: 'Lisa T.', performance: 4.3 },
-    { name: 'Mark P.', performance: 4.4 },
-  ],
-};
-
 export default function RouteOptimization() {
   const [location] = useLocation();
-  const [routes, setRoutes] = useState({
-    active: [...activeRoutes],
-    scheduled: [...scheduledRoutes],
-    completed: [...completedRoutes],
-    templates: [...routeTemplates]
+  
+  // Interface for route state
+  interface RoutesState {
+    active: MergedRouteData[];
+    scheduled: MergedRouteData[];
+    completed: MergedRouteData[];
+    templates: MergedRouteData[];
+  }
+
+  // Set up state for routes
+  const [routes, setRoutes] = useState<RoutesState>({
+    active: activeRoutes,
+    scheduled: scheduledRoutes,
+    completed: completedRoutes,
+    templates: routeTemplates
   });
   
   const [selectedRoute, setSelectedRoute] = useState<RouteData | undefined>(undefined);
@@ -447,19 +242,32 @@ export default function RouteOptimization() {
   
   // Handle creating a new route
   const handleAddRoute = (routeData: RouteData) => {
+    // Ensure route data has both property sets
+    const mappedRouteData: MergedRouteData = {
+      ...routeData,
+      startLocation: routeData.startLocation,
+      endLocation: routeData.endLocation,
+      origin: routeData.startLocation,
+      destination: routeData.endLocation
+    };
+    
     setRoutes({
       ...routes,
-      scheduled: [routeData, ...routes.scheduled]
+      scheduled: [mappedRouteData, ...routes.scheduled]
     });
   };
   
   // Handle starting a scheduled route
   const handleStartRoute = (route: RouteData) => {
-    const updatedRoute = {
+    const updatedRoute: MergedRouteData = {
       ...route,
       status: "active",
       startTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      completionRate: 0
+      completionRate: 0,
+      startLocation: route.origin || route.startLocation || "",
+      endLocation: route.destination || route.endLocation || "",
+      origin: route.origin || route.startLocation || "",
+      destination: route.destination || route.endLocation || ""
     };
     
     setRoutes({
@@ -476,7 +284,11 @@ export default function RouteOptimization() {
       status: "completed",
       endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       completionRate: 100,
-      actualDuration: Math.floor(route.duration * (Math.random() > 0.5 ? (1 + Math.random() * 0.2) : (1 - Math.random() * 0.15)))
+      actualDuration: Math.floor(route.duration * (Math.random() > 0.5 ? (1 + Math.random() * 0.2) : (1 - Math.random() * 0.15))),
+      startLocation: route.origin || route.startLocation || "",
+      endLocation: route.destination || route.endLocation || "",
+      origin: route.origin || route.startLocation || "",
+      destination: route.destination || route.endLocation || ""
     };
     
     setRoutes({
@@ -494,6 +306,8 @@ export default function RouteOptimization() {
       name: `${route.name} (Copy)`,
       status: "scheduled",
       departureDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
+      startLocation: route.startLocation || "",
+      endLocation: route.endLocation || ""
     };
     
     setRoutes({
@@ -552,10 +366,10 @@ export default function RouteOptimization() {
   // Get the appropriate filtered routes based on current tab
   const getFilteredRoutes = () => {
     switch (activeTab) {
-      case "active": return filterRoutes(routes.active);
-      case "scheduled": return filterRoutes(routes.scheduled);
-      case "completed": return filterRoutes(routes.completed);
-      case "templates": return filterRoutes(routes.templates);
+      case "active": return filterRoutes(routes.active as RouteData[]);
+      case "scheduled": return filterRoutes(routes.scheduled as RouteData[]);
+      case "completed": return filterRoutes(routes.completed as RouteData[]);
+      case "templates": return filterRoutes(routes.templates as RouteData[]);
       default: return [];
     }
   };
@@ -3053,7 +2867,7 @@ export default function RouteOptimization() {
                   <TrafficLiveMap 
                     height="100%" 
                     incidents={trafficIncidents}
-                    roads={trafficRoads.map(road => {
+                    roads={liveTrafficRoads.map(road => {
                       // Function to generate map coordinates from SVG path
                       // Inside this component to access the function properly
                       const coords = generateCoordinatesFromPath(road.path, road.id);
@@ -3522,7 +3336,7 @@ export default function RouteOptimization() {
                       {/* Header and Dropdown for Performance Area */}
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="text-sm font-medium">Driver Performance Comparison</h4>
-                        <Select value={performanceArea} onValueChange={setPerformanceArea}>
+                        <Select value={performanceArea} onValueChange={(value) => setPerformanceArea(value as PerformanceAreaKey)}>
                           <SelectTrigger className="w-[180px] h-8 text-xs">
                             <SelectValue placeholder="Select performance area" />
                           </SelectTrigger>

@@ -268,6 +268,50 @@ function LiveTrafficMapComponent({ incidents, title, height = "300px" }: LiveTra
   );
 }
 
+// Define a type for driver performance data
+interface DriverPerformanceData {
+  name: string;
+  performance: number;
+}
+
+// Define a type for the performance data object with specific keys
+type PerformanceAreaKey = 'overall' | 'fuelEfficiency' | 'onTimeDelivery' | 'customerRating';
+
+const driverPerformanceData: Record<PerformanceAreaKey, DriverPerformanceData[]> = {
+  overall: [
+    { name: 'Alex K.', performance: 98.3 },
+    { name: 'Sarah M.', performance: 97.8 },
+    { name: 'David W.', performance: 96.2 },
+    { name: 'Robert J.', performance: 82.4 },
+    { name: 'Lisa T.', performance: 83.7 },
+    { name: 'Mark P.', performance: 84.1 },
+  ],
+  fuelEfficiency: [
+    { name: 'Alex K.', performance: 18.0 }, // in MPG
+    { name: 'Sarah M.', performance: 17.5 },
+    { name: 'David W.', performance: 17.0 },
+    { name: 'Robert J.', performance: 14.0 },
+    { name: 'Lisa T.', performance: 14.5 },
+    { name: 'Mark P.', performance: 15.0 },
+  ],
+  onTimeDelivery: [
+    { name: 'Alex K.', performance: 99 }, // in %
+    { name: 'Sarah M.', performance: 98 },
+    { name: 'David W.', performance: 97 },
+    { name: 'Robert J.', performance: 88 },
+    { name: 'Lisa T.', performance: 89 },
+    { name: 'Mark P.', performance: 90 },
+  ],
+  customerRating: [
+    { name: 'Alex K.', performance: 4.9 }, // on a 5.0 scale
+    { name: 'Sarah M.', performance: 4.8 },
+    { name: 'David W.', performance: 4.7 },
+    { name: 'Robert J.', performance: 4.2 },
+    { name: 'Lisa T.', performance: 4.3 },
+    { name: 'Mark P.', performance: 4.4 },
+  ],
+};
+
 export default function RouteOptimization() {
   const [location] = useLocation();
   const [routes, setRoutes] = useState({
@@ -531,6 +575,9 @@ export default function RouteOptimization() {
   const [trafficRoads, setTrafficRoads] = useState<TrafficRoad[]>(liveTrafficRoads);
   const incidentsPerPage = 3;
   
+  // State for performance tabs/dropdown
+  const [performanceTab, setPerformanceTab] = useState('overall');
+  
   // Filter incidents function
   const filterIncidentsBySeverity = (severity: IncidentSeverity | 'all') => {
     if (severity === 'all') {
@@ -671,6 +718,9 @@ export default function RouteOptimization() {
     setFilteredIncidents(updatedIncidents);
   };
   
+  // State for selected performance area in dropdown
+  const [performanceArea, setPerformanceArea] = useState<PerformanceAreaKey>('overall');
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -3469,19 +3519,27 @@ export default function RouteOptimization() {
                   
                   <div className="col-span-2">
                     <div className="rounded-md border p-4 h-full">
-                      <h4 className="text-sm font-medium mb-3">Driver Performance Comparison</h4>
+                      {/* Header and Dropdown for Performance Area */}
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-medium">Driver Performance Comparison</h4>
+                        <Select value={performanceArea} onValueChange={setPerformanceArea}>
+                          <SelectTrigger className="w-[180px] h-8 text-xs">
+                            <SelectValue placeholder="Select performance area" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="overall">Overall Performance</SelectItem>
+                            <SelectItem value="fuelEfficiency">Fuel Efficiency</SelectItem>
+                            <SelectItem value="onTimeDelivery">On-time Delivery</SelectItem>
+                            <SelectItem value="customerRating">Customer Rating</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {/* Chart component */}
                       <div className="h-[250px] border-b mb-2">
-                        {/* Actual chart component */}
                         <ResponsiveContainer width="100%" height="100%">
-                          <RechartsBarChart // Use the aliased BarChart from recharts
-                            data={[
-                              { name: 'Alex K.', performance: 98.3 },
-                              { name: 'Sarah M.', performance: 97.8 },
-                              { name: 'David W.', performance: 96.2 },
-                              { name: 'Robert J.', performance: 82.4 },
-                              { name: 'Lisa T.', performance: 83.7 },
-                              { name: 'Mark P.', performance: 84.1 },
-                            ]}
+                          <RechartsBarChart
+                            data={driverPerformanceData[performanceArea]}
                           >
                             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                             <YAxis
@@ -3489,15 +3547,48 @@ export default function RouteOptimization() {
                               fontSize={12}
                               tickLine={false}
                               axisLine={false}
-                              tickFormatter={(value) => `${value}%`}
-                              domain={[0, 100]}
+                              // Dynamically format YAxis based on selected area
+                              tickFormatter={(value) => {
+                                switch (performanceArea) {
+                                  case 'fuelEfficiency':
+                                    return `${value} MPG`;
+                                  case 'customerRating':
+                                    return value.toFixed(1);
+                                  case 'onTimeDelivery':
+                                    return `${value}%`;
+                                  default:
+                                    return `${value}%`;
+                                }
+                              }}
+                              domain={performanceArea === 'customerRating' ? [0, 5] : [0, 100]} // Adjust domain for rating
                             />
-                            <Tooltip formatter={(value: number) => [`${value}%`, 'Performance']} />
-                            <Bar dataKey="performance" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                            <Tooltip 
+                              // Dynamically format Tooltip based on selected area
+                              formatter={(value: number) => {
+                                switch (performanceArea) {
+                                  case 'fuelEfficiency':
+                                    return [`${value} MPG`, 'Fuel Efficiency'];
+                                  case 'customerRating':
+                                    return [value.toFixed(1), 'Customer Rating'];
+                                  case 'onTimeDelivery':
+                                    return [`${value}%`, 'On-time Delivery'];
+                                  default:
+                                    return [`${value}%`, 'Overall Performance'];
+                                }
+                              }}
+                            />
+                            {/* Adjust Bar fill color based on performance area */}
+                            <Bar dataKey="performance" fill={
+                              performanceArea === 'fuelEfficiency' ? '#82ca9d' :
+                              performanceArea === 'onTimeDelivery' ? '#ffc658' :
+                              performanceArea === 'customerRating' ? '#a4de6c' :
+                              '#8884d8'
+                            } radius={[4, 4, 0, 0]} />
                           </RechartsBarChart>
                         </ResponsiveContainer>
                       </div>
                       
+                      {/* Leaderboards remain below the chart */}
                       <div className="grid grid-cols-3 gap-4 mt-4">
                         <div className="space-y-1">
                           <div className="text-xs text-muted-foreground">Top Performers</div>

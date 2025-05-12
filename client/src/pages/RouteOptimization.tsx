@@ -13,7 +13,8 @@ import {
   Zap, DollarSign, Compass, MapPin, Calculator, ChevronLeft, ChevronRight, Search, ChevronsLeft, ChevronsRight, Save, Play, Map as MapIcon,
   TrafficCone, Activity, User
 } from "lucide-react";
-import { BarChart } from "@/components/ui/bar-chart";
+import { BarChart as CustomBarChart } from "@/components/ui/bar-chart";
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { LineChart as LineChartComponent } from "@/components/ui/line-chart";
 import { routeService, RouteSummary } from "@/services/routeService";
 import { Input } from "@/components/ui/input";
@@ -2682,12 +2683,12 @@ export default function RouteOptimization() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
-                      <BarChart
+                      <CustomBarChart
                         data={optimizationSummaryData} 
                         index="name" 
                         categories={["before", "after"]} 
                         colors={["#94a3b8", "#3b82f6"]} 
-                        valueFormatter={(value: number) => `${value}${value > 1000 ? ' km' : value > 100 ? ' hr' : value > 30 ? ' gal' : ' kg'}`}
+                        valueFormatter={(value: number) => `${value} hrs`}
                         yAxisWidth={48}
                       />
                       
@@ -3153,12 +3154,12 @@ export default function RouteOptimization() {
                     <CardDescription>Savings per route after optimization</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <BarChart
-                      data={efficiencyImprovementData} 
-                      index="name" 
-                      categories={["distance", "time", "fuel", "emissions"]} 
-                      colors={["#3b82f6", "#f97316", "#16a34a", "#6b7280"]} 
-                      valueFormatter={(value: number) => `${value}${value > 20 ? ' km' : value > 10 ? ' min' : value > 1.5 ? ' gal' : ' kg'}`}
+                    <CustomBarChart
+                      data={efficiencyImprovementData}
+                      index="name"
+                      categories={["distance", "time", "fuel", "emissions"]}
+                      colors={["indigo", "rose", "amber", "emerald"]}
+                      valueFormatter={(value: number) => value.toLocaleString()}
                       yAxisWidth={48}
                     />
                     <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
@@ -3470,13 +3471,31 @@ export default function RouteOptimization() {
                     <div className="rounded-md border p-4 h-full">
                       <h4 className="text-sm font-medium mb-3">Driver Performance Comparison</h4>
                       <div className="h-[250px] border-b mb-2">
-                        {/* Placeholder for chart component */}
-                        <div className="h-full flex items-center justify-center text-muted-foreground">
-                          <div className="text-center">
-                            <BarChart3 className="h-10 w-10 mx-auto mb-2 text-muted-foreground/50" />
-                            <span className="text-sm">Performance comparison chart</span>
-                          </div>
-                        </div>
+                        {/* Actual chart component */}
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RechartsBarChart // Use the aliased BarChart from recharts
+                            data={[
+                              { name: 'Alex K.', performance: 98.3 },
+                              { name: 'Sarah M.', performance: 97.8 },
+                              { name: 'David W.', performance: 96.2 },
+                              { name: 'Robert J.', performance: 82.4 },
+                              { name: 'Lisa T.', performance: 83.7 },
+                              { name: 'Mark P.', performance: 84.1 },
+                            ]}
+                          >
+                            <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                            <YAxis
+                              stroke="#888888"
+                              fontSize={12}
+                              tickLine={false}
+                              axisLine={false}
+                              tickFormatter={(value) => `${value}%`}
+                              domain={[0, 100]}
+                            />
+                            <Tooltip formatter={(value: number) => [`${value}%`, 'Performance']} />
+                            <Bar dataKey="performance" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                          </RechartsBarChart>
+                        </ResponsiveContainer>
                       </div>
                       
                       <div className="grid grid-cols-3 gap-4 mt-4">

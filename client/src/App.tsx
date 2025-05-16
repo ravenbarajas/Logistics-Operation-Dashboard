@@ -19,6 +19,7 @@ import Analytics from "@/pages/Analytics";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 import OrdersLandingPage from "@/landing/orders/OrdersLandingPage";
+import CustomersLandingPage from "@/landing/customers/CustomersLandingPage";
 import { DEFAULT_MODULE, MODULE_ROUTES, MODULE_TITLES, ModuleType } from "./config";
 
 // Get the base path from the current URL
@@ -143,7 +144,7 @@ export const STANDALONE_LINKS = {
   dashboard: "/",
   vehicles: "/vehicles/inventory",
   shipments: "/shipments/tracking",
-  customers: "/customers/summary",
+  customers: "/customers",
   suppliers: "/suppliers/performance",
   warehouse: "/warehouse/inventory",
   orders: "/orders",
@@ -266,10 +267,7 @@ function Router() {
                 {() => <Shipments />}
               </Route>
               <Route path="/customers">
-              {() => {
-                  window.location.pathname = makePath("/customers/summary");
-                  return null;
-                }}
+                {() => <CustomersLandingPage />}
               </Route>
               <Route path="/customers/summary">
                 {() => <Customers />}

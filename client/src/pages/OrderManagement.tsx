@@ -1813,13 +1813,6 @@ export default function OrderManagement() {
                   </div>
                 </CardContent>
               </Card>
-              
-              <div className="text-sm text-muted-foreground mb-4">
-                <div className="flex items-center">
-                  <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                  Data refreshed automatically every 5 minutes. Last update: 10:42 AM
-                </div>
-              </div>
             </TabsContent>
             
             {/* Fulfillment Metrics Tab */}  

@@ -11,13 +11,13 @@ export const DEFAULT_MODULE: ModuleType = "orders";
 // Map of module names to their corresponding routes
 export const MODULE_ROUTES: Record<ModuleType, string> = {
   dashboard: "/",
-  vehicles: "/vehicles",
-  shipments: "/shipments",
-  customers: "/customers",
-  suppliers: "/suppliers",
-  warehouse: "/warehouse",
-  orders: "/orders",
-  routes: "/routes",
+  vehicles: "/vehicles", // Landing Page works with this route
+  shipments: "/shipments", // Landing Page works with this route
+  customers: "/customers", // Landing Page works with this route
+  suppliers: "/suppliers", // Landing Page works with this route
+  warehouse: "/warehouse", // Landing Page works with this route
+  orders: "/orders", // Landing Page works with this route
+  routes: "/routes", // Landing Page works with this route
   reports: "/reports",
   analytics: "/analytics",
   settings: "/settings"

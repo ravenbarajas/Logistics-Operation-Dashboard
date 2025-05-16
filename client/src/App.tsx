@@ -20,6 +20,13 @@ import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
 import OrdersLandingPage from "@/landing/orders/OrdersLandingPage";
 import CustomersLandingPage from "@/landing/customers/CustomersLandingPage";
+import ShipmentsLandingPage from "@/landing/shipments/ShipmentsLandingPage";
+import VehiclesLandingPage from "@/landing/vehicles/VehiclesLandingPage";
+import SuppliersLandingPage from "@/landing/suppliers/SuppliersLandingPage";
+import WarehouseLandingPage from "@/landing/warehouse/WarehouseLandingPage";
+import RoutesLandingPage from "@/landing/routes/RoutesLandingPage";
+import ReportsLandingPage from "@/landing/reports/ReportsLandingPage";
+import AnalyticsLandingPage from "@/landing/analytics/AnalyticsLandingPage";
 import { DEFAULT_MODULE, MODULE_ROUTES, MODULE_TITLES, ModuleType } from "./config";
 
 // Get the base path from the current URL
@@ -103,6 +110,7 @@ const STANDALONE_ROUTES = [
   
   // Warehouse module
   "/warehouse",
+  "/warehouse/warehouses",
   "/warehouse/inventory",
   "/warehouse/analytics",
   "/warehouse/storage",
@@ -142,15 +150,15 @@ const STANDALONE_ROUTES = [
 // Secret links for navigation between modules
 export const STANDALONE_LINKS = {
   dashboard: "/",
-  vehicles: "/vehicles/inventory",
-  shipments: "/shipments/tracking",
+  vehicles: "/vehicles",
+  shipments: "/shipments",
   customers: "/customers",
-  suppliers: "/suppliers/performance",
-  warehouse: "/warehouse/inventory",
+  suppliers: "/suppliers",
+  warehouse: "/warehouse",
   orders: "/orders",
-  routes: "/routes/management",
-  reports: "/reports/recent",
-  analytics: "/analytics/risk",
+  routes: "/routes",
+  reports: "/reports",
+  analytics: "/analytics",
   settings: "/settings"
 };
 
@@ -234,7 +242,7 @@ function Router() {
                 {() => <Dashboard />}
               </Route>
               <Route path="/vehicles">
-                {() => <Vehicles />}
+                {() => <VehiclesLandingPage />}
               </Route>
               <Route path="/vehicles/inventory">
                 {() => <Vehicles />}
@@ -249,10 +257,7 @@ function Router() {
                 {() => <Vehicles />}
               </Route>
               <Route path="/shipments">
-                {() => {
-                  window.location.pathname = makePath("/shipments/tracking");
-                  return null;
-                }}
+                {() => <ShipmentsLandingPage />}
               </Route>
               <Route path="/shipments/tracking">
                 {() => <Shipments />}
@@ -282,10 +287,7 @@ function Router() {
                 {() => <Customers />}
               </Route>
               <Route path="/suppliers">
-                {() => {
-                  window.location.pathname = makePath("/suppliers/performance");
-                  return null;
-                }}
+                {() => <SuppliersLandingPage />}
               </Route>
               <Route path="/suppliers/performance">
                 {() => <Suppliers />}
@@ -300,6 +302,9 @@ function Router() {
                 {() => <Suppliers />}
               </Route>
               <Route path="/warehouse">
+                {() => <WarehouseLandingPage />}
+              </Route>
+              <Route path="/warehouse/warehouses">
                 {() => <Warehouse />}
               </Route>
               <Route path="/warehouse/inventory">
@@ -327,7 +332,7 @@ function Router() {
                 {() => <OrderManagement />}
               </Route>
               <Route path="/routes">
-                {() => <RouteOptimization />}
+                {() => <RoutesLandingPage />}
               </Route>
               <Route path="/routes/management">
                 {() => <RouteOptimization />}
@@ -342,10 +347,7 @@ function Router() {
                 {() => <RouteOptimization />}
               </Route>
               <Route path="/reports">
-                {() => {
-                  window.location.pathname = makePath("/reports/recent");
-                  return null;
-                }}
+                {() => <ReportsLandingPage />}
               </Route>
               <Route path="/reports/recent">
                 {() => <Reports />}
@@ -360,10 +362,7 @@ function Router() {
                 {() => <Reports />}
               </Route>
               <Route path="/analytics">
-                {() => {
-                  window.location.pathname = makePath("/analytics/risk");
-                  return null;
-                }}
+                {() => <AnalyticsLandingPage />}
               </Route>
               <Route path="/analytics/risk">
                 {() => <Analytics />}

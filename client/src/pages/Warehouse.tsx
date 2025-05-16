@@ -212,6 +212,8 @@ export default function Warehouse() {
       return "analytics";
     } else if (location.includes("/warehouse/storage")) {
       return "storage";
+    } else if (location.includes("/warehouse/warehouses")) { // Added check for /warehouse/warehouses
+      return "warehouses";
     }
     return "warehouses";
   };
@@ -546,7 +548,7 @@ export default function Warehouse() {
     
     // Update URL based on selected tab
     if (value === "warehouses") {
-      setLocation("/warehouse");
+      setLocation("/warehouse/warehouses"); // Changed to navigate to /warehouse/warehouses
     } else if (value === "inventory") {
       setLocation("/warehouse/inventory");
     } else if (value === "analytics") {

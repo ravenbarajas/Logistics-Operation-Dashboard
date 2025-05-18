@@ -127,7 +127,7 @@ function FeatureCard({ icon, title, description }) {
 function StatCard({ number, label }) {
   return (
     <div className="text-center p-6 rounded-lg bg-background border border-border/40">
-      <p className="text-4xl md:text-5xl font-bold text-primary mb-2">{number}</p>
+      <p className="text-4xl md:text-5xl font-bold text-primary dark:text-white mb-2">{number}</p>
       <p className="text-muted-foreground">{label}</p>
     </div>
   )

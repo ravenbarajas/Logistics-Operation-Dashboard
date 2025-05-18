@@ -16,14 +16,18 @@ function OrdersLandingPage() {
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-16 md:pt-32 md:pb-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-12">
             Order Management Simplified
           </h1>
           <p className="text-xl md:text-2xl mb-10 text-muted-foreground">
             Track, manage, and optimize your orders with our comprehensive system designed for modern businesses.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button onClick={handleGoToDashboard} size="lg" className="text-md px-8 py-6 h-auto font-semibold">
+            <Button 
+              variant="default"
+              onClick={handleGoToDashboard} 
+              size="lg" 
+              className="text-md px-8 py-6 h-auto font-semibold">
               Go to Dashboard <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button

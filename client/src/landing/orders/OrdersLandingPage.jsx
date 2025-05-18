@@ -112,7 +112,7 @@ function FeatureCard({ icon, title, description }) {
   return (
     <Card className="border border-border/40 transition-all duration-200 hover:border-primary/20 hover:shadow-md">
       <CardHeader>
-        <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+        <div className="h-12 w-12 rounded-lg bg-primary/10 dark:bg-white/10 flex items-center justify-center text-primary dark:text-white mb-4">
           {icon}
         </div>
         <CardTitle>{title}</CardTitle>

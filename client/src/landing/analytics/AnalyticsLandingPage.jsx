@@ -55,7 +55,7 @@ function AnalyticsLandingPage() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl bg-card">
+            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl dark:shadow-lg dark:shadow-violet-500/20 bg-card">
               <div className="absolute inset-0 p-6">
                 <DemoAreaChart />
               </div>
@@ -73,7 +73,7 @@ function AnalyticsLandingPage() {
             title="Performance Metrics"
             description="Track key performance indicators and identify trends to optimize your logistics operations."
           >
-            <div className="h-32 mt-4">
+            <div className="h-32 mt-4 shadow-xl dark:shadow-lg dark:shadow-violet-500/20">
               <DemoLineChart />
             </div>
           </FeatureCard>
@@ -82,7 +82,7 @@ function AnalyticsLandingPage() {
             title="Comparative Analysis"
             description="Compare performance across different time periods, regions, or business units."
           >
-            <div className="h-32 mt-4">
+            <div className="h-32 mt-4 shadow-xl dark:shadow-lg dark:shadow-violet-500/20">
               <DemoBarChart />
             </div>
           </FeatureCard>
@@ -91,7 +91,7 @@ function AnalyticsLandingPage() {
             title="Distribution Insights"
             description="Understand the distribution of your logistics resources and identify optimization opportunities."
           >
-            <div className="h-32 mt-4">
+            <div className="h-32 mt-4 shadow-xl dark:shadow-lg dark:shadow-violet-500/20">
               <DemoPieChart />
             </div>
           </FeatureCard>

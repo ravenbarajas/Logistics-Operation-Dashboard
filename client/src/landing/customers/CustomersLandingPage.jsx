@@ -70,7 +70,7 @@ function CustomersLandingPage() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl bg-card">
+            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl dark:shadow-lg dark:shadow-teal-500/20 bg-card">
               <div className="absolute inset-0 p-6">
                 <CustomerDashboard />
               </div>
@@ -88,7 +88,7 @@ function CustomersLandingPage() {
             title="Customer Profiles"
             description="Create detailed customer profiles with purchase history, preferences, and interaction logs."
           >
-            <div className="h-32 mt-4">
+            <div className="h-32 mt-4 shadow-xl dark:shadow-lg dark:shadow-teal-500/20">
               <CustomerSegmentChart />
             </div>
           </FeatureCard>
@@ -112,7 +112,7 @@ function CustomersLandingPage() {
             title="Growth Insights"
             description="Track customer acquisition, retention, and churn with actionable insights."
           >
-            <div className="h-32 mt-4">
+            <div className="h-32 mt-4 shadow-xl dark:shadow-lg dark:shadow-teal-500/20">
               <CustomerGrowthChart />
             </div>
           </FeatureCard>
@@ -264,7 +264,7 @@ function CustomerDashboard() {
 
       <div className="flex-1">
         <h4 className="text-sm font-medium mb-2">Customer Growth (Last 6 Months)</h4>
-        <div className="h-[180px]">
+        <div className="h-[180px] shadow-xl dark:shadow-lg dark:shadow-teal-500/20">
           <CustomerTrendChart />
         </div>
       </div>

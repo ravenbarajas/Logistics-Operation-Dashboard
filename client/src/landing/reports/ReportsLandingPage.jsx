@@ -74,7 +74,7 @@ function ReportsLandingPage() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl bg-card">
+            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl dark:shadow-lg dark:shadow-blue-500/20 bg-card">
               <div className="absolute inset-0 p-6">
                 <ReportsDashboard />
               </div>
@@ -120,7 +120,7 @@ function ReportsLandingPage() {
               title="Interactive Visualizations"
               description="Transform complex data into clear, interactive visualizations for better understanding and decision-making."
             >
-              <div className="h-40 mt-4">
+              <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-blue-500/20">
                 <MultiTypeChart />
               </div>
             </FeatureCard>
@@ -200,17 +200,17 @@ function ReportsLandingPage() {
           <ReportExampleCard
             title="Performance Dashboard"
             description="Comprehensive view of key performance indicators and metrics."
-            chart={<PerformanceChart />}
+            chart={<div className="h-48 mt-4 shadow-xl dark:shadow-lg dark:shadow-blue-500/20"><PerformanceChart /></div>}
           />
           <ReportExampleCard
             title="Resource Allocation"
             description="Visualization of how resources are distributed across different areas."
-            chart={<ResourceChart />}
+            chart={<div className="h-48 mt-4 shadow-xl dark:shadow-lg dark:shadow-blue-500/20"><ResourceChart /></div>}
           />
           <ReportExampleCard
             title="Trend Analysis"
             description="Historical data analysis showing patterns and trends over time."
-            chart={<TrendChart />}
+            chart={<div className="h-48 mt-4 shadow-xl dark:shadow-lg dark:shadow-blue-500/20"><TrendChart /></div>}
           />
         </div>
       </div>

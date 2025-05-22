@@ -58,7 +58,7 @@ function RoutesLandingPage() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl bg-card">
+            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl dark:shadow-lg dark:shadow-green-500/20 bg-card">
               <div className="absolute inset-0">
                 <RouteMapVisualization />
               </div>
@@ -111,7 +111,7 @@ function RoutesLandingPage() {
             title="Fleet Management"
             description="Manage your entire fleet with vehicle tracking, maintenance scheduling, and driver assignment."
           >
-            <div className="h-32 mt-4">
+            <div className="h-32 mt-4 shadow-xl dark:shadow-lg dark:shadow-green-500/20">
               <FleetUtilizationChart />
             </div>
           </FeatureCard>
@@ -135,7 +135,7 @@ function RoutesLandingPage() {
             title="Dynamic Rerouting"
             description="Adapt to real-time changes such as traffic, new orders, or cancellations with instant rerouting."
           >
-            <div className="h-32 mt-4">
+            <div className="h-32 mt-4 shadow-xl dark:shadow-lg dark:shadow-green-500/20">
               <DeliveryPerformanceChart />
             </div>
           </FeatureCard>

@@ -70,7 +70,7 @@ function ShipmentsLandingPage() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl bg-card">
+            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl dark:shadow-lg dark:shadow-blue-500/20 bg-card">
               <div className="absolute inset-0">
                 <ShipmentTrackingVisualization />
               </div>
@@ -135,7 +135,7 @@ function ShipmentsLandingPage() {
             title="Global Visibility"
             description="Track shipments across continents with real-time location updates and status changes."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-blue-500/20">
               <ShipmentStatusChart />
             </div>
           </FeatureCard>
@@ -149,7 +149,7 @@ function ShipmentsLandingPage() {
             title="Performance Analytics"
             description="Analyze carrier performance, transit times, and shipping costs with detailed reports."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-blue-500/20">
               <ShipmentPerformanceChart />
             </div>
           </FeatureCard>

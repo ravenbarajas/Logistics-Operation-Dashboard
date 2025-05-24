@@ -78,7 +78,7 @@ function SuppliersLandingPage() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl bg-card">
+            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl dark:shadow-lg dark:shadow-purple-500/20 bg-card">
               <div className="absolute inset-0 p-6">
                 <SupplierDashboard />
               </div>
@@ -131,7 +131,7 @@ function SuppliersLandingPage() {
             title="Performance Analytics"
             description="Track key performance indicators and identify trends to optimize supplier relationships."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-purple-500/20">
               <SupplierPerformanceChart />
             </div>
           </FeatureCard>
@@ -145,7 +145,7 @@ function SuppliersLandingPage() {
             title="Risk Assessment"
             description="Evaluate supplier risks with customizable risk scoring and automated alerts."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-purple-500/20">
               <SupplierRiskChart />
             </div>
           </FeatureCard>
@@ -154,7 +154,7 @@ function SuppliersLandingPage() {
             title="Supplier Diversity"
             description="Track and improve supplier diversity with detailed reporting and analytics."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-purple-500/20">
               <SupplierDiversityChart />
             </div>
           </FeatureCard>
@@ -773,7 +773,7 @@ function SupplierScorecard() {
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">Performance Trend</h3>
-            <div className="h-64">
+            <div className="h-64 shadow-xl dark:shadow-lg dark:shadow-purple-500/20">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={[

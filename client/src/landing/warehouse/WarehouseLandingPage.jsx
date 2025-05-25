@@ -76,7 +76,7 @@ function WarehouseLandingPage() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl bg-card">
+            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl dark:shadow-lg dark:shadow-orange-500/20 bg-card">
               <div className="absolute inset-0 p-6">
                 <WarehouseDashboard />
               </div>
@@ -144,7 +144,7 @@ function WarehouseLandingPage() {
             title="Inventory Management"
             description="Track inventory levels, locations, and movements with real-time visibility."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-orange-500/20">
               <InventoryLevelChart />
             </div>
           </FeatureCard>
@@ -153,7 +153,7 @@ function WarehouseLandingPage() {
             title="Space Utilization"
             description="Optimize warehouse layout and storage to maximize space utilization."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-orange-500/20">
               <SpaceUtilizationChart />
             </div>
           </FeatureCard>
@@ -162,7 +162,7 @@ function WarehouseLandingPage() {
             title="Order Fulfillment"
             description="Streamline picking, packing, and shipping processes for faster order fulfillment."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-orange-500/20">
               <OrderFulfillmentChart />
             </div>
           </FeatureCard>
@@ -193,7 +193,9 @@ function WarehouseLandingPage() {
             efficiency.
           </p>
           <div className="max-w-5xl mx-auto">
-            <WarehouseLayoutVisualization />
+            <div className="shadow-xl dark:shadow-lg dark:shadow-orange-500/20">
+              <WarehouseLayoutVisualization />
+            </div>
           </div>
         </div>
       </div>
@@ -519,13 +521,13 @@ function WarehouseDashboard() {
       <div className="flex-1 grid grid-cols-2 gap-4">
         <div>
           <h4 className="text-sm font-medium mb-2">Inventory by Category</h4>
-          <div className="h-[160px]">
+          <div className="h-[160px] shadow-xl dark:shadow-lg dark:shadow-orange-500/20">
             <InventoryCategoryChart />
           </div>
         </div>
         <div>
           <h4 className="text-sm font-medium mb-2">Daily Order Volume</h4>
-          <div className="h-[160px]">
+          <div className="h-[160px] shadow-xl dark:shadow-lg dark:shadow-orange-500/20">
             <OrderVolumeChart />
           </div>
         </div>

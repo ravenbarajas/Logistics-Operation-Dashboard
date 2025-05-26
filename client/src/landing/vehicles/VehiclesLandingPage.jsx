@@ -75,7 +75,7 @@ function VehiclesLandingPage() {
             </div>
           </div>
           <div className="hidden lg:block">
-            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl bg-card">
+            <div className="relative h-[400px] w-full rounded-xl overflow-hidden border border-border/40 shadow-xl dark:shadow-lg dark:shadow-teal-500/20 bg-card">
               <div className="absolute inset-0 p-6">
                 <FleetDashboard />
               </div>
@@ -141,7 +141,7 @@ function VehiclesLandingPage() {
             title="Real-time Tracking"
             description="Monitor your vehicles in real-time with GPS tracking and location history."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-teal-500/20">
               <VehicleLocationMap />
             </div>
           </FeatureCard>
@@ -150,7 +150,7 @@ function VehiclesLandingPage() {
             title="Maintenance Scheduling"
             description="Plan and track maintenance activities to keep your fleet in optimal condition."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-teal-500/20">
               <MaintenanceScheduleChart />
             </div>
           </FeatureCard>
@@ -164,7 +164,7 @@ function VehiclesLandingPage() {
             title="Performance Analytics"
             description="Analyze vehicle performance data to make informed fleet management decisions."
           >
-            <div className="h-40 mt-4">
+            <div className="h-40 mt-4 shadow-xl dark:shadow-lg dark:shadow-teal-500/20">
               <FleetPerformanceChart />
             </div>
           </FeatureCard>
@@ -230,7 +230,9 @@ function VehiclesLandingPage() {
             histories.
           </p>
           <div className="max-w-5xl mx-auto">
-            <VehicleHealthScorecard />
+            <div className="shadow-xl dark:shadow-lg dark:shadow-teal-500/20">
+              <VehicleHealthScorecard />
+            </div>
           </div>
         </div>
       </div>
@@ -496,13 +498,13 @@ function FleetDashboard() {
       <div className="flex-1 grid grid-cols-2 gap-4">
         <div>
           <h4 className="text-sm font-medium mb-2">Fleet Status</h4>
-          <div className="h-[160px]">
+          <div className="h-[160px] shadow-xl dark:shadow-lg dark:shadow-teal-500/20">
             <FleetStatusChart />
           </div>
         </div>
         <div>
           <h4 className="text-sm font-medium mb-2">Fuel Consumption</h4>
-          <div className="h-[160px]">
+          <div className="h-[160px] shadow-xl dark:shadow-lg dark:shadow-teal-500/20">
             <FuelConsumptionChart />
           </div>
         </div>

@@ -34,7 +34,8 @@ import {
   Truck,
   Network,
   MapPin,
-  Car
+  Car,
+  ChevronLeft
 } from "lucide-react";
 import { 
   fuelConsumptionData, 
@@ -160,7 +161,7 @@ export default function Analytics() {
     sustainability: "metrics"
   });
   
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [mainTabValue, setMainTabValue] = useState('risk');
 
   useEffect(() => {
@@ -305,6 +306,11 @@ export default function Analytics() {
         <div>
           <h1 className="text-3xl font-bold">Analytics & Reports</h1>
           <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            {/* Add a button to go back to the base section */}
+            <Button variant="outline" size="sm" className="ml-0 mr-2 h-6 text-xs" onClick={() => setLocation("/analytics")}>
+              <ChevronLeft className="h-3 w-3 mr-1" />
+              Back to Analytics
+            </Button>
             <span>Current section: </span>
             <Badge className="ml-2">
               {getCurrentPageName()}

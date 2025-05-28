@@ -916,6 +916,11 @@ export default function Customers() {
         <div>
           <h1 className="text-3xl font-bold">Customer Management</h1>
           <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            {/* Add a button to go back to the base section */}
+            <Button variant="outline" size="sm" className="ml-0 mr-2 h-6 text-xs" onClick={() => setLocation("/customers")}>
+              <ChevronLeft className="h-3 w-3 mr-1" />
+              Back to Customers
+            </Button>
             <span>Current section: </span>
             <Badge className="ml-2">{getCurrentPageName()}</Badge>
           </div>

@@ -916,7 +916,7 @@ export default function Suppliers() {
   
   // Get current location
   const [location, setLocation] = useLocation();
-  
+
   // Add new filter states
   const [deliveryDateFilter, setDeliveryDateFilter] = useState("all");
   const [ratingFilter, setRatingFilter] = useState("all");
@@ -930,10 +930,10 @@ export default function Suppliers() {
   const [selectedInitiatives, setSelectedInitiatives] = useState<string[]>([]);
   const [costCurrentPage, setCostCurrentPage] = useState(1);
   const [costPageSize, setCostPageSize] = useState(5);
-  
+
   // Add state for the main tab navigation (different sections)
   const [mainTab, setMainTab] = useState("performance");
-  
+
   // Add state for the content tabs within each main section
   const [directoryTab, setDirectoryTab] = useState("all");
   const [ordersTab, setOrdersTab] = useState("all");
@@ -943,29 +943,29 @@ export default function Suppliers() {
   const [directorySubTab, setDirectorySubTab] = useState("list");
   // Add state for purchase orders sub-tabs
   const [ordersSubTab, setOrdersSubTab] = useState("current");
-  
+
   // State for purchase orders
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
-  
+
   // State for quality metrics
   const [qualityMetrics, setQualityMetrics] = useState<QualityMetric[]>([]);
-  
+
   // Calculate supplier statistics
   const totalSuppliers = suppliers.length;
   const activeSuppliers = suppliers.filter(s => s.status === 'active').length;
   const reviewSuppliers = suppliers.filter(s => s.status === 'review').length;
   const inactiveSuppliers = suppliers.filter(s => s.status === 'inactive').length;
-  
+
   // Calculate average metrics
   const avgOnTimeRate = suppliers.reduce((sum, s) => sum + s.onTimeRate, 0) / totalSuppliers;
   const avgRating = suppliers.reduce((sum, s) => sum + s.rating, 0) / totalSuppliers;
-  
+
   // Calculate category distribution
   const categories = {} as {[key: string]: number};
   suppliers.forEach(s => {
     categories[s.category] = (categories[s.category] || 0) + 1;
   });
-  
+
   // Cost optimization initiatives handlers
   
   // Filter cost initiatives based on search term, status, and category
@@ -996,12 +996,12 @@ export default function Suppliers() {
     
     return filtered;
   };
-  
+
   // Handle cost initiative pagination
   const handleCostPageChange = (page: number) => {
     setCostCurrentPage(page);
   };
-  
+
   // Handle toggle initiative selection
   const handleToggleInitiativeSelection = (id: string) => {
     if (selectedInitiatives.includes(id)) {
@@ -1010,13 +1010,13 @@ export default function Suppliers() {
       setSelectedInitiatives([...selectedInitiatives, id]);
     }
   };
-  
+
   // Handle cost search
   const handleCostSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCostSearchTerm(e.target.value);
     setCostCurrentPage(1); // Reset to first page after search
   };
-  
+
   // Filter and paginate cost initiatives
   const filteredCostInitiatives = getFilteredCostInitiatives();
   const costTotalPages = Math.ceil(filteredCostInitiatives.length / costPageSize);
@@ -1024,12 +1024,12 @@ export default function Suppliers() {
     (costCurrentPage - 1) * costPageSize,
     costCurrentPage * costPageSize
   );
-  
+
   // Get unique categories for the filter dropdown
   const uniqueCostCategories = Array.from(
     new Set(costInitiatives.map(initiative => initiative.category))
   );
-  
+
   // Mock purchase order data
   useEffect(() => {
     // In a real app, this would be loaded from an API
@@ -2499,14 +2499,15 @@ export default function Suppliers() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-left">
-            Supplier Management
-          </h1>
+          <h1 className="text-3xl font-bold">Supplier Management</h1>
           <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            {/* Add a button to go back to the base section */}
+            <Button variant="outline" size="sm" className="ml-0 mr-2 h-6 text-xs" onClick={() => setLocation("/suppliers")}>
+              <ChevronLeft className="h-3 w-3 mr-1" />
+              Back to Suppliers
+            </Button>
             <span>Current section: </span>
-            <Badge className="ml-2">
-              {getCurrentPageName()}
-            </Badge>
+            <Badge className="ml-2">{getCurrentPageName()}</Badge>
           </div>
         </div>
         <div className="flex gap-2 items-center">

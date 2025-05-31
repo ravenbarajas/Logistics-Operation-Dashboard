@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RouteData, RouteDetails as IRouteDetails } from "@/components/routes/RouteTable";
 import { RouteDetails } from "@/components/routes/RouteDetails";
 import { RoutePlanModal } from "@/components/routes/RoutePlanModal";
-import { RefreshCw, Map as MapIcon, Route, TrafficCone, Activity } from "lucide-react";
+import { RefreshCw, Map as MapIcon, Route, TrafficCone, Activity, ChevronLeft } from "lucide-react";
 import { routeService, RouteSummary } from "@/services/routeService";
 import { useLocation } from "wouter";
 import { 
@@ -41,7 +41,7 @@ import {
 } from "@/mockData/routes";
 
 export default function RouteOptimization() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   
   // Set up state for routes
   const [routes, setRoutes] = useState<{
@@ -400,6 +400,10 @@ export default function RouteOptimization() {
         <div>
           <h1 className="text-3xl font-bold">Route Management System</h1>
           <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            <Button variant="outline" size="sm" className="ml-0 mr-2 h-6 text-xs" onClick={() => setLocation("/routes")}>
+              <ChevronLeft className="h-3 w-3 mr-1" />
+              Back to Routes
+            </Button>
             <span>Current section: </span>
             <Badge className="ml-2">
               {getCurrentPageName()}

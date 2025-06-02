@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { 
   Plus, RefreshCw, Search, Filter, Pencil, Trash2, FileText, Truck, 
   CalendarClock, Fuel, Settings, AlertCircle, Map, TrendingUp, Activity, 
@@ -144,7 +144,7 @@ export default function Vehicles() {
   const [costMonthFilter, setCostMonthFilter] = useState("all");
   
   // Get current location - add this for tab navigation
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   
   // Determine the default active tab based on the URL
   const getDefaultTab = () => {
@@ -562,6 +562,11 @@ export default function Vehicles() {
         <div>
           <h1 className="text-3xl font-bold">Fleet Management</h1>
           <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            {/* Add a button to go back to the base section */}
+            <Button variant="outline" size="sm" className="ml-0 mr-2 h-6 text-xs" onClick={() => setLocation("/vehicles")}>
+              <ChevronLeft className="h-3 w-3 mr-1" />
+              Back to Fleet
+            </Button>
             <span>Current section: </span>
             <Badge className="ml-2">
               {getCurrentPageName()}

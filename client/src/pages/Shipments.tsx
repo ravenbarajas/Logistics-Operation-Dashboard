@@ -8,7 +8,7 @@ import {
   Search, Plus, Filter, Calendar, Clock, RefreshCw, MapPin, Edit, Trash, 
   ChevronDown, Package, Truck, User, FileText, ExternalLink, Clipboard, AlertCircle,
   BarChartBig, Activity, Zap, TrendingUp, Target, LineChart as LineChartIcon, Route, Droplet,
-  AlertTriangleIcon, RouteIcon, Leaf, TruckIcon, RefreshCwIcon
+  AlertTriangleIcon, RouteIcon, Leaf, TruckIcon, RefreshCwIcon, ChevronLeft
 } from "lucide-react";
 import {
   Select,
@@ -51,7 +51,7 @@ import { EnvironmentalImpactCalculator } from "@/components/shipments/Environmen
 import { ShipmentExceptionHandler } from "@/components/shipments/ShipmentExceptionHandler";
 import { ShipmentLoadUtilization } from "@/components/shipments/ShipmentLoadUtilization";
 import { DeliveryTimePerformance } from "@/components/shipments/DeliveryTimePerformance";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 
 // Extended Shipment interface with additional properties that might be needed
 interface ExtendedShipment extends Shipment {
@@ -76,7 +76,7 @@ interface ShipmentManagementProps {
 }
 
 export default function Shipments({ shipment, onRefresh }: ShipmentManagementProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -651,6 +651,10 @@ export default function Shipments({ shipment, onRefresh }: ShipmentManagementPro
         <div>
           <h1 className="text-3xl font-bold">Shipment Management</h1>
           <div className="flex items-center mt-2 text-sm text-muted-foreground">
+            <Button variant="outline" size="sm" className="ml-0 mr-2 h-6 text-xs" onClick={() => setLocation("/shipments")}>
+              <ChevronLeft className="h-3 w-3 mr-1" />
+              Back to Shipments
+            </Button>
             <span>Current section: </span>
             <Badge className="ml-2">
               {getCurrentPageName()}
